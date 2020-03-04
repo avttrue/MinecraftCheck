@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS NameHistory (
+Uuid TEXT NOT NULL,
+ChangedToAt TEXT NOT NULL,
+Name TEXT NOT NULL
+); 
