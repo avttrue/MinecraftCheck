@@ -37,6 +37,8 @@ DBBrowser::DBBrowser(QWidget *parent)
     actionDeleteTable->setDisabled(true);
     actionReport = new QAction(QIcon(":/resources/img/text.svg"), "Report", this);
     actionReport->setDisabled(true);
+    actionLoad = new QAction(QIcon(":/resources/img/load.svg"), "Load query", this);
+    actionLoad->setDisabled(true);
 
     connect(actionUpdateDB, &QAction::triggered, this, &DBBrowser::slotRefresh);
     connect(actionSchemaDB, &QAction::triggered, this, &DBBrowser::slotMetaData);
@@ -45,6 +47,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     connect(actionClearTable, &QAction::triggered, this, &DBBrowser::slotClearTable);
     connect(actionDeleteTable, &QAction::triggered, this, &DBBrowser::slotDeleteTable);
     connect(actionReport, &QAction::triggered, this, &DBBrowser::slotReport);
+    connect(actionLoad, &QAction::triggered, this, &DBBrowser::slotLoadQuery);
 
     auto layout = new QVBoxLayout(this);
     layout->setSpacing(1);
@@ -57,6 +60,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     toolBar->addAction(actionSchemaDB);
     toolBar->addSeparator();
     toolBar->addAction(actionReport);
+    if(config->AdvancedDBMode()) toolBar->addAction(actionLoad);
     toolBar->addSeparator();
     if(config->AdvancedDBMode()) toolBar->addAction(actionDeleteTable);
     if(config->AdvancedDBMode()) toolBar->addAction(actionClearTable);
@@ -113,6 +117,8 @@ DBBrowser::DBBrowser(QWidget *parent)
 
 static QString dbCaption(const QSqlDatabase &db)
 {
+    if(!db.isOpen()) return "error";
+
     auto caption = QString("[%1] %2%3").
                    arg(db.driverName(),
                        db.userName().isEmpty() ? "" : QString("<%1> ").arg(db.userName()),
@@ -123,7 +129,6 @@ static QString dbCaption(const QSqlDatabase &db)
 void DBBrowser::slotMetaData()
 {
     auto cItem = tree->currentItem();
-
     if (!cItem || !cItem->parent()) return;
 
     setTreeItemActive(cItem->parent());
@@ -143,12 +148,12 @@ void DBBrowser::slotRefresh()
         auto db = QSqlDatabase::database(name, false);
         root->setText(0, dbCaption(db));
         root->setIcon(0, QIcon(":/resources/img/database.svg"));
-        if (name == activeDB)
+        if(name == activeDB)
         {
             gotActiveDb = true;
             setTreeItemActive(root);
         }
-        if (db.isOpen())
+        if(db.isOpen())
         {
             auto tables = db.tables();
             for (int t = 0; t < tables.count(); ++t)
@@ -185,10 +190,10 @@ static void setBold(QTreeWidgetItem *item, bool bold)
 // сделать активным элемент дерева БД
 void DBBrowser::setTreeItemActive(QTreeWidgetItem *item)
 {
+    if (!item) return;
+
     for(int i = 0; i < tree->topLevelItemCount(); ++i)
         if (tree->topLevelItem(i)->font(0).bold()) setBold(tree->topLevelItem(i), false);
-
-    if (!item) return;
 
     setBold(item, true);
     activeDB = QSqlDatabase::connectionNames().value(tree->indexOfTopLevelItem(item));
@@ -221,11 +226,12 @@ void DBBrowser::slotTreeItemActivated(QTreeWidgetItem *item)
 // отобразить таблицу
 void DBBrowser::showTable(const QString &tablename)
 {
-    if(!database().isOpen()) return;
+    auto db = database();
+    if(!db.isOpen()) return;
 
-    auto model = new MySqlTableModel(table, database());
+    auto model = new MySqlTableModel(table, db);
     model->setEditStrategy(QSqlTableModel::OnRowChange);
-    model->setTable(database().driver()->escapeIdentifier(tablename, QSqlDriver::TableName));
+    model->setTable(db.driver()->escapeIdentifier(tablename, QSqlDriver::TableName));
     model->select();
 
     if (model->lastError().type() != QSqlError::NoError)
@@ -251,9 +257,10 @@ void DBBrowser::showTable(const QString &tablename)
 // отобразить метаданные
 void DBBrowser::showMetaData(const QString &t)
 {
-    if(!database().open()) return;
+    auto db = database();
+    if(!db.isOpen()) return;
 
-    auto rec = database().record(t);
+    auto rec = db.record(t);
     auto model = new QStandardItemModel(table);
 
     model->insertRows(0, rec.count());
@@ -390,7 +397,6 @@ void DBBrowser::showTableInfo()
 void DBBrowser::slotClearTable()
 {
     auto item = tree->currentItem();
-
     if (!item || !item->parent()) return;
 
     auto tableName = item->text(0);
@@ -408,7 +414,6 @@ void DBBrowser::slotClearTable()
 void DBBrowser::slotDeleteTable()
 {
     auto item = tree->currentItem();
-
     if (!item || !item->parent()) return;
 
     auto tableName = item->text(0);
@@ -440,6 +445,12 @@ void DBBrowser::slotReport()
 
     }
     Q_EMIT signalReport(answer);
+}
+
+void DBBrowser::slotLoadQuery()
+{
+
+
 }
 
 QVariant MySqlTableModel::data(const QModelIndex &idx, int role) const
