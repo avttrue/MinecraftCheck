@@ -59,3 +59,29 @@ QString humanReadableByteCount(long long bytes, bool si)
         arg(pre[exp - 1]).
         arg(si ? "" : "i");
 }
+
+QString fileToText(const QString& path, bool* ok)
+{
+    QString text;
+    QFile file(path);
+
+    if (!file.exists())
+    {
+        qCritical() << "File not found:" << path;
+        if(ok) *ok = false;
+        return "";
+    }
+
+    if (!file.open(QIODevice::ReadOnly | QFile::Text))
+    {
+        qCritical() << "File not open for reading:" << path;
+        if(ok) *ok = false;
+        return "";
+    }
+
+    QTextStream stream(&file);
+    text = stream.readAll();
+    file.close();
+    if(ok) *ok = true;
+    return text;
+}

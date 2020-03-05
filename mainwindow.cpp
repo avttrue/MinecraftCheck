@@ -75,9 +75,9 @@ void MainWindow::loadGui()
     actionAbort->setShortcut(Qt::CTRL + Qt::Key_X);
     QObject::connect(actionAbort, &QAction::triggered, [=](){ Q_EMIT signalAbortQuery(); });
 
-//    auto testAction = new QAction(QIcon(":/resources/img/question.svg"), "TEST", this);
-//    QObject::connect(testAction, &QAction::triggered, [=]()
-//                     {});
+    //    auto testAction = new QAction(QIcon(":/resources/img/question.svg"), "TEST", this);
+    //    QObject::connect(testAction, &QAction::triggered, [=]()
+    //                     {});
 
     // тулбар
     auto tbMain = new QToolBar(this);
@@ -125,8 +125,13 @@ void MainWindow::loadGui()
     dbBrowser = new DBBrowser(this);
     tabWidget->addTab(dbBrowser, QIcon(":/resources/img/database.svg"), "Database");
     QObject::connect(dbBrowser, &DBBrowser::signalMessage, [=](const QString& text)
-                     { textEvents->appendPlainText(text); tabWidget->setCurrentIndex(2); });
+                     { textEvents->appendPlainText(text);
+                       tabWidget->setCurrentIndex(2); });
     QObject::connect(dbBrowser, &DBBrowser::signalReport, this, &MainWindow::showDBProfiles);
+    QObject::connect(dbBrowser, &DBBrowser::signalQuery, [=](const QString& text)
+                     { QVector<QVariantList> answer;
+                       setQueryDataBase(text, &answer, true);
+                       tabWidget->setCurrentIndex(2); });
 
     textEvents = new QPlainTextEdit(this);
     textEvents->setFont(QFont(config->FontNameEvents(), -1, QFont::ExtraBold));

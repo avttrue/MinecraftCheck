@@ -14,6 +14,11 @@ QString getTextFromRes(const QString& path);
 bool textToFile(const QString& text, const QString& path);
 
 /*!
+ * \brief fileToText - считать файл как текст.
+ */
+QString fileToText(const QString& path, bool* ok = nullptr);
+
+/*!
  * \brief longTimeToString - перевести время в формате long (MSecsSinceEpoch) в строку в формате format.
  */
 QString longTimeToString(long datetime, const QString& format);

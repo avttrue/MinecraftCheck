@@ -30,7 +30,7 @@ private:
     QAction* actionDeleteRow;
     QAction* actionClearTable;
     QAction* actionReport;
-    QAction* actionLoad;
+    QAction* actionSearch;
     QTableView *table;
     QTreeWidget *tree;
     QString activeDB;
@@ -55,6 +55,7 @@ private Q_SLOTS:
     void slotClearTable();
     void slotReport();
     void slotLoadQuery();
+    void slotSearch();
 };
 
 class MySqlTableModel: public QSqlTableModel

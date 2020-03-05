@@ -55,6 +55,8 @@ public:
     void setAutoCollectProfiles(bool value);
     bool AdvancedDBMode() const;
     void setAdvancedDBMode(bool value);
+    QString LastDir() const;
+    void setLastDir(const QString &value);
 
 protected:
     void load();
@@ -64,6 +66,7 @@ private:
     QString m_DateTimeFormat;           // формат отображения даты и времени
     QString m_PathAppConfig;            // путь до конфига приложения
     QString m_PathAppDir;               // путь до приложения
+    QString m_LastDir;                  // путь до последнего каталога
     QString m_PathLocalDB;              // путь до локальной БД
     QString m_QueryServers;             // запрос статусов серверов
     QString m_QueryPersonUuid;          // запрос о персонаже по uuid

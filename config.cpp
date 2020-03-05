@@ -104,6 +104,18 @@ void Config::load()
     if(!m_Settings->contains("Database/AdvancedMode"))
         m_Settings->setValue("Database/AdvancedMode", ADVANCED_DB_MODE);
     m_AdvancedDBMode = m_Settings->value("Database/AdvancedMode").toBool();
+
+    if(!m_Settings->contains("LastCatalog"))
+        m_Settings->setValue("LastCatalog", m_PathAppDir);
+    m_LastDir = m_Settings->value("LastCatalog").toString();
+}
+
+void Config::setLastDir(const QString &value)
+{
+    if(m_LastDir == value) return;
+
+    m_LastDir = value;
+    m_Settings->setValue("LastCatalog", m_LastDir);
 }
 
 void Config::setAdvancedDBMode(bool value)
@@ -242,6 +254,7 @@ void Config::setQueryServers(const QString &value)
     m_Settings->setValue("ApiQueries/Servers", m_QueryServers);
 }
 
+QString Config::LastDir() const { return m_LastDir; }
 bool Config::AdvancedDBMode() const { return m_AdvancedDBMode; }
 bool Config::AutoCollectProfiles() const { return m_AutoCollectProfiles; }
 bool Config::AutoVacuum() const { return m_AutoVacuum; }

@@ -20,6 +20,7 @@
 #include <QSqlRecord>
 #include <QSqlField>
 #include <QSqlQuery>
+#include <QFileDialog>
 
 DBBrowser::DBBrowser(QWidget *parent)
     : QWidget(parent)
@@ -35,8 +36,9 @@ DBBrowser::DBBrowser(QWidget *parent)
     actionClearTable->setDisabled(true);
     actionReport = new QAction(QIcon(":/resources/img/text.svg"), "Report", this);
     actionReport->setDisabled(true);
-    actionLoad = new QAction(QIcon(":/resources/img/load.svg"), "Load query", this);
-    actionLoad->setDisabled(true);
+    auto actionLoad = new QAction(QIcon(":/resources/img/load.svg"), "Load query", this);
+    actionSearch = new QAction(QIcon(":/resources/img/search.svg"), "Search player by name", this);
+    actionSearch->setDisabled(true);
 
     connect(actionUpdateDB, &QAction::triggered, this, &DBBrowser::slotRefresh);
     connect(actionSchemaDB, &QAction::triggered, this, &DBBrowser::slotMetaData);
@@ -45,6 +47,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     connect(actionClearTable, &QAction::triggered, this, &DBBrowser::slotClearTable);
     connect(actionReport, &QAction::triggered, this, &DBBrowser::slotReport);
     connect(actionLoad, &QAction::triggered, this, &DBBrowser::slotLoadQuery);
+    connect(actionSearch, &QAction::triggered, this, &DBBrowser::slotSearch);
 
     auto layout = new QVBoxLayout(this);
     layout->setSpacing(1);
@@ -57,6 +60,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     toolBar->addAction(actionSchemaDB);
     toolBar->addSeparator();
     toolBar->addAction(actionReport);
+    toolBar->addAction(actionSearch);
     if(config->AdvancedDBMode()) toolBar->addAction(actionLoad);
     toolBar->addSeparator();
     if(config->AdvancedDBMode()) toolBar->addAction(actionClearTable);
@@ -109,6 +113,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     layout->addWidget(splitter);
 
     QMetaObject::connectSlotsByName(this);
+    if(!config->AdvancedDBMode()) qInfo() << "Advanced DB Mode OFF, see" << APP_CFG << "file";
 }
 
 static QString dbCaption(const QSqlDatabase &db)
@@ -201,6 +206,7 @@ void DBBrowser::slotTreeCurrentItemChanged(QTreeWidgetItem *current)
     actionSchemaDB->setEnabled(current && current->parent());
     actionInsertRow->setEnabled(current && current->parent());
     actionClearTable->setEnabled(current && current->parent());
+    actionSearch->setEnabled(current && current->parent());
 
     if(current && !current->parent()) clearTableView();
 }
@@ -379,9 +385,9 @@ void DBBrowser::showTableInfo()
         auto text = getTextFromRes(":/resources/sql/get_table_rows_count.sql").arg(tablename);
         if(query.exec(text))
         {
-          query.first();
-          auto value = query.value(0);
-          if(value.isValid()) info = value.toString();
+            query.first();
+            auto value = query.value(0);
+            if(value.isValid()) info = value.toString();
         }
     }
 
@@ -427,8 +433,24 @@ void DBBrowser::slotReport()
 
 void DBBrowser::slotLoadQuery()
 {
+    auto db = database();
+    if(!db.isOpen()) return;
 
+    QString filename = QFileDialog::getOpenFileName(
+        this, "Open sql query", config->LastDir(), "query (*.sql)");
 
+    if(filename.isNull()) return;
+
+    config->setLastDir(QFileInfo(filename).dir().path());
+
+    auto text = fileToText(filename);
+
+    Q_EMIT signalQuery(text);
+}
+
+void DBBrowser::slotSearch()
+{
+    // TODO:  slotSearch
 }
 
 QVariant MySqlTableModel::data(const QModelIndex &idx, int role) const
