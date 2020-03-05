@@ -29,7 +29,6 @@ private:
     QAction* actionInsertRow;
     QAction* actionDeleteRow;
     QAction* actionClearTable;
-    QAction* actionDeleteTable;
     QAction* actionReport;
     QAction* actionLoad;
     QTableView *table;
@@ -54,7 +53,6 @@ private Q_SLOTS:
     void slotDeleteRow();
     void slotMetaData();
     void slotClearTable();
-    void slotDeleteTable();
     void slotReport();
     void slotLoadQuery();
 };

@@ -10,7 +10,6 @@
         <file>resources/sql/add_record_history.sql</file>
         <file>resources/sql/vacuum.sql</file>
         <file>resources/sql/clear_table.sql</file>
-        <file>resources/sql/del_table.sql</file>
         <file>resources/img/update.svg</file>
         <file>resources/img/tag.svg</file>
         <file>resources/img/save.svg</file>

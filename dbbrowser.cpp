@@ -33,8 +33,6 @@ DBBrowser::DBBrowser(QWidget *parent)
     actionSchemaDB->setDisabled(true);
     actionClearTable = new QAction(QIcon(":/resources/img/delete.svg"), "Clear table", this);
     actionClearTable->setDisabled(true);
-    actionDeleteTable = new QAction(QIcon(":/resources/img/no.svg"), "Delete table", this);
-    actionDeleteTable->setDisabled(true);
     actionReport = new QAction(QIcon(":/resources/img/text.svg"), "Report", this);
     actionReport->setDisabled(true);
     actionLoad = new QAction(QIcon(":/resources/img/load.svg"), "Load query", this);
@@ -45,7 +43,6 @@ DBBrowser::DBBrowser(QWidget *parent)
     connect(actionInsertRow, &QAction::triggered, this, &DBBrowser::slotInsertRow);
     connect(actionDeleteRow, &QAction::triggered, this, &DBBrowser::slotDeleteRow);
     connect(actionClearTable, &QAction::triggered, this, &DBBrowser::slotClearTable);
-    connect(actionDeleteTable, &QAction::triggered, this, &DBBrowser::slotDeleteTable);
     connect(actionReport, &QAction::triggered, this, &DBBrowser::slotReport);
     connect(actionLoad, &QAction::triggered, this, &DBBrowser::slotLoadQuery);
 
@@ -60,9 +57,8 @@ DBBrowser::DBBrowser(QWidget *parent)
     toolBar->addAction(actionSchemaDB);
     toolBar->addSeparator();
     toolBar->addAction(actionReport);
-    toolBar->addAction(actionLoad);
+    if(config->AdvancedDBMode()) toolBar->addAction(actionLoad);
     toolBar->addSeparator();
-    if(config->AdvancedDBMode()) toolBar->addAction(actionDeleteTable);
     if(config->AdvancedDBMode()) toolBar->addAction(actionClearTable);
     if(config->AdvancedDBMode()) toolBar->addAction(actionInsertRow);
     if(config->AdvancedDBMode()) toolBar->addAction(actionDeleteRow);
@@ -205,7 +201,6 @@ void DBBrowser::slotTreeCurrentItemChanged(QTreeWidgetItem *current)
     actionSchemaDB->setEnabled(current && current->parent());
     actionInsertRow->setEnabled(current && current->parent());
     actionClearTable->setEnabled(current && current->parent());
-    actionDeleteTable->setEnabled(current && current->parent());
 
     if(current && !current->parent()) clearTableView();
 }
@@ -408,23 +403,6 @@ void DBBrowser::slotClearTable()
     if (reply == QMessageBox::No) return;
 
     Q_EMIT signalQuery(getTextFromRes(":/resources/sql/clear_table.sql").arg(tableName));
-}
-
-// Удалить таблицу из БД
-void DBBrowser::slotDeleteTable()
-{
-    auto item = tree->currentItem();
-    if (!item || !item->parent()) return;
-
-    auto tableName = item->text(0);
-
-    QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, "Confirm", QString("Delete a table '%1'?").arg(tableName),
-                                  QMessageBox::Yes | QMessageBox::No);
-
-    if (reply == QMessageBox::No) return;
-
-    Q_EMIT signalQuery(getTextFromRes(":/resources/sql/del_table.sql").arg(tableName));
 }
 
 void DBBrowser::slotReport()
