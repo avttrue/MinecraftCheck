@@ -61,7 +61,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     toolBar->addSeparator();
     toolBar->addAction(actionReport);
     toolBar->addAction(actionSearch);
-    if(config->AdvancedDBMode()) toolBar->addAction(actionLoad);
+    toolBar->addAction(actionLoad);
     toolBar->addSeparator();
     if(config->AdvancedDBMode()) toolBar->addAction(actionClearTable);
     if(config->AdvancedDBMode()) toolBar->addAction(actionInsertRow);
