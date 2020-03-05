@@ -60,7 +60,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     toolBar->addAction(actionSchemaDB);
     toolBar->addSeparator();
     toolBar->addAction(actionReport);
-    if(config->AdvancedDBMode()) toolBar->addAction(actionLoad);
+    toolBar->addAction(actionLoad);
     toolBar->addSeparator();
     if(config->AdvancedDBMode()) toolBar->addAction(actionDeleteTable);
     if(config->AdvancedDBMode()) toolBar->addAction(actionClearTable);
