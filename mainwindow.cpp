@@ -220,7 +220,7 @@ void MainWindow::getServersStatus()
 void MainWindow::getPlayerProfile()
 {
     if(lineEdit->text().isEmpty()) return;
-    QString query = config->QueryPersonName().arg(lineEdit->text());
+    QString query = config->QueryPersonName().arg(lineEdit->text().simplified());
     lineEdit->clear();
     lineEdit->setVisible(false);
     tabWidget->setCurrentIndex(2);
@@ -304,7 +304,7 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
     QSqlQuery query(database);
     if( !query.exec(text))
     {
-        auto error = database.lastError().text().trimmed();
+        auto error = database.lastError().text().simplified();
         if(error.isEmpty()) error = "Incorrect query syntax";
         textEvents->appendPlainText(QString("[!]\tFatal error at into local database query: %1\n").
                                     arg(error));
@@ -337,16 +337,14 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
                 if(!log) continue;
                 srow.isEmpty()
                     ? srow.append(value.toString())
-                    : srow.append(QString(",%1").arg(value.toString()));
+                    : srow.append(QString(";%1").arg(value.toString()));
             }
             if(row.isEmpty()) continue;
 
             answer->append(row);
 
             if(!log) continue;
-            sanswer.isEmpty()
-                ? sanswer.append(QString("\n\t%1").arg(srow))
-                : sanswer.append(QString(";\n\t%1").arg(srow));
+            sanswer.append(QString("\n\t%1").arg(srow));
         }
         while(query.next());
 

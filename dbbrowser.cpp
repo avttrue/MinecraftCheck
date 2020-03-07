@@ -238,7 +238,7 @@ void DBBrowser::showTable(const QString &tablename)
     if (model->lastError().type() != QSqlError::NoError)
     {
         auto message = QString("[!]\tError at displaying the table '%1'.");
-        auto error = model->lastError().text().trimmed();
+        auto error = model->lastError().text().simplified();
         if(error.isEmpty()) error = tablename;
         Q_EMIT signalMessage(message.arg(error));
     }
