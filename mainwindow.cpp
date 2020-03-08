@@ -59,18 +59,26 @@ void MainWindow::loadGui()
     // действия
     auto actionQt = new QAction(QIcon(":/resources/img/qt_logo.svg"), "About Qt", this);
     QObject::connect(actionQt, &QAction::triggered, qApp, QApplication::aboutQt);
+
     auto actionExit = new QAction(QIcon(":/resources/img/exit.svg"), "Exit", this);
     QObject::connect(actionExit, &QAction::triggered, this, &MainWindow::close);
 
     actionCheckServers = new QAction(QIcon(":/resources/img/check.svg"), "Check servers", this);
-    actionCheckServers->setShortcut(Qt::CTRL + Qt::Key_M);
+    actionCheckServers->setShortcut(Qt::CTRL + Qt::Key_M);    
     QObject::connect(actionCheckServers, &QAction::triggered, this, &MainWindow::getServersStatus);
-    actionCheckPerson = new QAction(QIcon(":/resources/img/person.svg"), "Check player", this);
-    actionCheckPerson->setShortcut(Qt::CTRL + Qt::Key_P);
-    QObject::connect(actionCheckPerson, &QAction::triggered, this, &MainWindow::showTextEdit);
+
+    actionCheckPerson = new QAction(QIcon(":/resources/img/person.svg"), "Check player by nick", this);
+    actionCheckPerson->setShortcut(Qt::CTRL + Qt::Key_N);
+    QObject::connect(actionCheckPerson, &QAction::triggered, [this](){ showTextEdit(0); });
+
+    actionCheckPersonId = new QAction(QIcon(":/resources/img/person_id.svg"), "Check player by id", this);
+    actionCheckPersonId->setShortcut(Qt::CTRL + Qt::Key_I);
+    QObject::connect(actionCheckPersonId, &QAction::triggered, [this](){ showTextEdit(1); });
+
     actionSave = new QAction(QIcon(":/resources/img/save.svg"), "Save report", this);
     actionSave->setShortcut(Qt::CTRL + Qt::Key_S);
     QObject::connect(actionSave, &QAction::triggered, this, &MainWindow::saveReport);
+
     auto actionAbort = new QAction(QIcon(":/resources/img/no.svg"), "Abort query", this);
     actionAbort->setShortcut(Qt::CTRL + Qt::Key_X);
     QObject::connect(actionAbort, &QAction::triggered, [=](){ Q_EMIT signalAbortQuery(); });
@@ -87,6 +95,7 @@ void MainWindow::loadGui()
 
     tbMain->addAction(actionCheckServers);
     tbMain->addAction(actionCheckPerson);
+    tbMain->addAction(actionCheckPersonId);
     tbMain->addSeparator();
     tbMain->addAction(actionAbort);
     tbMain->addSeparator();
@@ -114,7 +123,6 @@ void MainWindow::loadGui()
 
     lineEdit = new QLineEdit(this);
     lineEdit->setClearButtonEnabled(true);
-    lineEdit->setPlaceholderText("enter the player's nickname");
     lineEdit->setVisible(false);
     auto* leef = new LineEditEventFilter(lineEdit);
     lineEdit->installEventFilter(leef);
@@ -172,16 +180,22 @@ void MainWindow::loadGui()
 void MainWindow::setEnableActions(bool value)
 {
     actionCheckPerson->setEnabled(value);
+    actionCheckPersonId->setEnabled(value);
     actionCheckServers->setEnabled(value);
     actionSave->setEnabled(value);
 }
 
-void MainWindow::showTextEdit()
+void MainWindow::showTextEdit(int mode)
 {
     tabWidget->setCurrentIndex(0);
     lineEdit->clear();
     lineEdit->setVisible(true);
     lineEdit->setFocus();
+    lineEdit->setProperty("SearchMode", mode);
+    if(mode == 0)
+        lineEdit->setPlaceholderText("enter the player's NICK");
+    else if(mode == 1)
+        lineEdit->setPlaceholderText("enter the player's ID");
 }
 
 void MainWindow::queryDone(bool success)
@@ -214,14 +228,14 @@ void MainWindow::getServersStatus()
 
     progressBar->setVisible(true);
     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+
+    newTaskMarker();
     reader->sendQuery(config->QueryServers());
 }
 
 void MainWindow::getPlayerProfile()
 {
     if(lineEdit->text().isEmpty()) return;
-    QString query = config->QueryPersonName().arg(lineEdit->text().simplified());
-    lineEdit->clear();
     lineEdit->setVisible(false);
     tabWidget->setCurrentIndex(2);
     setEnableActions(false);    
@@ -246,8 +260,31 @@ void MainWindow::getPlayerProfile()
     QObject::connect(reader, &PlayerProfileReader::signalProfile, this, &MainWindow::writeProfile);
 
     progressBar->setVisible(true);
+
+    newTaskMarker();
+    if(lineEdit->property("SearchMode").toInt() == 0)
+    {
+        auto nick = lineEdit->text().simplified();
+        auto query = config->QueryPersonName().arg(nick);
+        textEvents->appendPlainText(QString("[i]\tSearching by player's name '%1'\n").arg(nick));
+        reader->sendQuery(query);
+    }
+    else if(lineEdit->property("SearchMode").toInt() == 1)
+    {
+        auto id = lineEdit->text().simplified().remove('{').remove('}').remove('-');
+        auto query = config->QueryPersonUuid().arg(id);
+        reader->setProfileId(id);
+        textEvents->appendPlainText(QString("[i]\tSearching by player's id '%1'\n").arg(id));
+        reader->sendQuery(query);
+    }
+    else // error
+    {
+       qCritical() << "Wrong 'SearchMode' (" << lineEdit->property("SearchMode") << ")";
+       progressBar->setVisible(false);
+    }
+
+    lineEdit->clear();
     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-    reader->sendQuery(query);
 }
 
 void MainWindow::saveReport()
@@ -287,7 +324,7 @@ void MainWindow::openDataBase()
         }
         else
         {
-            textEvents->appendPlainText(QString("[!]\tValidation: false\n"));
+            textEvents->appendPlainText("[!]\tValidation: false\n");
             tabWidget->setCurrentIndex(2);
         }
         return;
@@ -523,6 +560,7 @@ void MainWindow::showProfile(const QString &caption, const QString &profiletable
 
 void MainWindow::showDBProfiles(QStringList uuids)
 {
+    newTaskMarker();
     auto time = QDateTime::currentMSecsSinceEpoch();
     setEnableActions(false);
     progressBar->setVisible(true);
@@ -620,4 +658,9 @@ void MainWindow::getDBInfo()
     textEvents->appendPlainText(QString("[i]\tLocal database: %1 bytes size, %2 profiles count").
                                 arg(dbsize, dbcount));
     labelLocalDB->setText(QString("%1, %2 profiles").arg(dbsize, dbcount));
+}
+
+void MainWindow::newTaskMarker()
+{
+    textEvents->appendPlainText("\n--------------------\n");
 }

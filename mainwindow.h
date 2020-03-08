@@ -23,7 +23,7 @@ protected:
     void closeEvent(QCloseEvent *event);
     void loadGui();
     void setEnableActions(bool value);
-    void showTextEdit();
+    void showTextEdit(int mode); // mode = 0 - by nick, 1- by id
     void queryDone(bool success);
     void getServersStatus();
     void getPlayerProfile();
@@ -37,6 +37,7 @@ protected:
     void showDBProfiles(QStringList uuids);
     void writeProfile(const MojangApiProfile& profile);
     void getDBInfo();
+    void newTaskMarker();
 
 private:
     QSqlDatabase database;
@@ -49,6 +50,7 @@ private:
     QLineEdit* lineEdit;
     QAction* actionCheckServers;
     QAction* actionCheckPerson;
+    QAction* actionCheckPersonId;
     QAction* actionSave;
     DBBrowser* dbBrowser;
 

@@ -42,5 +42,6 @@
         <file>resources/sql/get_table_rows_count.sql</file>
         <file>resources/sql/select_history_uuid.sql</file>
         <file>resources/img/load.svg</file>
+        <file>resources/img/person_id.svg</file>
     </qresource>
 </RCC>

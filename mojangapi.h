@@ -62,7 +62,7 @@ public:
     explicit ServerStatusReader(QObject *parent);
 
 protected:
-    void interpretateReply(const QString& string);
+    void interpretateReply(const QString& reply);
 
 private:
     QMap<QString, QString> m_Statuses;
@@ -76,9 +76,10 @@ class PlayerProfileReader : public MojangApi
     Q_OBJECT
 public:
     explicit PlayerProfileReader(QObject *parent);
+    void setProfileId(const QString& id); // если получаем профиль не по нику, а по id
 
 protected:
-    void interpretateReply(const QString& string);
+    void interpretateReply(const QString& reply);
     void interpretateData(const QByteArray& data);
     bool interpretate_Id(const QJsonDocument& document);      // получение id
     bool interpretate_History(const QJsonDocument& document); // получение истории ников

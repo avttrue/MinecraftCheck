@@ -145,9 +145,9 @@ ServerStatusReader::ServerStatusReader(QObject *parent):
     setObjectName("ServerStatusReader");
 }
 
-void ServerStatusReader::interpretateReply(const QString& string)
+void ServerStatusReader::interpretateReply(const QString& reply)
 {
-    QJsonDocument jdoc = getJsonDocument(string);
+    QJsonDocument jdoc = getJsonDocument(reply);
     if(jdoc.isEmpty()) return;
 
     auto vl = jdoc.toVariant().toList();
@@ -182,25 +182,31 @@ PlayerProfileReader::PlayerProfileReader(QObject *parent):
     setObjectName("PlayerProfileReader");
 }
 
-void PlayerProfileReader::interpretateReply(const QString &string)
+void PlayerProfileReader::setProfileId(const QString &id)
+{
+    m_Stage = 1;
+    m_Profile.Id = id;
+}
+
+void PlayerProfileReader::interpretateReply(const QString &reply)
 {
     if(m_Stage == 0) //id
     {
-        if(!interpretate_Id(getJsonDocument(string))) return;
+        if(!interpretate_Id(getJsonDocument(reply))) return;
 
         m_Stage++;
         sendQuery(config->QueryPersonUuid().arg(m_Profile.Id));
     }
     else if(m_Stage == 1) // name history
     {
-        if(!interpretate_History(getJsonDocument(string))) return;
+        if(!interpretate_History(getJsonDocument(reply))) return;
 
         m_Stage++;
         sendQuery(config->QueryProfileUuid().arg(m_Profile.Id));
     }
     else if(m_Stage == 2) // profile
     {
-        if(!interpretate_Profile(getJsonDocument(string))) return;
+        if(!interpretate_Profile(getJsonDocument(reply))) return;
 
         if(!interpretate_SkinCape(getJsonDocument(m_SkinCapeValue))) return;
 
@@ -214,11 +220,6 @@ void PlayerProfileReader::interpretateReply(const QString &string)
         Q_EMIT signalError();
         abort();
     }
-
-    /* TODO: 'legacy' & 'demo'
-     * 'legacy' only appears when true (not migrated to mojang account)
-     *  'demo' only appears when true (account unpaid)
-     */
 }
 
 void PlayerProfileReader::interpretateData(const QByteArray &data)
@@ -267,7 +268,6 @@ void PlayerProfileReader::interpretateData(const QByteArray &data)
         }
 
         interpretation_Final();
-
     }
     else // сюда попадать не должны
     {
@@ -290,14 +290,6 @@ bool PlayerProfileReader::interpretate_Id(const QJsonDocument &document)
         return false;
     }
 
-    if(!map.contains("name")) //NOTE: 'name' key
-    {
-        Q_EMIT signalMessage("[!]\tERROR. Json parsing: 'name' key is absent");
-        Q_EMIT signalStatus("ERROR");
-        Q_EMIT signalError();
-        return false;
-    }
-
     if(!map.contains("id")) //NOTE: 'id' key
     {
         Q_EMIT signalMessage("[!]\tERROR. Json parsing: 'id' key is absent");
@@ -307,7 +299,6 @@ bool PlayerProfileReader::interpretate_Id(const QJsonDocument &document)
     }
 
     m_Profile.DateTime = QDateTime::currentMSecsSinceEpoch();
-    m_Profile.CurrentName = map.value("name").toString();
     m_Profile.Id = map.value("id").toString();
 
     Q_EMIT signalMessage(QString("[i]\tPlayer id: %1").arg(m_Profile.Id));
@@ -363,6 +354,17 @@ bool PlayerProfileReader::interpretate_Profile(const QJsonDocument &document)
 
     m_Profile.Legacy = map.contains("legacy") ? map.value("legacy").toBool() : false;
     m_Profile.Demo = map.contains("demo") ? map.value("demo").toBool() : false;
+
+    // CurrentName читаем здесь, хотя мобли бы в interpretate_Id. На случай изначального поиска не по нику, а по id
+    if(!map.contains("name")) //NOTE: 'name' key
+    {
+        Q_EMIT signalMessage("[!]\tERROR. Json parsing: 'name' key is absent");
+        Q_EMIT signalStatus("ERROR");
+        Q_EMIT signalError();
+        return false;
+    }
+    m_Profile.CurrentName = map.value("name").toString();
+    Q_EMIT signalMessage(QString("[i]\tPlayer current name: %1").arg(m_Profile.CurrentName));
 
     if(!map.contains("properties")) //NOTE: 'properties' key
     {
@@ -463,4 +465,5 @@ void PlayerProfileReader::interpretation_Final()
     Q_EMIT signalStatus("Done");
     Q_EMIT signalSuccess();
 }
+
 
