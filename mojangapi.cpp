@@ -218,6 +218,7 @@ void PlayerProfileReader::interpretateReply(const QString &reply)
     {
         Q_EMIT signalStatus("FATAL ERROR");
         Q_EMIT signalError();
+        qCritical() << __func__ << ": wrong stage";
         abort();
     }
 }
@@ -273,6 +274,7 @@ void PlayerProfileReader::interpretateData(const QByteArray &data)
     {
         Q_EMIT signalStatus("FATAL ERROR");
         Q_EMIT signalError();
+        qCritical() << __func__ << ": wrong stage";
         abort();
     }
 }

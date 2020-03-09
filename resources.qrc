@@ -43,5 +43,7 @@
         <file>resources/sql/select_history_uuid.sql</file>
         <file>resources/img/load.svg</file>
         <file>resources/img/person_id.svg</file>
+        <file>resources/sql/is_profile_exists_uuid.sql</file>
+        <file>resources/img/refresh.svg</file>
     </qresource>
 </RCC>

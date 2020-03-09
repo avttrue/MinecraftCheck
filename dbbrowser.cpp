@@ -39,6 +39,8 @@ DBBrowser::DBBrowser(QWidget *parent)
     auto actionLoad = new QAction(QIcon(":/resources/img/load.svg"), "Load query", this);
     actionSearch = new QAction(QIcon(":/resources/img/search.svg"), "Search player by name", this);
     actionSearch->setDisabled(true);
+    actionUpdateProfile = new QAction(QIcon(":/resources/img/refresh.svg"), "Reload profile", this);
+    actionUpdateProfile->setDisabled(true);
 
     connect(actionUpdateDB, &QAction::triggered, this, &DBBrowser::slotRefresh);
     connect(actionSchemaDB, &QAction::triggered, this, &DBBrowser::slotMetaData);
@@ -48,6 +50,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     connect(actionReport, &QAction::triggered, this, &DBBrowser::slotReport);
     connect(actionLoad, &QAction::triggered, this, &DBBrowser::slotLoadQuery);
     connect(actionSearch, &QAction::triggered, this, &DBBrowser::slotSearch);
+    connect(actionUpdateProfile, &QAction::triggered, this, &DBBrowser::slotUpdateProfile);
 
     auto layout = new QVBoxLayout(this);
     layout->setSpacing(1);
@@ -59,6 +62,8 @@ DBBrowser::DBBrowser(QWidget *parent)
     toolBar->addAction(actionUpdateDB);
     toolBar->addAction(actionSchemaDB);
     toolBar->addSeparator();
+    toolBar->addSeparator();
+    toolBar->addAction(actionUpdateProfile);
     toolBar->addAction(actionReport);
     toolBar->addAction(actionSearch);
     toolBar->addAction(actionLoad);
@@ -451,6 +456,11 @@ void DBBrowser::slotLoadQuery()
 void DBBrowser::slotSearch()
 {
     // TODO:  slotSearch
+}
+
+void DBBrowser::slotUpdateProfile()
+{
+    // TODO:  slotUpdateProfile
 }
 
 QVariant MySqlTableModel::data(const QModelIndex &idx, int role) const

@@ -279,8 +279,9 @@ void MainWindow::getPlayerProfile()
     }
     else // error
     {
-       qCritical() << "Wrong 'SearchMode' (" << lineEdit->property("SearchMode") << ")";
-       progressBar->setVisible(false);
+        labelStatus->setText("FATAL ERROR");
+        qCritical() << __func__ << ": wrong 'SearchMode' (" << lineEdit->property("SearchMode") << ")";
+        progressBar->setVisible(false);
     }
 
     lineEdit->clear();
@@ -302,7 +303,7 @@ void MainWindow::saveReport()
         if(!config->ReportAutoOpen()) return;
 
         if (!QDesktopServices::openUrl(QUrl::fromLocalFile(filename)))
-            qCritical() << "Error at QDesktopServices::openUrl(" << filename << ")";
+            qCritical() << __func__ << ": error at QDesktopServices::openUrl(" << filename << ")";
         return;
     }
     QMessageBox::critical(this, "Error", QString("Error at file saving:\n%1").arg(filename));
@@ -395,7 +396,6 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
         if(raffected > 0)
             textEvents->appendPlainText(QString("[i]\tDatabase rows affected: %1").
                                         arg(QString::number(raffected)));
-
         return raffected;
     }
 }
@@ -440,11 +440,27 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
 {
     if(!database.isOpen()) return;
 
-    QString text = getTextFromRes(":/resources/sql/del_record_profile.sql").arg(profile.Id);
-    setQueryDataBase(text);
+    QVector<QVariantList> answer;
+    QString text = getTextFromRes(":/resources/sql/is_profile_exists_uuid.sql").arg(profile.Id);
+    setQueryDataBase(text, &answer);
+    if(answer.isEmpty() || answer.at(0).isEmpty())
+        textEvents->appendPlainText("[!]\tError: unexpected response from 'Profiles' table");
+    else
+    {
+        if(answer.at(0).at(0).toInt() > 0)
+        {
+            textEvents->appendPlainText(QString("[i]\tProfile '%1' already exists, rewrites").
+                                        arg(profile.Id));
+            text = getTextFromRes(":/resources/sql/del_record_profile.sql").arg(profile.Id);
+            setQueryDataBase(text);
 
-    text = getTextFromRes(":/resources/sql/del_record_history.sql").arg(profile.Id);
-    setQueryDataBase(text);
+            text = getTextFromRes(":/resources/sql/del_record_history.sql").arg(profile.Id);
+            setQueryDataBase(text);
+        }
+        else
+            textEvents->appendPlainText(QString("[i]\tProfile '%1' is new, will be added").
+                                        arg(profile.Id));
+    }
 
     text = getTextFromRes(":/resources/sql/add_record_profile.sql").
            arg(profile.Id, QString::number(profile.DateTime),
