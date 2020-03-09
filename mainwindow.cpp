@@ -18,7 +18,6 @@
 #include <QTextBrowser>
 #include <QToolBar>
 #include <QFileDialog>
-#include <QMessageBox>
 #include <QDesktopServices>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -306,7 +305,9 @@ void MainWindow::saveReport()
             qCritical() << __func__ << ": error at QDesktopServices::openUrl(" << filename << ")";
         return;
     }
-    QMessageBox::critical(this, "Error", QString("Error at file saving:\n%1").arg(filename));
+
+    textEvents->appendPlainText(QString("[!]\tError at file saving: %1").arg(filename));
+    tabWidget->setCurrentIndex(2);
 }
 
 void MainWindow::openDataBase()
@@ -451,6 +452,9 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
         {
             textEvents->appendPlainText(QString("[i]\tProfile '%1' already exists, rewrites").
                                         arg(profile.Id));
+
+            //TODO: сохранять comments если есть
+
             text = getTextFromRes(":/resources/sql/del_record_profile.sql").arg(profile.Id);
             setQueryDataBase(text);
 
@@ -469,7 +473,7 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
                profile.CapeUrl, profile.Cape,
                QString::number(profile.Legacy),
                QString::number(profile.Demo),
-               "",
+               "", // comments
                profile.NameHistory.isEmpty() ? "0" : "1");
     setQueryDataBase(text);
 
