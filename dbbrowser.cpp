@@ -182,6 +182,7 @@ void DBBrowser::slotRefresh()
     labelTree->setText(QString("<b>Tables: %1</b>").arg(tableCount));
     actionDeleteRow->setEnabled(false);
     actionReport->setEnabled(false);
+    actionUpdateProfile->setEnabled(false);
 }
 
 QSqlDatabase DBBrowser::database() const { return QSqlDatabase::database(activeDB); }
@@ -349,22 +350,39 @@ void DBBrowser::slotTableSelectionChanged()
 {
     auto model = qobject_cast<QSqlTableModel*>(table->model());
 
-    if (model && table->selectionModel()->selectedIndexes().count() > 0)
+    if (model && table->selectionModel()->selectedRows().count() > 0)
         actionDeleteRow->setEnabled(true);
     else
     {
         actionDeleteRow->setEnabled(false);
         actionReport->setEnabled(false);
+        actionUpdateProfile->setEnabled(false);
         return;
     }
 
-    // проверка по конкретной таблице, для отчёта
+    // проверка по конкретной таблице
     auto item = tree->currentItem();
     if (!item || !item->parent()) return;
     auto tableName = item->text(0);
 
-    if(tableName == "Profiles") actionReport->setEnabled(true); // NOTE: 'Profiles' table
-    else actionReport->setEnabled(false);
+    if(tableName == "Profiles") //NOTE: 'Profiles' table
+    {
+        actionReport->setEnabled(true);
+    }
+    else
+    {
+        actionReport->setEnabled(false);
+    }
+
+    if(tableName == "Profiles" &&
+        table->selectionModel()->selectedRows().count() == 1)
+    {
+        actionUpdateProfile->setEnabled(true);
+    }
+    else
+    {
+        actionUpdateProfile->setEnabled(false);
+    }
 }
 
 // очистить представление таблицы
@@ -431,7 +449,6 @@ void DBBrowser::slotReport()
     {
         if (index.column() != 0) continue;
         answer.append(model->record(index.row()).field("Uuid").value().toString()); //NOTE: 'Uuid' column
-
     }
     Q_EMIT signalReport(answer);
 }
@@ -456,6 +473,10 @@ void DBBrowser::slotLoadQuery()
 void DBBrowser::slotSearch()
 {
     // TODO:  slotSearch
+    auto model = qobject_cast<QSqlTableModel *>(table->model());
+    if(!model) return;
+
+    //model->setFilter("");
 }
 
 void DBBrowser::slotUpdateProfile()
