@@ -66,6 +66,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     toolBar->addAction(actionUpdateProfile);
     toolBar->addAction(actionReport);
     toolBar->addAction(actionSearch);
+    toolBar->addSeparator();
     toolBar->addAction(actionLoad);
     toolBar->addSeparator();
     if(config->AdvancedDBMode()) toolBar->addAction(actionClearTable);
@@ -183,6 +184,7 @@ void DBBrowser::slotRefresh()
     actionDeleteRow->setEnabled(false);
     actionReport->setEnabled(false);
     actionUpdateProfile->setEnabled(false);
+    actionSearch->setEnabled(true);
 }
 
 QSqlDatabase DBBrowser::database() const { return QSqlDatabase::database(activeDB); }
@@ -212,7 +214,6 @@ void DBBrowser::slotTreeCurrentItemChanged(QTreeWidgetItem *current)
     actionSchemaDB->setEnabled(current && current->parent());
     actionInsertRow->setEnabled(current && current->parent());
     actionClearTable->setEnabled(current && current->parent());
-    actionSearch->setEnabled(current && current->parent());
 
     if(current && !current->parent()) clearTableView();
 }
