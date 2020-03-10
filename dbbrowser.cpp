@@ -2,7 +2,7 @@
 #include "dbbrowser.h"
 #include "properties.h"
 #include "helper.h"
-#include "dialogdbtablesearch.h"
+#include "dialogs/dialogvalueslist.h"
 
 #include <QDebug>
 #include <QAction>
@@ -470,10 +470,24 @@ void DBBrowser::slotLoadQuery()
 void DBBrowser::slotSearch()
 {
     // TODO:  slotSearch
-    QString search_string;
-    auto ddbts = new DialogDBTableSearch(this, "test", &search_string);
-    if(ddbts->exec() != QDialog::Accepted) return;
+    const QVector<QString> keys =
+        {"Value: ",
+         "Parameter: "
+        };
+    QMap<QString, DialogValue>
+        map =
+            {{keys.at(0), {QVariant::String, ""}},
+             {keys.at(1), {QVariant::StringList,
+                            "", "", QStringList({"ID", "NAME"}),
+                           DialogValueMode::OneFromList}}
+            };
 
+
+    auto dvl = new DialogValuesList(":/resources/img/search.svg", "Find a profile", true, &map, this);
+
+    if(!dvl->exec()) return;
+
+    //map.value(keys.at(0)).value.toString();
 
     //auto model = qobject_cast<QSqlTableModel *>(table->model());
     //if(!model) return;
