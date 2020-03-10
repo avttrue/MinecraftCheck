@@ -42,6 +42,7 @@ Q_SIGNALS:
     void signalMessage(const QString& text);
     void signalQuery(const QString& text);
     void signalReport(QStringList list);
+    void signalUpdateProfile(const QString& list);
 
 public Q_SLOTS:
     void slotRefresh();

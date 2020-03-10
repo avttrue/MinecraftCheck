@@ -32,6 +32,7 @@ const auto WINDOW_HEIGHT = 700;
 const auto WINDOW_WIDTH = 900;
 const auto SPLASH_TIME = 1000;
 const auto SPLASH_SIZE = 512;
+const auto SPLASH_FIN_TIME = 50;
 const auto BUTTON_SIZE = 32;
 const auto REPORT_AUTOOPEN = false;
 const auto AUTOVACUUM = true;

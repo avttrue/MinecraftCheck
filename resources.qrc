@@ -45,5 +45,6 @@
         <file>resources/img/person_id.svg</file>
         <file>resources/sql/is_profile_exists_uuid.sql</file>
         <file>resources/img/refresh.svg</file>
+        <file>resources/sql/get_profile_comment.sql</file>
     </qresource>
 </RCC>

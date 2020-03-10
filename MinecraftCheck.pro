@@ -23,7 +23,8 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     mojangapi.cpp \
-    properties.cpp
+    properties.cpp \
+    splashscreen.cpp
 
 HEADERS += \
     config.h \
@@ -33,7 +34,8 @@ HEADERS += \
     helpergraphics.h \
     mainwindow.h \
     mojangapi.h \
-    properties.h
+    properties.h \
+    splashscreen.h
 
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin

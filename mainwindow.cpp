@@ -5,6 +5,7 @@
 #include "helper.h"
 #include "helpergraphics.h"
 #include "dbbrowser.h"
+#include "splashscreen.h"
 
 #include <QDebug>
 #include <QApplication>
@@ -23,6 +24,7 @@
 #include <QSqlQuery>
 #include <QDateTime>
 #include <QScrollBar>
+#include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -36,6 +38,13 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    // сплеш на завершающие процедуры - Vacuum и пр.
+    SplashScreen splash;
+    splash.show();
+    QEventLoop loop;
+    QTimer::singleShot(SPLASH_FIN_TIME, &loop, &QEventLoop::quit); // без этого не отображается
+    loop.exec();
+
     if(database.isOpen())
     {
         if(config->AutoVacuum())
@@ -50,6 +59,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settings.setValue("MainWindow/Height",height());
     settings.setValue("MainWindow/Width",width());
 
+    splash.close();
     event->accept();
 }
 
@@ -139,6 +149,9 @@ void MainWindow::loadGui()
                      { QVector<QVariantList> answer;
                        setQueryDataBase(text, &answer, true);
                        tabWidget->setCurrentIndex(2); });
+    QObject::connect(dbBrowser, &DBBrowser::signalUpdateProfile, [=](const QString& text)
+                     { showTextEdit(1);
+                       lineEdit->setText(text); });
 
     textEvents = new QPlainTextEdit(this);
     textEvents->setFont(QFont(config->FontNameEvents(), -1, QFont::ExtraBold));
@@ -228,7 +241,7 @@ void MainWindow::getServersStatus()
     progressBar->setVisible(true);
     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
-    newTaskMarker();
+    taskSeparator();
     reader->sendQuery(config->QueryServers());
 }
 
@@ -260,7 +273,7 @@ void MainWindow::getPlayerProfile()
 
     progressBar->setVisible(true);
 
-    newTaskMarker();
+    taskSeparator();
     if(lineEdit->property("SearchMode").toInt() == 0)
     {
         auto nick = lineEdit->text().simplified();
@@ -360,6 +373,8 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
 
         if(answer == nullptr || rows <= 0) return rows;
 
+        answer->clear();
+
         // подготовка ответа
         query.first();
         QString sanswer;
@@ -443,17 +458,18 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
 
     QVector<QVariantList> answer;
     QString text = getTextFromRes(":/resources/sql/is_profile_exists_uuid.sql").arg(profile.Id);
+    QString comments;
     setQueryDataBase(text, &answer);
-    if(answer.isEmpty() || answer.at(0).isEmpty())
-        textEvents->appendPlainText("[!]\tError: unexpected response from 'Profiles' table");
-    else
+    if(checkAnswerDB(answer, 1, 1))
     {
         if(answer.at(0).at(0).toInt() > 0)
         {
             textEvents->appendPlainText(QString("[i]\tProfile '%1' already exists, rewrites").
                                         arg(profile.Id));
 
-            //TODO: сохранять comments если есть
+            text = getTextFromRes(":/resources/sql/get_profile_comment.sql").arg(profile.Id);
+            setQueryDataBase(text, &answer);
+            if(checkAnswerDB(answer, 1, 1)) comments = answer.at(0).at(0).toString();
 
             text = getTextFromRes(":/resources/sql/del_record_profile.sql").arg(profile.Id);
             setQueryDataBase(text);
@@ -473,7 +489,7 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
                profile.CapeUrl, profile.Cape,
                QString::number(profile.Legacy),
                QString::number(profile.Demo),
-               "", // comments
+               comments,
                profile.NameHistory.isEmpty() ? "0" : "1");
     setQueryDataBase(text);
 
@@ -580,7 +596,7 @@ void MainWindow::showProfile(const QString &caption, const QString &profiletable
 
 void MainWindow::showDBProfiles(QStringList uuids)
 {
-    newTaskMarker();
+    taskSeparator();
     auto time = QDateTime::currentMSecsSinceEpoch();
     setEnableActions(false);
     progressBar->setVisible(true);
@@ -596,12 +612,7 @@ void MainWindow::showDBProfiles(QStringList uuids)
 
         setQueryDataBase(getTextFromRes(":/resources/sql/select_profile_uuid.sql").arg(uuid), &answer_pofile);
 
-        if(answer_pofile.isEmpty()) continue;
-        if(answer_pofile.at(0).length() < 13)
-        {
-            textEvents->appendPlainText("[!]\tError: unexpected response from 'Profiles' table");
-            continue;
-        }
+        if(!checkAnswerDB(answer_pofile, 1, 13)) continue;
 
         profile.Id = answer_pofile.at(0).at(0).toString();
         profile.DateTime = answer_pofile.at(0).at(1).toLongLong();
@@ -620,13 +631,10 @@ void MainWindow::showDBProfiles(QStringList uuids)
         if(hasHistory)
         {
             setQueryDataBase(getTextFromRes(":/resources/sql/select_history_uuid.sql").arg(uuid), &answer_history);
+            if(!checkAnswerDB(answer_history, 1, 2)) continue;
+
             for(auto list: answer_history)
-            {
-                if(list.length() < 2)
-                    textEvents->appendPlainText("[!]\tError: unexpected response  from 'NameHistory' table");
-                else
-                    profile.NameHistory.insert(list.at(0).toLongLong(), list.at(1).toString());
-            }
+                profile.NameHistory.insert(list.at(0).toLongLong(), list.at(1).toString());
         }
 
         auto profiletable = createTableProfile(profile);
@@ -680,7 +688,28 @@ void MainWindow::getDBInfo()
     labelLocalDB->setText(QString("%1, %2 profiles").arg(dbsize, dbcount));
 }
 
-void MainWindow::newTaskMarker()
+void MainWindow::taskSeparator()
 {
-    textEvents->appendPlainText("\n--------------------\n");
+    textEvents->appendPlainText("\n------------------------------\n");
+}
+
+bool MainWindow::checkAnswerDB(QVector<QVariantList> answer, int row, int col)
+{
+    if(answer.isEmpty() || answer.at(0).isEmpty())
+    {
+        textEvents->appendPlainText("[!]\tError: empty answer from database");
+        return false;
+    }
+
+    if(answer.count() < row || answer.at(0).count() < col)
+    {
+        textEvents->appendPlainText(QString("[!]\tError: incomplete answer from database: "
+                                            "%1 rows < %2, %3 columns < %4").
+                                    arg(QString::number(answer.count()),
+                                        QString::number(row),
+                                        QString::number(answer.at(0).count()),
+                                        QString::number(col)));
+        return false;
+    }
+    return true;
 }

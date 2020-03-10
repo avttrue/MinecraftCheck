@@ -335,10 +335,9 @@ void DBBrowser::slotDeleteRow()
 
     if (reply == QMessageBox::No) return;
 
-    auto currentSelection = table->selectionModel()->selectedIndexes();
+    auto currentSelection = table->selectionModel()->selectedRows();
     for(auto index: currentSelection)
     {
-        if (index.column() != 0) continue;
         model->removeRow(index.row());
     }
     model->select();
@@ -437,17 +436,16 @@ void DBBrowser::slotClearTable()
 void DBBrowser::slotReport()
 {
     auto model = qobject_cast<QSqlTableModel *>(table->model());
-    if(!model || table->selectionModel()->selectedIndexes().count() == 0)
+    if(!model || table->selectionModel()->selectedRows().count() == 0)
     {
         actionReport->setEnabled(false);
         return;
     }
 
     QStringList answer;
-    auto currentSelection = table->selectionModel()->selectedIndexes();
+    auto currentSelection = table->selectionModel()->selectedRows();
     for(auto index: currentSelection)
     {
-        if (index.column() != 0) continue;
         answer.append(model->record(index.row()).field("Uuid").value().toString()); //NOTE: 'Uuid' column
     }
     Q_EMIT signalReport(answer);
@@ -455,9 +453,6 @@ void DBBrowser::slotReport()
 
 void DBBrowser::slotLoadQuery()
 {
-    auto db = database();
-    if(!db.isOpen()) return;
-
     QString filename = QFileDialog::getOpenFileName(
         this, "Open sql query", config->LastDir(), "query (*.sql)");
 
@@ -481,7 +476,18 @@ void DBBrowser::slotSearch()
 
 void DBBrowser::slotUpdateProfile()
 {
-    // TODO:  slotUpdateProfile
+    auto model = qobject_cast<QSqlTableModel *>(table->model());
+
+    if(!model || table->selectionModel()->selectedRows().count() == 0)
+    {
+        actionUpdateProfile->setDisabled(true);
+        return;
+    }
+
+    auto currentSelection = table->selectionModel()->selectedRows();
+    auto answer = model->record(currentSelection.at(0).row()).field("Uuid").value().toString();
+
+    Q_EMIT signalUpdateProfile(answer);
 }
 
 QVariant MySqlTableModel::data(const QModelIndex &idx, int role) const

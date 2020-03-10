@@ -37,7 +37,8 @@ protected:
     void showDBProfiles(QStringList uuids);
     void writeProfile(const MojangApiProfile& profile);
     void getDBInfo();
-    void newTaskMarker();
+    void taskSeparator();
+    bool checkAnswerDB(QVector<QVariantList> answer, int row, int col);
 
 private:
     QSqlDatabase database;
