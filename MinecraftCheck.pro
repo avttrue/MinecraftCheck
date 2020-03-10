@@ -18,6 +18,7 @@ SOURCES += \
     config.cpp \
     controls.cpp \
     dbbrowser.cpp \
+    dialogdbtablesearch.cpp \
     helper.cpp \
     helpergraphics.cpp \
     main.cpp \
@@ -30,6 +31,7 @@ HEADERS += \
     config.h \
     controls.h \
     dbbrowser.h \
+    dialogdbtablesearch.h \
     helper.h \
     helpergraphics.h \
     mainwindow.h \

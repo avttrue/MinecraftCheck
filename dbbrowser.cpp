@@ -2,6 +2,7 @@
 #include "dbbrowser.h"
 #include "properties.h"
 #include "helper.h"
+#include "dialogdbtablesearch.h"
 
 #include <QDebug>
 #include <QAction>
@@ -469,8 +470,13 @@ void DBBrowser::slotLoadQuery()
 void DBBrowser::slotSearch()
 {
     // TODO:  slotSearch
-    auto model = qobject_cast<QSqlTableModel *>(table->model());
-    if(!model) return;
+    QString search_string;
+    auto ddbts = new DialogDBTableSearch(this, "test", &search_string);
+    if(ddbts->exec() != QDialog::Accepted) return;
+
+
+    //auto model = qobject_cast<QSqlTableModel *>(table->model());
+    //if(!model) return;
 
     //model->setFilter("");
 }

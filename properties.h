@@ -34,6 +34,7 @@ const auto SPLASH_TIME = 1000;
 const auto SPLASH_SIZE = 512;
 const auto SPLASH_FIN_TIME = 50;
 const auto BUTTON_SIZE = 32;
+const auto SEARCH_LINE_WIDTH = 400;
 const auto REPORT_AUTOOPEN = false;
 const auto AUTOVACUUM = true;
 const auto AUTOCOLLECT_PROFILES = true;
