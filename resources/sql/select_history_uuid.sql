@@ -4,6 +4,4 @@ SELECT
 FROM
     NameHistory
 WHERE
-    Uuid = '%1'
-ORDER BY
-    ChangedToAt ASC;
+    Uuid = '%1';

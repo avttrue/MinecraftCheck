@@ -18,6 +18,7 @@ public:
 
 protected:
     QSqlDatabase database() const;
+    QString tableName();
     void setTreeItemActive(QTreeWidgetItem*);
     void showTable(const QString &tablename);
     void showMetaData(const QString &table);

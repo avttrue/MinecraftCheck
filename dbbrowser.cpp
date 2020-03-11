@@ -185,10 +185,16 @@ void DBBrowser::slotRefresh()
     actionDeleteRow->setEnabled(false);
     actionReport->setEnabled(false);
     actionUpdateProfile->setEnabled(false);
-    actionSearch->setEnabled(false);
 }
 
 QSqlDatabase DBBrowser::database() const { return QSqlDatabase::database(activeDB); }
+
+QString DBBrowser::tableName()
+{
+    auto item = tree->currentItem();
+    if (!item || !item->parent()) return "";
+    return item->text(0);
+}
 
 static void setBold(QTreeWidgetItem *item, bool bold)
 {
@@ -267,6 +273,8 @@ void DBBrowser::showTable(const QString &tablename)
     connect(table->selectionModel(), &QItemSelectionModel::selectionChanged, this, &DBBrowser::slotTableSelectionChanged);
 
     model->select(); // применение сортировки
+
+    actionSearch->setEnabled(tablename == "Profiles"); // NOTE: 'Profiles' table
 
     showTableInfo();
 }
@@ -366,35 +374,13 @@ void DBBrowser::slotTableSelectionChanged()
         actionDeleteRow->setEnabled(false);
         actionReport->setEnabled(false);
         actionUpdateProfile->setEnabled(false);
-        actionSearch->setEnabled(false);
         return;
     }
 
     // проверка по конкретной таблице
-    auto item = tree->currentItem();
-    if (!item || !item->parent()) return;
-    auto tableName = item->text(0);
-
-    if(tableName == "Profiles") //NOTE: 'Profiles' table
-    {
-        actionReport->setEnabled(true);
-        actionSearch->setEnabled(true);
-    }
-    else
-    {
-        actionReport->setEnabled(false);
-        actionSearch->setEnabled(false);
-    }
-
-    if(tableName == "Profiles" &&
-        table->selectionModel()->selectedRows().count() == 1)
-    {
-        actionUpdateProfile->setEnabled(true); 
-    }
-    else
-    {
-        actionUpdateProfile->setEnabled(false);  
-    }
+    actionReport->setEnabled(tableName() == "Profiles"); //NOTE: 'Profiles' table
+    actionUpdateProfile->setEnabled(tableName() == "Profiles" &&
+                                    table->selectionModel()->selectedRows().count() == 1);
 }
 
 // очистить представление таблицы
@@ -415,11 +401,10 @@ void DBBrowser::showTableInfo(const QString& where)
 
     if(db.isOpen() && model)
     {
-        auto tablename = model->tableName();
         QSqlQuery query(db);
         auto text = where.isEmpty()
-                        ? getTextFromRes(":/resources/sql/get_table_rows_count.sql").arg(tablename)
-                        : getTextFromRes(":/resources/sql/get_table_rows_count_where.sql").arg(tablename, where);
+                        ? getTextFromRes(":/resources/sql/get_table_rows_count.sql").arg(tableName())
+                        : getTextFromRes(":/resources/sql/get_table_rows_count_where.sql").arg(tableName(), where);
         if(query.exec(text))
         {
             query.first();
@@ -434,18 +419,16 @@ void DBBrowser::showTableInfo(const QString& where)
 // очистить содержимое таблицы
 void DBBrowser::slotClearTable()
 {
-    auto item = tree->currentItem();
-    if (!item || !item->parent()) return;
-
-    auto tableName = item->text(0);
+    auto tablename = tableName();
+    if(tablename.isEmpty()) return;
 
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, "Confirm", QString("Clear the table '%1'?").arg(tableName),
+    reply = QMessageBox::question(this, "Confirm", QString("Clear the table '%1'?").arg(tablename),
                                   QMessageBox::Yes | QMessageBox::No);
 
     if (reply == QMessageBox::No) return;
 
-    Q_EMIT signalQuery(getTextFromRes(":/resources/sql/clear_table.sql").arg(tableName));
+    Q_EMIT signalQuery(getTextFromRes(":/resources/sql/clear_table.sql").arg(tablename));
 }
 
 void DBBrowser::slotReport()
@@ -469,7 +452,7 @@ void DBBrowser::slotReport()
 void DBBrowser::slotLoadQuery()
 {
     QString filename = QFileDialog::getOpenFileName(
-        this, "Open sql query", config->LastDir(), "query (*.sql)");
+        this, "SQL scripts", config->LastDir(), "query (*.sql)");
 
     if(filename.isNull()) return;
 
@@ -483,26 +466,33 @@ void DBBrowser::slotLoadQuery()
 void DBBrowser::slotSearch()
 {
     auto model = qobject_cast<QSqlTableModel *>(table->model());
+    auto db = database();
 
-    if(!model)
+    if(!model || !db.isOpen())
+    {
+        actionSearch->setEnabled(false);
+        return;
+    }
+
+    if (tableName() != "Profiles") //NOTE: 'Profiles' table
     {
         actionSearch->setEnabled(false);
         return;
     }
 
     const QVector<QString> keys =
-        { "Value: ",
+        {"Value: ",
          "Area: ",
          "Precision: "
         };
     const QStringList arealist =
-        { "ID in Profiles",
+        {"ID in Profiles",
          "NAMES in Profiles",
          "NAMES in Profiles and History",
          "Comments"
         };
     const QStringList preclist =
-        { "Equal", "Like", "NOT Equal" };
+        {"Equal", "Like", "NOT Equal"};
 
         QMap<QString, DialogValue>
             map =
@@ -546,8 +536,26 @@ void DBBrowser::slotSearch()
     }
     else if(map.value(keys.at(1)).value.toString() == arealist.at(2))
     {
-        qDebug() << "not ready yet";
-        //TODO: NAMES in Profiles and History
+        auto arg = QString("Name %1 '%2'").arg(prec, value);
+        auto text = getTextFromRes(":/resources/sql/select_history_where.sql").arg(arg);
+        QStringList idsl;
+        QString ids;
+
+        QSqlQuery query(db);
+        if(query.exec(text) && query.first())
+        {
+            do
+            {
+                auto value = query.value(0);
+                if(value.isValid()) idsl.append(value.toString());
+            }
+            while(query.next());
+        }
+        idsl.removeDuplicates();
+        idsl.removeAll("");
+        for(auto id: idsl) ids.append(QString(" OR Uuid = '%1'").arg(id)); //NOTE: 'Uuid' column
+
+        where = QString("FirstName %1 '%2' OR CurrentName %1 '%2'%3").arg(prec, value, ids); //NOTE: 'FirstName', 'CurrentName' column
     }
     else if(map.value(keys.at(1)).value.toString() == arealist.at(3))
     {

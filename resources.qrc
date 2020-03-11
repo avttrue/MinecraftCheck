@@ -48,5 +48,6 @@
         <file>resources/sql/get_profile_comment.sql</file>
         <file>resources/img/yes.svg</file>
         <file>resources/sql/get_table_rows_count_where.sql</file>
+        <file>resources/sql/select_history_where.sql</file>
     </qresource>
 </RCC>

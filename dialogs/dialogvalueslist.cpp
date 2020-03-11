@@ -239,8 +239,8 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
 
 bool DialogValuesList::eventFilter(QObject *obj, QEvent *event)
 {
-    Q_UNUSED(obj)
-    if(event->type() == QEvent::Wheel) { return true; }
+    if(obj == this && event->type() == QEvent::Wheel) { return true; }
+
     return false;
 }
 
