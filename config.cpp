@@ -23,6 +23,10 @@ Config::Config(const QString& in_AppDirectory):
 
 void Config::load()
 {
+    if(!m_Settings->contains("LastCatalog"))
+        m_Settings->setValue("LastCatalog", m_PathAppDir);
+    m_LastDir = m_Settings->value("LastCatalog").toString();
+
     if(!m_Settings->contains("MainWindow/Height"))
         m_Settings->setValue("MainWindow/Height", WINDOW_HEIGHT);
 
@@ -105,9 +109,17 @@ void Config::load()
         m_Settings->setValue("Database/AdvancedMode", ADVANCED_DB_MODE);
     m_AdvancedDBMode = m_Settings->value("Database/AdvancedMode").toBool();
 
-    if(!m_Settings->contains("LastCatalog"))
-        m_Settings->setValue("LastCatalog", m_PathAppDir);
-    m_LastDir = m_Settings->value("LastCatalog").toString();
+    if(!m_Settings->contains("Database/KeepCommentsAtUpd"))
+        m_Settings->setValue("Database/KeepCommentsAtUpd", KEEP_COMMENTS_AT_UPD);
+    m_KeepCommentsAtUpd = m_Settings->value("Database/KeepCommentsAtUpd").toBool();
+}
+
+void Config::setKeepCommentsAtUpd(bool value)
+{
+    if(m_KeepCommentsAtUpd == value) return;
+
+    m_KeepCommentsAtUpd = value;
+    m_Settings->setValue("Database/KeepCommentsAtUpd", m_KeepCommentsAtUpd);
 }
 
 void Config::setLastDir(const QString &value)
@@ -254,6 +266,7 @@ void Config::setQueryServers(const QString &value)
     m_Settings->setValue("ApiQueries/Servers", m_QueryServers);
 }
 
+bool Config::KeepCommentsAtUpd() const { return m_KeepCommentsAtUpd; }
 QString Config::LastDir() const { return m_LastDir; }
 bool Config::AdvancedDBMode() const { return m_AdvancedDBMode; }
 bool Config::AutoCollectProfiles() const { return m_AutoCollectProfiles; }

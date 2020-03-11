@@ -185,7 +185,7 @@ void DBBrowser::slotRefresh()
     actionDeleteRow->setEnabled(false);
     actionReport->setEnabled(false);
     actionUpdateProfile->setEnabled(false);
-    actionSearch->setEnabled(true);
+    actionSearch->setEnabled(false);
 }
 
 QSqlDatabase DBBrowser::database() const { return QSqlDatabase::database(activeDB); }
@@ -243,6 +243,12 @@ void DBBrowser::showTable(const QString &tablename)
     model->setTable(db.driver()->escapeIdentifier(tablename, QSqlDriver::TableName));
     model->select();
 
+    // настройка сортировки
+    if(tablename == "Profiles") // NOTE: 'Profiles' table
+        model->setSort(1, Qt::AscendingOrder);
+    else if(tablename == "NameHistory") // NOTE: 'NameHistory' table
+        model->setSort(0, Qt::AscendingOrder);
+
     if (model->lastError().type() != QSqlError::NoError)
     {
         auto message = QString("[!]\tError at displaying the table '%1'.");
@@ -259,6 +265,8 @@ void DBBrowser::showTable(const QString &tablename)
         table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     connect(table->selectionModel(), &QItemSelectionModel::selectionChanged, this, &DBBrowser::slotTableSelectionChanged);
+
+    model->select(); // применение сортировки
 
     showTableInfo();
 }
@@ -329,7 +337,7 @@ void DBBrowser::slotDeleteRow()
     auto model = qobject_cast<QSqlTableModel *>(table->model());
     if(!model) return;
 
-    if(table->selectionModel()->selectedIndexes().count() == 0) return;
+    if(table->selectionModel()->selectedRows().count() == 0) return;
 
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(this, "Confirm", "Delete a row from a table?",
@@ -358,6 +366,7 @@ void DBBrowser::slotTableSelectionChanged()
         actionDeleteRow->setEnabled(false);
         actionReport->setEnabled(false);
         actionUpdateProfile->setEnabled(false);
+        actionSearch->setEnabled(false);
         return;
     }
 
@@ -369,20 +378,22 @@ void DBBrowser::slotTableSelectionChanged()
     if(tableName == "Profiles") //NOTE: 'Profiles' table
     {
         actionReport->setEnabled(true);
+        actionSearch->setEnabled(true);
     }
     else
     {
         actionReport->setEnabled(false);
+        actionSearch->setEnabled(false);
     }
 
     if(tableName == "Profiles" &&
         table->selectionModel()->selectedRows().count() == 1)
     {
-        actionUpdateProfile->setEnabled(true);
+        actionUpdateProfile->setEnabled(true); 
     }
     else
     {
-        actionUpdateProfile->setEnabled(false);
+        actionUpdateProfile->setEnabled(false);  
     }
 }
 
@@ -396,7 +407,7 @@ void DBBrowser::clearTableView()
     model->clear();
 }
 
-void DBBrowser::showTableInfo()
+void DBBrowser::showTableInfo(const QString& where)
 {
     QString info = "error";
     auto db = database();
@@ -406,7 +417,9 @@ void DBBrowser::showTableInfo()
     {
         auto tablename = model->tableName();
         QSqlQuery query(db);
-        auto text = getTextFromRes(":/resources/sql/get_table_rows_count.sql").arg(tablename);
+        auto text = where.isEmpty()
+                        ? getTextFromRes(":/resources/sql/get_table_rows_count.sql").arg(tablename)
+                        : getTextFromRes(":/resources/sql/get_table_rows_count_where.sql").arg(tablename, where);
         if(query.exec(text))
         {
             query.first();
@@ -469,30 +482,80 @@ void DBBrowser::slotLoadQuery()
 
 void DBBrowser::slotSearch()
 {
-    // TODO:  slotSearch
+    auto model = qobject_cast<QSqlTableModel *>(table->model());
+
+    if(!model)
+    {
+        actionSearch->setEnabled(false);
+        return;
+    }
+
     const QVector<QString> keys =
-        {"Value: ",
-         "Parameter: "
+        { "Value: ",
+         "Area: ",
+         "Precision: "
         };
-    QMap<QString, DialogValue>
-        map =
-            {{keys.at(0), {QVariant::String, ""}},
-             {keys.at(1), {QVariant::StringList,
-                            "", "", QStringList({"ID", "NAME"}),
-                           DialogValueMode::OneFromList}}
-            };
+    const QStringList arealist =
+        { "ID in Profiles",
+         "NAMES in Profiles",
+         "NAMES in Profiles and History",
+         "Comments"
+        };
+    const QStringList preclist =
+        { "Equal", "Like", "NOT Equal" };
+
+        QMap<QString, DialogValue>
+            map =
+                {{keys.at(0), {QVariant::String, ""}},
+                 {keys.at(1), {QVariant::StringList, arealist.at(0), "", arealist, DialogValueMode::OneFromList}},
+                 {keys.at(2), {QVariant::StringList, preclist.at(0), "", preclist, DialogValueMode::OneFromList}},
+                 };
 
 
     auto dvl = new DialogValuesList(":/resources/img/search.svg", "Find a profile", true, &map, this);
 
     if(!dvl->exec()) return;
 
-    //map.value(keys.at(0)).value.toString();
+    auto value = map.value(keys.at(0)).value.toString().simplified();
+    if(value.isEmpty())
+    {
+        model->setFilter("");
+        showTableInfo();
+        return;
+    }
 
-    //auto model = qobject_cast<QSqlTableModel *>(table->model());
-    //if(!model) return;
+    // Precision
+    auto prec = "=";
+    if(map.value(keys.at(2)).value.toString() == preclist.at(0)) prec = "=";
+    else if(map.value(keys.at(2)).value.toString() == preclist.at(1))
+    {
+        prec = "LIKE";
+        value.prepend("%").append("%");
+    }
+    else if(map.value(keys.at(2)).value.toString() == preclist.at(2)) prec = "!=";
 
-    //model->setFilter("");
+    // Area
+    QString where;
+    if(map.value(keys.at(1)).value.toString() == arealist.at(0))
+    {
+        where = QString("Uuid %1 '%2'").arg(prec, value); //NOTE: 'Uuid' column
+    }
+    else if(map.value(keys.at(1)).value.toString() == arealist.at(1))
+    {
+        where = QString("FirstName %1 '%2' OR CurrentName %1 '%2'").arg(prec, value); //NOTE: 'FirstName', 'CurrentName' column
+    }
+    else if(map.value(keys.at(1)).value.toString() == arealist.at(2))
+    {
+        qDebug() << "not ready yet";
+        //TODO: NAMES in Profiles and History
+    }
+    else if(map.value(keys.at(1)).value.toString() == arealist.at(3))
+    {
+        where = QString("Comments %1 '%2'").arg(prec, value); //NOTE: 'Comments' column
+    }
+
+    model->setFilter(where);
+    showTableInfo(where);
 }
 
 void DBBrowser::slotUpdateProfile()
@@ -501,7 +564,7 @@ void DBBrowser::slotUpdateProfile()
 
     if(!model || table->selectionModel()->selectedRows().count() == 0)
     {
-        actionUpdateProfile->setDisabled(true);
+        actionUpdateProfile->setEnabled(false);
         return;
     }
 

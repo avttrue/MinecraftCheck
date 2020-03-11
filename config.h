@@ -57,6 +57,8 @@ public:
     void setAdvancedDBMode(bool value);
     QString LastDir() const;
     void setLastDir(const QString &value);
+    bool KeepCommentsAtUpd() const;
+    void setKeepCommentsAtUpd(bool value);
 
 protected:
     void load();
@@ -86,6 +88,7 @@ private:
     bool m_AutoVacuum;                  // выполнять vacuum при выходе
     bool m_AutoCollectProfiles;         // сохранять все профили игроков в БД
     bool m_AdvancedDBMode;              // возможность редактировать БД
+    bool m_KeepCommentsAtUpd;           // сохранять комментарии при обновлении профиля
 };
 
 #endif // CONFIG_H

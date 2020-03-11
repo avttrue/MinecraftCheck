@@ -167,7 +167,6 @@ void ServerStatusReader::interpretateReply(const QString& reply)
         for(auto key: map.keys())
         {
             m_Statuses.insert(key, map.value(key).toString());
-            //qDebug() << key << "=" << map.value(key).toString();
         }
     }
     Q_EMIT signalStatus("Done");
@@ -180,6 +179,7 @@ PlayerProfileReader::PlayerProfileReader(QObject *parent):
     m_Stage(0)
 {
     setObjectName("PlayerProfileReader");
+    m_Profile.DateTime = QDateTime::currentMSecsSinceEpoch();
 }
 
 void PlayerProfileReader::setProfileId(const QString &id)
@@ -300,7 +300,6 @@ bool PlayerProfileReader::interpretate_Id(const QJsonDocument &document)
         return false;
     }
 
-    m_Profile.DateTime = QDateTime::currentMSecsSinceEpoch();
     m_Profile.Id = map.value("id").toString();
 
     Q_EMIT signalMessage(QString("[i]\tPlayer id: %1").arg(m_Profile.Id));

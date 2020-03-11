@@ -467,9 +467,12 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
             textEvents->appendPlainText(QString("[i]\tProfile '%1' already exists, rewrites").
                                         arg(profile.Id));
 
-            text = getTextFromRes(":/resources/sql/get_profile_comment.sql").arg(profile.Id);
-            setQueryDataBase(text, &answer);
-            if(checkAnswerDB(answer, 1, 1)) comments = answer.at(0).at(0).toString();
+            if(config->KeepCommentsAtUpd())
+            {
+                text = getTextFromRes(":/resources/sql/get_profile_comment.sql").arg(profile.Id);
+                setQueryDataBase(text, &answer);
+                if(checkAnswerDB(answer, 1, 1)) comments = answer.at(0).at(0).toString();
+            }
 
             text = getTextFromRes(":/resources/sql/del_record_profile.sql").arg(profile.Id);
             setQueryDataBase(text);

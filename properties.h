@@ -39,5 +39,6 @@ const auto REPORT_AUTOOPEN = false;
 const auto AUTOVACUUM = true;
 const auto AUTOCOLLECT_PROFILES = true;
 const auto ADVANCED_DB_MODE = false;
+const auto KEEP_COMMENTS_AT_UPD = true;
 
 #endif // PROPERTIES_H

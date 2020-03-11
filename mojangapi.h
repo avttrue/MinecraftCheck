@@ -9,7 +9,7 @@ class QNetworkReply;
 
 struct MojangApiProfile
 {
-    long DateTime;
+    long DateTime = 0;
     QString CurrentName;
     QString FirstName;
     QString Id;
@@ -19,8 +19,8 @@ struct MojangApiProfile
     QString SkinModel;
     QString CapeUrl;
     QString Cape;
-    int Legacy;
-    int Demo;
+    int Legacy = 0;
+    int Demo = 0;
     QString Comment;
 };
 
