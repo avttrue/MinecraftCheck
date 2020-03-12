@@ -51,7 +51,7 @@ public:
     void addToolbarButton(QAction* action);
 
 protected:
-    void addWidgetContent(QWidget* widget); 
+    void addWidgetContent(QWidget* widget);
 
 private:
     bool eventFilter(QObject *, QEvent *event);
