@@ -34,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent)
     loadGui();
     setWidgetToScreenCenter(this);
     openDataBase();
+    slotAbout();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -78,11 +79,11 @@ void MainWindow::loadGui()
 
     actionCheckPerson = new QAction(QIcon(":/resources/img/person.svg"), "Check player by nick", this);
     actionCheckPerson->setShortcut(Qt::CTRL + Qt::Key_N);
-    QObject::connect(actionCheckPerson, &QAction::triggered, [this](){ showTextEdit(0); });
+    QObject::connect(actionCheckPerson, &QAction::triggered, [=](){ showTextEdit(0); });
 
     actionCheckPersonId = new QAction(QIcon(":/resources/img/person_id.svg"), "Check player by id", this);
     actionCheckPersonId->setShortcut(Qt::CTRL + Qt::Key_I);
-    QObject::connect(actionCheckPersonId, &QAction::triggered, [this](){ showTextEdit(1); });
+    QObject::connect(actionCheckPersonId, &QAction::triggered, [=](){ showTextEdit(1); });
 
     actionSave = new QAction(QIcon(":/resources/img/save.svg"), "Save report", this);
     actionSave->setShortcut(Qt::CTRL + Qt::Key_S);
@@ -91,6 +92,9 @@ void MainWindow::loadGui()
     auto actionAbort = new QAction(QIcon(":/resources/img/no.svg"), "Abort query", this);
     actionAbort->setShortcut(Qt::CTRL + Qt::Key_X);
     QObject::connect(actionAbort, &QAction::triggered, [=](){ Q_EMIT signalAbortQuery(); });
+
+    auto actionAbout = new QAction(QIcon(":/resources/img/question.svg"), "About", this);
+    QObject::connect(actionAbout, &QAction::triggered, this, &MainWindow::slotAbout);
 
     //    auto testAction = new QAction(QIcon(":/resources/img/question.svg"), "TEST", this);
     //    QObject::connect(testAction, &QAction::triggered, [=]()
@@ -111,6 +115,7 @@ void MainWindow::loadGui()
     tbMain->addAction(actionSave);
     //tbMain->addAction(testAction);
     tbMain->addWidget(new WidgetSpacer(this));
+    tbMain->addAction(actionAbout);
     tbMain->addAction(actionQt);
     tbMain->addAction(actionExit);
 
@@ -142,8 +147,7 @@ void MainWindow::loadGui()
     dbBrowser = new DBBrowser(this);
     tabWidget->addTab(dbBrowser, QIcon(":/resources/img/database.svg"), "Database");
     QObject::connect(dbBrowser, &DBBrowser::signalMessage, [=](const QString& text)
-                     { textEvents->appendPlainText(text);
-                       tabWidget->setCurrentIndex(2); });
+                     { textEvents->appendPlainText(text); });
     QObject::connect(dbBrowser, &DBBrowser::signalReport, this, &MainWindow::showDBProfiles);
     QObject::connect(dbBrowser, &DBBrowser::signalQuery, [=](const QString& text)
                      { QVector<QVariantList> answer;
@@ -714,4 +718,12 @@ bool MainWindow::checkAnswerDB(QVector<QVariantList> answer, int row, int col)
         return false;
     }
     return true;
+}
+
+void MainWindow::slotAbout()
+{
+    auto html = getTextFromRes(":/resources/about_body.html").
+                arg(APP_NAME, APP_VERS, GIT_VERS, BUILD_DATE, getSystemInfo(), QT_VERSION_STR);
+    textBrowser->setText(html);
+    tabWidget->setCurrentIndex(0);
 }

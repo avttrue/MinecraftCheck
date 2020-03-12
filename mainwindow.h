@@ -58,5 +58,8 @@ private:
 Q_SIGNALS:
     void signalAbortQuery();
 
+private Q_SLOTS:
+    void slotAbout();
+
 };
 #endif // MAINWINDOW_H

@@ -1,5 +1,6 @@
 #include "helper.h"
 
+#include <sys/utsname.h>
 #include <QFile>
 #include <QDebug>
 #include <QDateTime>
@@ -84,4 +85,20 @@ QString fileToText(const QString& path, bool* ok)
     file.close();
     if(ok) *ok = true;
     return text;
+}
+
+QString getSystemInfo()
+{
+    QString result;
+
+    struct utsname buf{};
+    if (uname(&buf) == 0)
+    {
+        result.append(buf.sysname).append(" ").
+            append(buf.version).append(" ").
+            append(buf.release).append(" ").
+            append(buf.machine);
+        return result;
+    }
+    return "unknown";
 }

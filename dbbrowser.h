@@ -23,7 +23,7 @@ protected:
     void showTable(const QString &tablename);
     void showMetaData(const QString &table);
     void clearTableView();
-    void showTableInfo(const QString &where = "");
+    QString showTableInfo(const QString &where = "");
 
 private:
     QAction* actionSchemaDB;

@@ -51,5 +51,6 @@
         <file>resources/sql/select_history_where.sql</file>
         <file>resources/img/edit.svg</file>
         <file>resources/sql/update_profile_comment.sql</file>
+        <file>resources/about_body.html</file>
     </qresource>
 </RCC>

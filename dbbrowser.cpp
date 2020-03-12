@@ -5,7 +5,6 @@
 #include "dialogs/dialogvalueslist.h"
 
 #include <QDebug>
-#include <QAction>
 #include <QHBoxLayout>
 #include <QToolBar>
 #include <QTreeWidget>
@@ -22,6 +21,7 @@
 #include <QSqlField>
 #include <QSqlQuery>
 #include <QFileDialog>
+#include <QDateTime>
 
 DBBrowser::DBBrowser(QWidget *parent)
     : QWidget(parent)
@@ -403,7 +403,7 @@ void DBBrowser::clearTableView()
     model->clear();
 }
 
-void DBBrowser::showTableInfo(const QString& where)
+QString DBBrowser::showTableInfo(const QString& where)
 {
     QString info = "error";
     auto db = database();
@@ -429,6 +429,7 @@ void DBBrowser::showTableInfo(const QString& where)
     }
 
     labelTable->setText(QString("<b>Records: %1</b>").arg(info));
+    return info;
 }
 
 // очистить содержимое таблицы
@@ -503,6 +504,7 @@ void DBBrowser::slotLoadQuery()
     auto dvl = new DialogValuesList(":/resources/img/search.svg", "Find a profile", true, &map, this);
 
     if(!dvl->exec()) return;
+    auto time = QDateTime::currentMSecsSinceEpoch();
 
     auto value = map.value(keys.at(0)).value.toString().simplified();
     if(value.isEmpty())
@@ -567,9 +569,12 @@ void DBBrowser::slotLoadQuery()
     }
 
     model->setFilter(where);
-    showTableInfo(where);
+    auto count = showTableInfo(where);
 
     table->selectRow(0);
+
+    Q_EMIT signalMessage(QString("[i]\tSearching was completed in %1 ms, found %2 records").
+                         arg(QString::number(QDateTime::currentMSecsSinceEpoch() - time), count));
 }
 
 void DBBrowser::slotUpdateProfile()

@@ -31,4 +31,6 @@ QString longTimeToString(long datetime, const QString& format);
  */
 QString humanReadableByteCount(long long bytes, bool si = true);
 
+QString getSystemInfo();
+
 #endif // HELPER_H
