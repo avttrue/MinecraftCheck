@@ -53,10 +53,13 @@ DialogValuesList::DialogValuesList(const QString& icon,
     toolBar->addWidget(new WidgetSpacer());
 
     auto actionAccept = new QAction(QIcon(":/resources/img/yes.svg"), "Accept");
+    actionAccept->setAutoRepeat(false);
+    actionAccept->setShortcut(Qt::CTRL + Qt::Key_Q);
     QObject::connect(actionAccept, &QAction::triggered, [=](){ accept(); });
     toolBar->addAction(actionAccept);
 
     auto actionCancel = new QAction(QIcon(":/resources/img/no.svg"), "Cancel");
+    actionCancel->setAutoRepeat(false);
     QObject::connect(actionCancel, &QAction::triggered, [=](){ reject(); });
     toolBar->addAction(actionCancel);
 
@@ -183,7 +186,8 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             }
             else if(values->value(key).mode == DialogValueMode::OneFromList)
             {
-                auto cb = new QComboBox(widget);                
+                auto cb = new QComboBox(widget);
+                cb->installEventFilter(this);
                 auto list = maxv.toStringList();
                 if(!list.isEmpty())
                 {
@@ -237,9 +241,9 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
     }
 }
 
-bool DialogValuesList::eventFilter(QObject *obj, QEvent *event)
+bool DialogValuesList::eventFilter(QObject*, QEvent *event)
 {
-    if(obj == this && event->type() == QEvent::Wheel) { return true; }
+    if(event->type() == QEvent::Wheel) { return true; }
 
     return false;
 }

@@ -399,8 +399,7 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
 
             if(!log) continue;
             sanswer.append(QString("\n\t%1").arg(srow));
-        }
-        while(query.next());
+        } while(query.next());
 
         if(log) textEvents->appendPlainText(QString("[i]\tDatabase query answer: %1").arg(sanswer));
         return rows;

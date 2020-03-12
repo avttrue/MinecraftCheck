@@ -33,6 +33,7 @@ private:
     QAction* actionReport;
     QAction* actionSearch;
     QAction* actionUpdateProfile;
+    QAction* actionComment;
     QTableView *table;
     QTreeWidget *tree;
     QString activeDB;
@@ -60,6 +61,7 @@ private Q_SLOTS:
     void slotLoadQuery();
     void slotSearch();
     void slotUpdateProfile();
+    void slotComment();
 };
 
 class MySqlTableModel: public QSqlTableModel

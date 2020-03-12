@@ -50,5 +50,6 @@
         <file>resources/sql/get_table_rows_count_where.sql</file>
         <file>resources/sql/select_history_where.sql</file>
         <file>resources/img/edit.svg</file>
+        <file>resources/sql/update_profile_comment.sql</file>
     </qresource>
 </RCC>

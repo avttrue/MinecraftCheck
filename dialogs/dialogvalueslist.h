@@ -21,7 +21,7 @@ enum DialogValueMode
 };
 
 /*!
- * \brief struct DialogValue - передаваемая для редактирования структура;
+ * \brief DialogValue - передаваемая для редактирования структура;
  * type: тип результата;
  * value: результат и значение поумолчанию
  * minValue: минимальное значение, если доступно;
@@ -54,7 +54,7 @@ protected:
     void addWidgetContent(QWidget* widget); 
 
 private:
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter(QObject *, QEvent *event);
     QGridLayout* glContent;
     QToolBar* toolBar;
     QMap<QString, DialogValue>* m_Values;

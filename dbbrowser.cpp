@@ -39,9 +39,14 @@ DBBrowser::DBBrowser(QWidget *parent)
     actionReport->setDisabled(true);
     auto actionLoad = new QAction(QIcon(":/resources/img/load.svg"), "Load query", this);
     actionSearch = new QAction(QIcon(":/resources/img/search.svg"), "Search player by name", this);
+    actionSearch->setShortcut(Qt::CTRL + Qt::Key_F);
     actionSearch->setDisabled(true);
     actionUpdateProfile = new QAction(QIcon(":/resources/img/refresh.svg"), "Reload profile", this);
+    actionUpdateProfile->setShortcut(Qt::CTRL + Qt::Key_R);
     actionUpdateProfile->setDisabled(true);
+    actionComment = new QAction(QIcon(":/resources/img/edit.svg"), "Edit comments", this);
+    actionComment->setShortcut(Qt::CTRL + Qt::Key_E);
+    actionComment->setDisabled(true);
 
     connect(actionUpdateDB, &QAction::triggered, this, &DBBrowser::slotRefresh);
     connect(actionSchemaDB, &QAction::triggered, this, &DBBrowser::slotMetaData);
@@ -52,6 +57,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     connect(actionLoad, &QAction::triggered, this, &DBBrowser::slotLoadQuery);
     connect(actionSearch, &QAction::triggered, this, &DBBrowser::slotSearch);
     connect(actionUpdateProfile, &QAction::triggered, this, &DBBrowser::slotUpdateProfile);
+    connect(actionComment, &QAction::triggered, this, &DBBrowser::slotComment);
 
     auto layout = new QVBoxLayout(this);
     layout->setSpacing(1);
@@ -67,6 +73,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     toolBar->addAction(actionUpdateProfile);
     toolBar->addAction(actionReport);
     toolBar->addAction(actionSearch);
+    toolBar->addAction(actionComment);
     toolBar->addSeparator();
     toolBar->addAction(actionLoad);
     toolBar->addSeparator();
@@ -156,6 +163,7 @@ void DBBrowser::slotRefresh()
         auto db = QSqlDatabase::database(name, false);
         root->setText(0, dbCaption(db));
         root->setIcon(0, QIcon(":/resources/img/database.svg"));
+
         if(name == activeDB)
         {
             gotActiveDb = true;
@@ -185,6 +193,7 @@ void DBBrowser::slotRefresh()
     actionDeleteRow->setEnabled(false);
     actionReport->setEnabled(false);
     actionUpdateProfile->setEnabled(false);
+    actionComment->setEnabled(false);
 }
 
 QSqlDatabase DBBrowser::database() const { return QSqlDatabase::database(activeDB); }
@@ -354,10 +363,8 @@ void DBBrowser::slotDeleteRow()
     if (reply == QMessageBox::No) return;
 
     auto currentSelection = table->selectionModel()->selectedRows();
-    for(auto index: currentSelection)
-    {
-        model->removeRow(index.row());
-    }
+    for(auto index: currentSelection) model->removeRow(index.row());
+
     model->select();
     showTableInfo();
 }
@@ -374,6 +381,7 @@ void DBBrowser::slotTableSelectionChanged()
         actionDeleteRow->setEnabled(false);
         actionReport->setEnabled(false);
         actionUpdateProfile->setEnabled(false);
+        actionComment->setEnabled(false);
         return;
     }
 
@@ -381,6 +389,8 @@ void DBBrowser::slotTableSelectionChanged()
     actionReport->setEnabled(tableName() == "Profiles"); //NOTE: 'Profiles' table
     actionUpdateProfile->setEnabled(tableName() == "Profiles" &&
                                     table->selectionModel()->selectedRows().count() == 1);
+    actionComment->setEnabled(tableName() == "Profiles" &&
+                              table->selectionModel()->selectedRows().count() == 1);
 }
 
 // очистить представление таблицы
@@ -411,6 +421,11 @@ void DBBrowser::showTableInfo(const QString& where)
             auto value = query.value(0);
             if(value.isValid()) info = value.toString();
         }
+        else
+        {
+            auto error = db.lastError().text().simplified();
+            qCritical() << "DB error: '" << error << "', query: '" << text.simplified() << "'";
+        }
     }
 
     labelTable->setText(QString("<b>Records: %1</b>").arg(info));
@@ -435,10 +450,7 @@ void DBBrowser::slotReport()
 {
     auto model = qobject_cast<QSqlTableModel *>(table->model());
     if(!model || table->selectionModel()->selectedRows().count() == 0)
-    {
-        actionReport->setEnabled(false);
-        return;
-    }
+    { actionReport->setEnabled(false); return; }
 
     QStringList answer;
     auto currentSelection = table->selectionModel()->selectedRows();
@@ -463,34 +475,21 @@ void DBBrowser::slotLoadQuery()
     Q_EMIT signalQuery(text);
 }
 
-void DBBrowser::slotSearch()
+    void DBBrowser::slotSearch()
 {
     auto model = qobject_cast<QSqlTableModel *>(table->model());
     auto db = database();
 
-    if(!model || !db.isOpen())
-    {
-        actionSearch->setEnabled(false);
-        return;
-    }
+        if(!model || !db.isOpen())
+    { actionSearch->setEnabled(false); return; }
 
-    if (tableName() != "Profiles") //NOTE: 'Profiles' table
-    {
-        actionSearch->setEnabled(false);
-        return;
-    }
+        if (tableName() != "Profiles") //NOTE: 'Profiles' table
+    { actionSearch->setEnabled(false); return; }
 
-    const QVector<QString> keys =
-        {"Value: ",
-         "Area: ",
-         "Precision: "
-        };
+        const QVector<QString> keys =
+            {"Value: ", "Area: ", "Precision: "};
     const QStringList arealist =
-        {"ID in Profiles",
-         "NAMES in Profiles",
-         "NAMES in Profiles and History",
-         "Comments"
-        };
+        {"ID in Profiles", "NAMES in Profiles", "NAMES in Profiles and History", "Comments"};
     const QStringList preclist =
         {"Equal", "Like", "NOT Equal"};
 
@@ -500,7 +499,6 @@ void DBBrowser::slotSearch()
                  {keys.at(1), {QVariant::StringList, arealist.at(0), "", arealist, DialogValueMode::OneFromList}},
                  {keys.at(2), {QVariant::StringList, preclist.at(0), "", preclist, DialogValueMode::OneFromList}},
                  };
-
 
     auto dvl = new DialogValuesList(":/resources/img/search.svg", "Find a profile", true, &map, this);
 
@@ -542,15 +540,21 @@ void DBBrowser::slotSearch()
         QString ids;
 
         QSqlQuery query(db);
-        if(query.exec(text) && query.first())
+        if(query.exec(text))
         {
-            do
-            {
-                auto value = query.value(0);
-                if(value.isValid()) idsl.append(value.toString());
-            }
-            while(query.next());
+            if(query.first())
+                do
+                {
+                    auto value = query.value(0);
+                    if(value.isValid()) idsl.append(value.toString());
+                } while(query.next());
         }
+        else
+        {
+            auto error = db.lastError().text().simplified();
+            qCritical() << "DB error: '" << error << "', query: '" << text.simplified() << "'";
+        }
+
         idsl.removeDuplicates();
         idsl.removeAll("");
         for(auto id: idsl) ids.append(QString(" OR Uuid = '%1'").arg(id)); //NOTE: 'Uuid' column
@@ -564,6 +568,8 @@ void DBBrowser::slotSearch()
 
     model->setFilter(where);
     showTableInfo(where);
+
+    table->selectRow(0);
 }
 
 void DBBrowser::slotUpdateProfile()
@@ -571,15 +577,49 @@ void DBBrowser::slotUpdateProfile()
     auto model = qobject_cast<QSqlTableModel *>(table->model());
 
     if(!model || table->selectionModel()->selectedRows().count() == 0)
-    {
-        actionUpdateProfile->setEnabled(false);
-        return;
-    }
+    { actionUpdateProfile->setEnabled(false); return; }
 
     auto currentSelection = table->selectionModel()->selectedRows();
-    auto answer = model->record(currentSelection.at(0).row()).field("Uuid").value().toString();
+    auto answer = model->record(currentSelection.at(0).row()).field("Uuid").value().toString(); // NOTE: 'Uuid' column
 
     Q_EMIT signalUpdateProfile(answer);
+}
+
+void DBBrowser::slotComment()
+{
+    auto model = qobject_cast<QSqlTableModel *>(table->model());
+    auto db = database();
+
+    if(!model || !db.isOpen() || table->selectionModel()->selectedRows().count() == 0)
+    { actionComment->setEnabled(false); return; }
+
+    auto currentSelection = table->selectionModel()->selectedRows();
+
+    auto uuid = model->record(currentSelection.at(0).row()).field("Uuid").value().toString(); // NOTE: 'Uuid' column
+    auto curname = model->record(currentSelection.at(0).row()).field("CurrentName").value().toString(); // NOTE: 'CurrentName' column
+    auto comments = model->record(currentSelection.at(0).row()).field("Comments").value().toString(); // NOTE: 'Comments' column
+
+    const QVector<QString> keys = {"1. Name: ", "2. ID: ", "Value: "};
+    QMap<QString, DialogValue> map = {{keys.at(0), {QVariant::String, curname, "", "", DialogValueMode::Disabled}},
+                                      {keys.at(1), {QVariant::String, uuid, "", "", DialogValueMode::Disabled}},
+                                      {keys.at(2), {QVariant::String, comments}}};
+
+    auto dvl = new DialogValuesList(":/resources/img/edit.svg", "Edit comments", true, &map, this);
+
+    if(!dvl->exec()) return;
+
+    auto newcomments = map.value(keys.at(2)).value.toString().simplified();
+    if(newcomments == comments) return;
+
+    QSqlQuery query(db);
+    auto text = getTextFromRes(":/resources/sql/update_profile_comment.sql").arg(uuid, newcomments);
+
+    if(query.exec(text)) model->select();
+    else
+    {
+        auto error = db.lastError().text().simplified();
+        qCritical() << "DB error: '" << error << "', query: '" << text.simplified() << "'";
+    }
 }
 
 QVariant MySqlTableModel::data(const QModelIndex &idx, int role) const
