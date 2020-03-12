@@ -430,7 +430,7 @@ void MainWindow::showServers(QMap<QString, QString> servers)
                      arg(getBase64Image(":/resources/img/led_yellow.svg", QSize(lsize, lsize), true));
     auto ledunknown = QString("<img src='%1' alt='%2'>").
                       arg(getBase64Image(":/resources/img/question.svg", QSize(lsize, lsize), true), "%1");
-    auto caption = QString("Status of the Mojang servers<br>%1").
+    auto caption = QString("Status of the Mojang services<br>%1").
                    arg(QDateTime::currentDateTime().toString(config->DateTimeFormat()));
 
     QString report_content;
