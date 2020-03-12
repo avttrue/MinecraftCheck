@@ -507,12 +507,12 @@ void DBBrowser::slotLoadQuery()
     auto time = QDateTime::currentMSecsSinceEpoch();
 
     auto value = map.value(keys.at(0)).value.toString().simplified();
-    if(value.isEmpty())
-    {
-        model->setFilter("");
-        showTableInfo();
-        return;
-    }
+//    if(value.isEmpty())
+//    {
+//        model->setFilter("");
+//        showTableInfo();
+//        return;
+//    }
 
     // Precision
     auto prec = "=";
