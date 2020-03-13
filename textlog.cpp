@@ -14,6 +14,8 @@ TextLog::TextLog(QWidget *parent)
     setReadOnly(true);
     setUndoRedoEnabled(false);
 
+    setLogSize(config->LogSize());
+
     actionClear = new QAction(QIcon(":/resources/img/delete.svg"), tr("Clear all"), this);
     connect(actionClear, &QAction::triggered, this, &TextLog::slotClear);
 

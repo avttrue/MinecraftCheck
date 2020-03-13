@@ -59,6 +59,8 @@ public:
     void setLastDir(const QString &value);
     bool KeepCommentsAtUpd() const;
     void setKeepCommentsAtUpd(bool value);
+    int LogSize() const;
+    void setLogSize(int value);
 
 protected:
     void load();
@@ -84,6 +86,7 @@ private:
     int m_ButtonSize;                   // размеры кнопок интерфейса
     int m_ReportLedSize;                // размер картинки индикатора серверов
     int m_ReportImgScale;               // масштаб картинок в отображении профиля игрока
+    int m_LogSize;                      // количество строк лога событий
     bool m_ReportAutoOpen;              // открывать отчёт после сохранения
     bool m_AutoVacuum;                  // выполнять vacuum при выходе
     bool m_AutoCollectProfiles;         // сохранять все профили игроков в БД

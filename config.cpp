@@ -41,6 +41,10 @@ void Config::load()
         m_Settings->setValue("MainWindow/SplashSize", SPLASH_SIZE);
     m_SplashSize = m_Settings->value("MainWindow/SplashSize").toInt();
 
+    if(!m_Settings->contains("MainWindow/LogSize"))
+        m_Settings->setValue("MainWindow/LogSize", LOG_SIZE);
+    m_LogSize = m_Settings->value("MainWindow/LogSize").toInt();
+
     if(!m_Settings->contains("MainWindow/ButtonSize"))
         m_Settings->setValue("MainWindow/ButtonSize", BUTTON_SIZE);
     m_ButtonSize = m_Settings->value("MainWindow/ButtonSize").toInt();
@@ -112,6 +116,14 @@ void Config::load()
     if(!m_Settings->contains("Database/KeepCommentsAtUpd"))
         m_Settings->setValue("Database/KeepCommentsAtUpd", KEEP_COMMENTS_AT_UPD);
     m_KeepCommentsAtUpd = m_Settings->value("Database/KeepCommentsAtUpd").toBool();
+}
+
+void Config::setLogSize(int value)
+{
+    if(m_LogSize == value) return;
+
+    m_LogSize = value >= 0 ? value : 0;
+    m_Settings->setValue("MainWindow/LogSize", m_LogSize);
 }
 
 void Config::setKeepCommentsAtUpd(bool value)
@@ -266,6 +278,7 @@ void Config::setQueryServers(const QString &value)
     m_Settings->setValue("ApiQueries/Servers", m_QueryServers);
 }
 
+int Config::LogSize() const { return m_LogSize; }
 bool Config::KeepCommentsAtUpd() const { return m_KeepCommentsAtUpd; }
 QString Config::LastDir() const { return m_LastDir; }
 bool Config::AdvancedDBMode() const { return m_AdvancedDBMode; }
