@@ -6,6 +6,7 @@
 #include "helpergraphics.h"
 #include "dbbrowser.h"
 #include "splashscreen.h"
+#include "textlog.h"
 
 #include <QDebug>
 #include <QApplication>
@@ -23,7 +24,6 @@
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QDateTime>
-#include <QScrollBar>
 #include <QTimer>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -147,7 +147,8 @@ void MainWindow::loadGui()
     dbBrowser = new DBBrowser(this);
     tabWidget->addTab(dbBrowser, QIcon(":/resources/img/database.svg"), "Database");
     QObject::connect(dbBrowser, &DBBrowser::signalMessage, [=](const QString& text)
-                     { textEvents->appendPlainText(text); });
+                     { taskSeparator();
+                       textEvents->addText(text); });
     QObject::connect(dbBrowser, &DBBrowser::signalReport, this, &MainWindow::showDBProfiles);
     QObject::connect(dbBrowser, &DBBrowser::signalQuery, [=](const QString& text)
                      { QVector<QVariantList> answer;
@@ -157,11 +158,7 @@ void MainWindow::loadGui()
                      { showTextEdit(1);
                        lineEdit->setText(text); });
 
-    textEvents = new QPlainTextEdit(this);
-    textEvents->setFont(QFont(config->FontNameEvents(), -1, QFont::ExtraBold));
-    textEvents->setLineWrapMode(QPlainTextEdit::NoWrap);
-    textEvents->setReadOnly(true);
-    textEvents->setUndoRedoEnabled(false);
+    textEvents = new TextLog(this);
     tabWidget->addTab(textEvents, QIcon(":/resources/img/log.svg"), "Events");
 
     setCentralWidget(tabWidget);
@@ -235,7 +232,7 @@ void MainWindow::getServersStatus()
     QObject::connect(reader, &ServerStatusReader::signalError, [=]()
                      { queryDone(false); reader->deleteLater(); });
     QObject::connect(reader, &ServerStatusReader::signalMessage, [=](QString text)
-                     { textEvents->appendPlainText(text);
+                     { textEvents->addText(text);
                      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
     QObject::connect(reader, &ServerStatusReader::signalStatus, [=](QString text)
                      { labelStatus->setText(text);
@@ -266,9 +263,7 @@ void MainWindow::getPlayerProfile()
                      { queryDone(false); reader->deleteLater();
                        textBrowser->setText("Failed to get data from Mojang"); });
     QObject::connect(reader, &PlayerProfileReader::signalMessage, [=](QString text)
-                     { textEvents->appendPlainText(text);
-                       QScrollBar *vScrollBar = textEvents->verticalScrollBar();
-                       vScrollBar->triggerAction(QScrollBar::SliderToMaximum);
+                     { textEvents->addText(text);
                        QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
     QObject::connect(reader, &PlayerProfileReader::signalStatus, [=](QString text)
                      { labelStatus->setText(text);
@@ -282,7 +277,7 @@ void MainWindow::getPlayerProfile()
     {
         auto nick = lineEdit->text().simplified();
         auto query = config->QueryPersonName().arg(nick);
-        textEvents->appendPlainText(QString("[i]\tSearching by player's name '%1'\n").arg(nick));
+        textEvents->addText(QString("[i]\tSearching by player's name '%1'\n").arg(nick));
         reader->sendQuery(query);
     }
     else if(lineEdit->property("SearchMode").toInt() == 1)
@@ -290,7 +285,7 @@ void MainWindow::getPlayerProfile()
         auto id = lineEdit->text().simplified().remove('{').remove('}').remove('-');
         auto query = config->QueryPersonUuid().arg(id);
         reader->setProfileId(id);
-        textEvents->appendPlainText(QString("[i]\tSearching by player's id '%1'\n").arg(id));
+        textEvents->addText(QString("[i]\tSearching by player's id '%1'\n").arg(id));
         reader->sendQuery(query);
     }
     else // error
@@ -323,7 +318,7 @@ void MainWindow::saveReport()
         return;
     }
 
-    textEvents->appendPlainText(QString("[!]\tError at file saving: %1").arg(filename));
+    textEvents->addText(QString("[!]\tError at file saving: %1").arg(filename));
     tabWidget->setCurrentIndex(2);
 }
 
@@ -343,13 +338,13 @@ void MainWindow::openDataBase()
         }
         else
         {
-            textEvents->appendPlainText("[!]\tValidation: false\n");
+            textEvents->addText("[!]\tValidation: false\n");
             tabWidget->setCurrentIndex(2);
         }
         return;
     }
-    textEvents->appendPlainText(QString("[!]\tError connecting to local database '%1': %2\n").
-                                arg(config->PathLocalDB(), database.lastError().text()));
+    textEvents->addText(QString("[!]\tError connecting to local database '%1': %2\n").
+                        arg(config->PathLocalDB(), database.lastError().text()));
     tabWidget->setCurrentIndex(2);
 }
 
@@ -362,8 +357,8 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
     {
         auto error = database.lastError().text().simplified();
         if(error.isEmpty()) error = "Incorrect query syntax";
-        textEvents->appendPlainText(QString("[!]\tFatal error at into local database query: %1\n").
-                                    arg(error));
+        textEvents->addText(QString("[!]\tFatal error at into local database query: %1\n").
+                            arg(error));
         tabWidget->setCurrentIndex(2);
         return -1;
     } else if (query.isSelect())
@@ -405,7 +400,7 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
             sanswer.append(QString("\n\t%1").arg(srow));
         } while(query.next());
 
-        if(log) textEvents->appendPlainText(QString("[i]\tDatabase query answer: %1").arg(sanswer));
+        if(log) textEvents->addText(QString("[i]\tDatabase query answer: %1").arg(sanswer));
         return rows;
     }
     else
@@ -413,8 +408,8 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
         auto raffected =query.numRowsAffected();
 
         if(raffected > 0)
-            textEvents->appendPlainText(QString("[i]\tDatabase rows affected: %1").
-                                        arg(QString::number(raffected)));
+            textEvents->addText(QString("[i]\tDatabase rows affected: %1").
+                                arg(QString::number(raffected)));
         return raffected;
     }
 }
@@ -467,8 +462,8 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
     {
         if(answer.at(0).at(0).toInt() > 0)
         {
-            textEvents->appendPlainText(QString("[i]\tProfile '%1' already exists, rewrites").
-                                        arg(profile.Id));
+            textEvents->addText(QString("[i]\tProfile '%1' already exists, rewrites").
+                                arg(profile.Id));
 
             if(config->KeepCommentsAtUpd())
             {
@@ -484,8 +479,8 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
             setQueryDataBase(text);
         }
         else
-            textEvents->appendPlainText(QString("[i]\tProfile '%1' is new, will be added").
-                                        arg(profile.Id));
+            textEvents->addText(QString("[i]\tProfile '%1' is new, will be added").
+                                arg(profile.Id));
     }
 
     text = getTextFromRes(":/resources/sql/add_record_profile.sql").
@@ -665,8 +660,8 @@ void MainWindow::showDBProfiles(QStringList uuids)
     progressBar->setVisible(false);
 
     auto currenttime = QDateTime::currentMSecsSinceEpoch();
-    textEvents->appendPlainText(QString("[i]\tReport was completed in %1 ms").
-                                arg(QString::number(currenttime - time)));
+    textEvents->addText(QString("[i]\tReport was completed in %1 ms").
+                        arg(QString::number(currenttime - time)));
 }
 
 void MainWindow::writeProfile(const MojangApiProfile &profile)
@@ -689,32 +684,32 @@ void MainWindow::getDBInfo()
     if(rowsinfo.isEmpty()) return;
 
     auto dbcount = QString::number(rowsinfo.at(0).at(0).toInt());
-    textEvents->appendPlainText(QString("[i]\tLocal database: %1 bytes size, %2 profiles count").
-                                arg(dbsize, dbcount));
+    textEvents->addText(QString("[i]\tLocal database: %1 bytes size, %2 profiles count").
+                        arg(dbsize, dbcount));
     labelLocalDB->setText(QString("%1, %2 profiles").arg(dbsize, dbcount));
 }
 
 void MainWindow::taskSeparator()
 {
-    textEvents->appendPlainText("\n------------------------------\n");
+    textEvents->addText("------------------------------");
 }
 
 bool MainWindow::checkAnswerDB(QVector<QVariantList> answer, int row, int col)
 {
     if(answer.isEmpty() || answer.at(0).isEmpty())
     {
-        textEvents->appendPlainText("[!]\tError: empty answer from database");
+        textEvents->addText("[!]\tError: empty answer from database");
         return false;
     }
 
     if(answer.count() < row || answer.at(0).count() < col)
     {
-        textEvents->appendPlainText(QString("[!]\tError: incomplete answer from database: "
-                                            "%1 rows < %2, %3 columns < %4").
-                                    arg(QString::number(answer.count()),
-                                        QString::number(row),
-                                        QString::number(answer.at(0).count()),
-                                        QString::number(col)));
+        textEvents->addText(QString("[!]\tError: incomplete answer from database: "
+                                    "%1 rows < %2, %3 columns < %4").
+                            arg(QString::number(answer.count()),
+                                QString::number(row),
+                                QString::number(answer.at(0).count()),
+                                QString::number(col)));
         return false;
     }
     return true;

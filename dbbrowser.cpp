@@ -507,12 +507,6 @@ void DBBrowser::slotLoadQuery()
     auto time = QDateTime::currentMSecsSinceEpoch();
 
     auto value = map.value(keys.at(0)).value.toString().simplified();
-//    if(value.isEmpty())
-//    {
-//        model->setFilter("");
-//        showTableInfo();
-//        return;
-//    }
 
     // Precision
     auto prec = "=";
@@ -571,6 +565,7 @@ void DBBrowser::slotLoadQuery()
     model->setFilter(where);
     auto count = showTableInfo(where);
 
+    model->select();
     table->selectRow(0);
 
     Q_EMIT signalMessage(QString("[i]\tSearching was completed in %1 ms, found %2 records").

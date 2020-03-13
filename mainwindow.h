@@ -10,6 +10,7 @@ class QPlainTextEdit;
 class QTextBrowser;
 class QLineEdit;
 class DBBrowser;
+class TextLog;
 struct MojangApiProfile;
 
 class MainWindow : public QMainWindow
@@ -46,7 +47,7 @@ private:
     QLabel* labelLocalDB;
     QLabel* labelStatus;
     QTabWidget* tabWidget;
-    QPlainTextEdit* textEvents;
+    TextLog* textEvents;
     QTextBrowser* textBrowser;
     QLineEdit* lineEdit;
     QAction* actionCheckServers;
