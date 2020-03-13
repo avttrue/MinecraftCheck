@@ -22,8 +22,8 @@ private:
     QAction* actionClear;
     QAction* actionAutoScroll;
 
-    int messagesCount = 0;
-    bool isAutoScroll = true;
+    int m_MessagesCount;
+    bool m_AutoScroll;
 
 public Q_SLOTS:
     void slotClear();

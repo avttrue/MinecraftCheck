@@ -7,7 +7,9 @@
 #include <QScrollBar>
 
 TextLog::TextLog(QWidget *parent)
-    :QPlainTextEdit(parent)
+    :QPlainTextEdit(parent),
+    m_MessagesCount(0),
+    m_AutoScroll(true)
 {
     setFont(QFont(config->FontNameEvents(), -1, QFont::ExtraBold));
     setLineWrapMode(QPlainTextEdit::NoWrap);
@@ -17,12 +19,12 @@ TextLog::TextLog(QWidget *parent)
     setLogSize(config->LogSize());
 
     actionClear = new QAction(QIcon(":/resources/img/delete.svg"), tr("Clear all"), this);
-    connect(actionClear, &QAction::triggered, this, &TextLog::slotClear);
+    QObject::connect(actionClear, &QAction::triggered, this, &TextLog::slotClear);
 
     actionAutoScroll = new QAction(tr("To last message"), this);
     actionAutoScroll->setCheckable(true);
-    actionAutoScroll->setChecked(isAutoScroll);
-    connect(actionAutoScroll, &QAction::triggered, this, &TextLog::slotAutoScroll);
+    actionAutoScroll->setChecked(m_AutoScroll);
+    QObject::connect(actionAutoScroll, &QAction::triggered, this, &TextLog::slotAutoScroll);
 }
 
 void TextLog::contextMenuEvent(QContextMenuEvent* event)
@@ -32,7 +34,7 @@ void TextLog::contextMenuEvent(QContextMenuEvent* event)
     menu->addAction(actionClear);
 
     menu->addAction(actionAutoScroll);
-    actionAutoScroll->setChecked(isAutoScroll);
+    actionAutoScroll->setChecked(m_AutoScroll);
 
     menu->exec(event->globalPos());
     delete menu;
@@ -41,16 +43,16 @@ void TextLog::contextMenuEvent(QContextMenuEvent* event)
 void TextLog::slotClear()
 {
     document()->clear();
-    messagesCount = 0;
+    m_MessagesCount = 0;
     textChanged();
 }
 
 void TextLog::addText(const QString &text)
 {
-    messagesCount++;
+    m_MessagesCount++;
     appendPlainText(text);
 
-    if(isAutoScroll)
+    if(m_AutoScroll)
     {
         QScrollBar *vScrollBar = verticalScrollBar();
         vScrollBar->triggerAction(QScrollBar::SliderToMaximum);
@@ -59,23 +61,23 @@ void TextLog::addText(const QString &text)
 
 void TextLog::setAutoScroll(bool value)
 {
-    if(isAutoScroll == value) return;
+    if(m_AutoScroll == value) return;
 
-    isAutoScroll = value;
-    Q_EMIT signalAutoScrollChanged(isAutoScroll);
+    m_AutoScroll = value;
+    Q_EMIT signalAutoScrollChanged(m_AutoScroll);
 }
 
 void TextLog::slotAutoScroll()
 {
-    isAutoScroll = !isAutoScroll;
-    if(isAutoScroll)
+    m_AutoScroll = !m_AutoScroll;
+    if(m_AutoScroll)
     {
         QScrollBar *vScrollBar = verticalScrollBar();
         vScrollBar->triggerAction(QScrollBar::SliderToMaximum);
     }
-    emit signalAutoScrollChanged(isAutoScroll);
+    Q_EMIT signalAutoScrollChanged(m_AutoScroll);
 }
 
 void TextLog::setLogSize(int count) { document()->setMaximumBlockCount(count);}
-bool TextLog::getAutoScroll() { return isAutoScroll; }
-int TextLog::getMessagesCount() { return  messagesCount; }
+bool TextLog::getAutoScroll() { return m_AutoScroll; }
+int TextLog::getMessagesCount() { return  m_MessagesCount; }
