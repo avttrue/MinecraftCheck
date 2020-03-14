@@ -387,10 +387,12 @@ void DBBrowser::slotTableSelectionChanged()
 
     // проверка по конкретной таблице
     actionReport->setEnabled(tableName() == "Profiles"); //NOTE: 'Profiles' table
+
     actionUpdateProfile->setEnabled(tableName() == "Profiles" &&
                                     table->selectionModel()->selectedRows().count() == 1);
+
     actionComment->setEnabled(tableName() == "Profiles" &&
-                              table->selectionModel()->selectedRows().count() == 1);
+                              table->selectionModel()->selectedRows().count() > 0);
 }
 
 // очистить представление таблицы
@@ -593,11 +595,13 @@ void DBBrowser::slotComment()
     if(!model || !db.isOpen() || table->selectionModel()->selectedRows().count() == 0)
     { actionComment->setEnabled(false); return; }
 
+    auto count = table->selectionModel()->selectedRows().count();
     auto currentSelection = table->selectionModel()->selectedRows();
+    auto record = model->record(currentSelection.at(count - 1).row());
 
-    auto uuid = model->record(currentSelection.at(0).row()).field("Uuid").value().toString(); // NOTE: 'Uuid' column
-    auto curname = model->record(currentSelection.at(0).row()).field("CurrentName").value().toString(); // NOTE: 'CurrentName' column
-    auto comments = model->record(currentSelection.at(0).row()).field("Comments").value().toString(); // NOTE: 'Comments' column
+    auto uuid = record.field("Uuid").value().toString(); // NOTE: 'Uuid' column
+    auto curname = record.field("CurrentName").value().toString(); // NOTE: 'CurrentName' column
+    auto comments = record.field("Comments").value().toString(); // NOTE: 'Comments' column
 
     const QVector<QString> keys = {"1. Name: ", "2. ID: ", "Value: "};
     QMap<QString, DialogValue> map = {{keys.at(0), {QVariant::String, curname, "", "", DialogValueMode::Disabled}},
