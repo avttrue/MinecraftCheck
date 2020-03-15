@@ -194,6 +194,7 @@ void DBBrowser::slotRefresh()
     actionReport->setEnabled(false);
     actionUpdateProfile->setEnabled(false);
     actionComment->setEnabled(false);
+    actionSearch->setEnabled(false);
 }
 
 QSqlDatabase DBBrowser::database() const { return QSqlDatabase::database(activeDB); }
@@ -478,19 +479,25 @@ void DBBrowser::slotLoadQuery()
     Q_EMIT signalQuery(text);
 }
 
-    void DBBrowser::slotSearch()
+void DBBrowser::slotSearch()
 {
     auto model = qobject_cast<QSqlTableModel *>(table->model());
     auto db = database();
 
-        if(!model || !db.isOpen())
-    { actionSearch->setEnabled(false); return; }
+    if(!model || !db.isOpen())
+    {
+        actionSearch->setEnabled(false);
+        return;
+    }
 
-        if (tableName() != "Profiles") //NOTE: 'Profiles' table
-    { actionSearch->setEnabled(false); return; }
+    if(tableName() != "Profiles") //NOTE: 'Profiles' table
+    {
+        actionSearch->setEnabled(false);
+        return;
+    }
 
-        const QVector<QString> keys =
-            {"Value: ", "Area: ", "Precision: "};
+    const QVector<QString> keys =
+        {"Value: ", "Area: ", "Precision: "};
     const QStringList arealist =
         {"ID in Profiles", "NAMES in Profiles", "NAMES in Profiles and History", "Comments"};
     const QStringList preclist =
