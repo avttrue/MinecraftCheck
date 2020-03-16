@@ -536,7 +536,7 @@ void DBBrowser::slotSearch()
         const QVector<QString> keys =
             {"Value: ", "Area: ", "Precision: "};
     const QStringList arealist =
-        {"ID in Profiles", "NAMES in Profiles", "NAMES in Profiles and History", "Comments"};
+        {"NAMES in Profiles", "NAMES in Profiles and History", "Comments", "ID in Profiles"};
     const QStringList preclist =
         {"Equal", "Like", "NOT Equal"};
 
@@ -567,13 +567,9 @@ void DBBrowser::slotSearch()
     QString where;
     if(map.value(keys.at(1)).value.toString() == arealist.at(0))
     {
-        where = QString("Uuid %1 '%2'").arg(prec, value); //NOTE: 'Uuid' column
-    }
-    else if(map.value(keys.at(1)).value.toString() == arealist.at(1))
-    {
         where = QString("FirstName %1 '%2' OR CurrentName %1 '%2'").arg(prec, value); //NOTE: 'FirstName', 'CurrentName' column
     }
-    else if(map.value(keys.at(1)).value.toString() == arealist.at(2))
+    else if(map.value(keys.at(1)).value.toString() == arealist.at(1))
     {
         auto arg = QString("Name %1 '%2'").arg(prec, value);
         auto text = getTextFromRes(":/resources/sql/select_history_where.sql").arg(arg);
@@ -602,8 +598,14 @@ void DBBrowser::slotSearch()
 
         where = QString("FirstName %1 '%2' OR CurrentName %1 '%2'%3").arg(prec, value, ids); //NOTE: 'FirstName', 'CurrentName' column
     }
-    else if(map.value(keys.at(1)).value.toString() == arealist.at(3))
+    else if(map.value(keys.at(1)).value.toString() == arealist.at(2))
+    {
         where = QString("Comments %1 '%2'").arg(prec, value); //NOTE: 'Comments' column
+    }
+    else if(map.value(keys.at(1)).value.toString() == arealist.at(3))
+    {
+        where = QString("Uuid %1 '%2'").arg(prec, value); //NOTE: 'Uuid' column
+    }
 
     model->setFilter(where);
     auto count = showTableInfo(where);
