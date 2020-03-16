@@ -1,1 +1,3 @@
-SELECT COUNT (*) FROM %1;
+SELECT COUNT (*) 
+FROM 
+    %1;

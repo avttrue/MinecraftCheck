@@ -599,13 +599,26 @@ void MainWindow::showDBProfiles(QStringList uuids)
 {
     taskSeparator();
     auto time = QDateTime::currentMSecsSinceEpoch();
+    tabWidget->setCurrentIndex(0);
     setEnableActions(false);
     progressBar->setVisible(true);
     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
+    QStringList list(uuids);
+    if(list.isEmpty())
+    {
+        QVector<QVariantList> answer;
+        setQueryDataBase(getTextFromRes(":/resources/sql/select_uuid_profiles.sql"), &answer);
+        for(auto v: answer)
+        {
+            if(v.isEmpty()) continue;
+            list.append(v.at(0).toString());
+        }
+    }
+
     QString content;
     int number = 1;
-    for(auto uuid: uuids)
+    for(auto uuid: list)
     {
         MojangApiProfile profile;
         QVector<QVariantList> answer_pofile;
@@ -655,7 +668,6 @@ void MainWindow::showDBProfiles(QStringList uuids)
     auto caption = QString("Profiles report %1").arg(dts);
 
     showProfile(caption, content);
-    tabWidget->setCurrentIndex(0);
     setEnableActions(true);
     progressBar->setVisible(false);
 

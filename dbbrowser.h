@@ -24,6 +24,7 @@ protected:
     void showMetaData(const QString &table);
     void clearTableView();
     QString showTableInfo(const QString &where = "");
+    void selectTable(const QString& name);
 
 private:
     QAction* actionSchemaDB;

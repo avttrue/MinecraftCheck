@@ -1,4 +1,6 @@
 SELECT
     COUNT (*)
-FROM %1
-WHERE %2; 
+FROM
+    %1
+WHERE
+    %2;

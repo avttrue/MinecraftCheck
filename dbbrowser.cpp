@@ -152,6 +152,12 @@ void DBBrowser::slotMetaData()
 
 void DBBrowser::slotRefresh()
 {
+    actionDeleteRow->setEnabled(false);
+    actionUpdateProfile->setEnabled(false);
+    actionComment->setEnabled(false);
+    actionSearch->setEnabled(false);
+    actionReport->setEnabled(false);
+
     tree->clear();
     auto connectionNames = QSqlDatabase::connectionNames();
     int tableCount = 0;
@@ -179,6 +185,8 @@ void DBBrowser::slotRefresh()
                 table->setIcon(0,QIcon(":/resources/img/grid.svg"));
                 tableCount++;
             }
+            actionSearch->setEnabled(true);
+            actionReport->setEnabled(true);
         }
     }
     if (!gotActiveDb)
@@ -190,11 +198,6 @@ void DBBrowser::slotRefresh()
     tree->doItemsLayout(); // hack
     clearTableView();
     labelTree->setText(QString("<b>Tables: %1</b>").arg(tableCount));
-    actionDeleteRow->setEnabled(false);
-    actionReport->setEnabled(false);
-    actionUpdateProfile->setEnabled(false);
-    actionComment->setEnabled(false);
-    actionSearch->setEnabled(false);
 }
 
 QSqlDatabase DBBrowser::database() const { return QSqlDatabase::database(activeDB); }
@@ -284,8 +287,6 @@ void DBBrowser::showTable(const QString &tablename)
 
     model->select(); // применение сортировки
 
-    actionSearch->setEnabled(tablename == "Profiles"); // NOTE: 'Profiles' table
-
     showTableInfo();
 }
 
@@ -331,7 +332,6 @@ void DBBrowser::showMetaData(const QString &t)
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
     actionInsertRow->setDisabled(true);
     actionDeleteRow->setDisabled(true);
-    actionReport->setDisabled(true);
 }
 
 // вставить строку в таблицу
@@ -380,15 +380,12 @@ void DBBrowser::slotTableSelectionChanged()
     else
     {
         actionDeleteRow->setEnabled(false);
-        actionReport->setEnabled(false);
         actionUpdateProfile->setEnabled(false);
         actionComment->setEnabled(false);
         return;
     }
 
     // проверка по конкретной таблице
-    actionReport->setEnabled(tableName() == "Profiles"); //NOTE: 'Profiles' table
-
     actionUpdateProfile->setEnabled(tableName() == "Profiles" &&
                                     table->selectionModel()->selectedRows().count() == 1);
 
@@ -435,6 +432,25 @@ QString DBBrowser::showTableInfo(const QString& where)
     return info;
 }
 
+// выбрать таблицу по имени
+void DBBrowser::selectTable(const QString &name)
+{
+    if(name.isEmpty() || tableName() == name) return;
+
+    QTreeWidgetItemIterator item(tree->topLevelItem(0));
+    while(*item)
+    {
+        if((*item)->text(0) == name)
+        {
+            (*item)->setSelected(true);
+            tree->setCurrentItem(*item);
+            slotTreeItemActivated(*item);
+            break;
+        }
+        ++item;
+    }
+}
+
 // очистить содержимое таблицы
 void DBBrowser::slotClearTable()
 {
@@ -452,9 +468,21 @@ void DBBrowser::slotClearTable()
 
 void DBBrowser::slotReport()
 {
+    auto db = database();
+    if(!db.isOpen())
+    {
+        actionReport->setEnabled(false);
+        return;
+    }
+
+    selectTable("Profiles"); //NOTE: 'Profiles' table
+
     auto model = qobject_cast<QSqlTableModel *>(table->model());
-    if(!model || table->selectionModel()->selectedRows().count() == 0)
-    { actionReport->setEnabled(false); return; }
+    if(!model)
+    {
+        actionReport->setEnabled(false);
+        return;
+    }
 
     QStringList answer;
     auto currentSelection = table->selectionModel()->selectedRows();
@@ -462,13 +490,21 @@ void DBBrowser::slotReport()
     {
         answer.append(model->record(index.row()).field("Uuid").value().toString()); //NOTE: 'Uuid' column
     }
+
+    if(answer.isEmpty())
+    {
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Confirm", "No profiles are selected. Create a report for all profiles?",
+                                      QMessageBox::Yes | QMessageBox::No);
+
+        if (reply == QMessageBox::No) return;
+    }
     Q_EMIT signalReport(answer);
 }
 
 void DBBrowser::slotLoadQuery()
 {
-    QString filename = QFileDialog::getOpenFileName(
-        this, "SQL scripts", config->LastDir(), "query (*.sql)");
+    QString filename = QFileDialog::getOpenFileName(this, "SQL scripts", config->LastDir(), "query (*.sql)");
 
     if(filename.isNull()) return;
 
@@ -481,23 +517,24 @@ void DBBrowser::slotLoadQuery()
 
 void DBBrowser::slotSearch()
 {
-    auto model = qobject_cast<QSqlTableModel *>(table->model());
     auto db = database();
-
-    if(!model || !db.isOpen())
+    if(!db.isOpen())
     {
         actionSearch->setEnabled(false);
         return;
     }
 
-    if(tableName() != "Profiles") //NOTE: 'Profiles' table
+    selectTable("Profiles"); //NOTE: 'Profiles' table
+
+    auto model = qobject_cast<QSqlTableModel *>(table->model());
+    if(!model)
     {
         actionSearch->setEnabled(false);
         return;
     }
 
-    const QVector<QString> keys =
-        {"Value: ", "Area: ", "Precision: "};
+        const QVector<QString> keys =
+            {"Value: ", "Area: ", "Precision: "};
     const QStringList arealist =
         {"ID in Profiles", "NAMES in Profiles", "NAMES in Profiles and History", "Comments"};
     const QStringList preclist =
@@ -511,10 +548,9 @@ void DBBrowser::slotSearch()
                  };
 
     auto dvl = new DialogValuesList(":/resources/img/search.svg", "Find a profile", true, &map, this);
-
     if(!dvl->exec()) return;
-    auto time = QDateTime::currentMSecsSinceEpoch();
 
+    auto time = QDateTime::currentMSecsSinceEpoch();
     auto value = map.value(keys.at(0)).value.toString().simplified();
 
     // Precision
@@ -567,9 +603,7 @@ void DBBrowser::slotSearch()
         where = QString("FirstName %1 '%2' OR CurrentName %1 '%2'%3").arg(prec, value, ids); //NOTE: 'FirstName', 'CurrentName' column
     }
     else if(map.value(keys.at(1)).value.toString() == arealist.at(3))
-    {
         where = QString("Comments %1 '%2'").arg(prec, value); //NOTE: 'Comments' column
-    }
 
     model->setFilter(where);
     auto count = showTableInfo(where);
