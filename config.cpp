@@ -27,6 +27,10 @@ void Config::load()
         m_Settings->setValue("LastCatalog", m_PathAppDir);
     m_LastDir = m_Settings->value("LastCatalog").toString();
 
+    if(!m_Settings->contains("SIMetric"))
+        m_Settings->setValue("SIMetric", SI_METRIC);
+    m_SI_metric = m_Settings->value("SIMetric").toBool();
+
     if(!m_Settings->contains("MainWindow/Height"))
         m_Settings->setValue("MainWindow/Height", WINDOW_HEIGHT);
 
@@ -118,10 +122,17 @@ void Config::load()
     m_KeepCommentsAtUpd = m_Settings->value("Database/KeepCommentsAtUpd").toBool();
 }
 
+void Config::setSIMetric(bool value)
+{
+    if(m_SI_metric == value) return;
+    m_SI_metric = value;
+    m_Settings->setValue("SIMetric", m_SI_metric);
+}
+
 void Config::setLogSize(int value)
 {
     if(m_LogSize == value) return;
-
+    
     m_LogSize = value >= 0 ? value : 0;
     m_Settings->setValue("MainWindow/LogSize", m_LogSize);
 }
@@ -278,6 +289,7 @@ void Config::setQueryServers(const QString &value)
     m_Settings->setValue("ApiQueries/Servers", m_QueryServers);
 }
 
+bool Config::SIMetric() const { return m_SI_metric; }
 int Config::LogSize() const { return m_LogSize; }
 bool Config::KeepCommentsAtUpd() const { return m_KeepCommentsAtUpd; }
 QString Config::LastDir() const { return m_LastDir; }

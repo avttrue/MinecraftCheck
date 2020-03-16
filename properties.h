@@ -41,5 +41,6 @@ const auto AUTOVACUUM = true;
 const auto AUTOCOLLECT_PROFILES = true;
 const auto ADVANCED_DB_MODE = false;
 const auto KEEP_COMMENTS_AT_UPD = true;
+const auto SI_METRIC = false;
 
 #endif // PROPERTIES_H

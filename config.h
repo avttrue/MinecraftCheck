@@ -61,6 +61,8 @@ public:
     void setKeepCommentsAtUpd(bool value);
     int LogSize() const;
     void setLogSize(int value);
+    bool SIMetric() const;
+    void setSIMetric(bool value);
 
 protected:
     void load();
@@ -92,6 +94,7 @@ private:
     bool m_AutoCollectProfiles;         // сохранять все профили игроков в БД
     bool m_AdvancedDBMode;              // возможность редактировать БД
     bool m_KeepCommentsAtUpd;           // сохранять комментарии при обновлении профиля
+    bool m_SI_metric;                   // использовать систему СИ в отображении размеров файлов
 };
 
 #endif // CONFIG_H

@@ -689,7 +689,7 @@ void MainWindow::writeProfile(const MojangApiProfile &profile)
 
 void MainWindow::getDBInfo()
 {
-    auto dbsize = humanReadableByteCount(QFileInfo(config->PathLocalDB()).size());
+    auto dbsize = humanReadableByteCount(QFileInfo(config->PathLocalDB()).size(), config->SIMetric());
     QVector<QVariantList> rowsinfo;
     setQueryDataBase(getTextFromRes(":/resources/sql/get_table_rows_count.sql").arg("Profiles"), &rowsinfo);
 
