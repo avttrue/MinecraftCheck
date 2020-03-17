@@ -14,21 +14,22 @@
 #include <QToolBar>
 #include <QStandardItemModel>
 
-DialogValuesList::DialogValuesList(const QString& icon,
+DialogValuesList::DialogValuesList(QWidget* parent,
+                                   const QString& icon,
                                    const QString& caption,
-                                   bool modal,
                                    QMap<QString, DialogValue> *values,
-                                   QWidget* parent) :
+                                   bool dialogMode) :
     QDialog(parent)
 {
     m_Values = values;
+    m_DialogMode = dialogMode;
     setWindowFlags(Qt::Dialog |
                    Qt::CustomizeWindowHint |
                    Qt::WindowTitleHint);
     setAttribute(Qt::WA_DeleteOnClose);
     setWindowTitle(caption);
     setWindowIcon(QIcon(icon));
-    setModal(modal);
+    setModal(m_DialogMode);
 
     auto vblForm = new QVBoxLayout();
     vblForm->setAlignment(Qt::AlignAbsolute);
@@ -52,12 +53,14 @@ DialogValuesList::DialogValuesList(const QString& icon,
 
     toolBar->addWidget(new WidgetSpacer());
 
-    auto actionAccept = new QAction(QIcon(":/resources/img/yes.svg"), "Accept");
-    actionAccept->setAutoRepeat(false);
-    actionAccept->setShortcut(Qt::CTRL + Qt::Key_Q);
-    QObject::connect(actionAccept, &QAction::triggered, [=](){ accept(); });
-    toolBar->addAction(actionAccept);
-
+    if(m_DialogMode)
+    {
+        auto actionAccept = new QAction(QIcon(":/resources/img/yes.svg"), "Accept");
+        actionAccept->setAutoRepeat(false);
+        actionAccept->setShortcut(Qt::CTRL + Qt::Key_Q);
+        QObject::connect(actionAccept, &QAction::triggered, [=](){ accept(); });
+        toolBar->addAction(actionAccept);
+    }
     auto actionCancel = new QAction(QIcon(":/resources/img/no.svg"), "Cancel");
     actionCancel->setAutoRepeat(false);
     QObject::connect(actionCancel, &QAction::triggered, [=](){ reject(); });
@@ -68,7 +71,7 @@ DialogValuesList::DialogValuesList(const QString& icon,
 
     slotLoadContent(values);
 
-    resize(400, 300);
+    resize(WINDOW_SIZE);
 }
 
 void DialogValuesList::addWidgetContent(QWidget *widget)
@@ -102,11 +105,61 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             bl->setMargin(0);
             bl->setSpacing(1);
             auto label = new QLabel(widget);
-            label->setText(QString(key));
+            label->setText(QString("<b>%1</b>").arg(key));
             label->setWordWrap(true);
             bl->addWidget(label, 0);
             auto le = new QLineEdit(v.toString(), widget);
             le->setReadOnly(true);
+            le->setCursorPosition(0);
+            QPalette pal;
+            pal.setColor(QPalette::Base, palette().color(QPalette::Button));
+            pal.setColor(QPalette::Text, palette().color(QPalette::ButtonText));
+            le->setPalette(pal);
+            bl->addWidget(le, 1);
+            widget->setLayout(bl);
+            addWidgetContent(widget);
+            continue;
+        }
+
+        if(values->value(key).mode == DialogValueMode::Base64Image)
+        {
+            auto widget = new QWidget();
+            auto bl = new QVBoxLayout();
+            bl->setMargin(0);
+            bl->setSpacing(1);
+            auto label = new QLabel(widget);
+            label->setText(QString("<b>%1</b>").arg(key));
+            label->setWordWrap(true);
+            bl->addWidget(label, 0);
+
+            QPixmap image;
+            image.loadFromData(QByteArray::fromBase64(v.toString().toLatin1()));
+            auto realw = image.width();
+            auto realh = image.height();
+            if(realw > 0 && realh)
+            {
+                auto limaga = new QLabel(widget);
+                int border = 5;
+                limaga->setBackgroundRole(QPalette::Base);
+                limaga->setStyleSheet(QString("border: 1px solid darkgray; border-radius: 9px; padding: %1px;").
+                                      arg(QString::number(border)));
+
+                auto w = minv.toInt();
+                auto h = maxv.toInt();
+                if(w > 0 && h > 0) image = image.scaled(realw * w, realh * h,
+                                         Qt::KeepAspectRatio, Qt::FastTransformation);
+
+                limaga->setPixmap(image);
+                limaga->setFixedSize(image.width() + 2 * border, image.height() + 2 * border);
+                bl->addWidget(limaga, 0);
+            }
+            auto lsize = new QLabel(QString("Size: %1X%2 px").
+                                    arg(QString::number(realw), QString::number(realh)), widget);
+            bl->addWidget(lsize, 0);
+
+            auto le = new QLineEdit(v.toString(), widget);
+            le->setReadOnly(true);
+            le->setCursorPosition(0);
             QPalette pal;
             pal.setColor(QPalette::Base, palette().color(QPalette::Button));
             pal.setColor(QPalette::Text, palette().color(QPalette::ButtonText));
@@ -125,9 +178,10 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             bl->setSpacing(1);
             auto label = new QLabel(widget);
             label->setWordWrap(true);
-            label->setText(QString(key));
+            label->setText(QString("<b>%1</b>").arg(key));
             bl->addWidget(label, 0);
             auto le = new QLineEdit(v.toString(), widget);
+            le->setCursorPosition(0);
             le->setProperty("ValueName", key);
             QObject::connect(le, &QLineEdit::textEdited,
                              this, &DialogValuesList::slotStringValueChanged);
@@ -167,7 +221,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
         {
             auto widget = new QWidget();
             auto label = new QLabel();
-            label->setText(QString(key));
+            label->setText(QString("<b>%1</b>").arg(key));
             label->setWordWrap(true);
             auto bl = new QHBoxLayout();
             bl->setMargin(0);
@@ -176,6 +230,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             if(values->value(key).mode == DialogValueMode::Default)
             { 
                 auto le = new QLineEdit(v.toStringList().join(','), widget);
+                le->setCursorPosition(0);
                 le->setProperty("ValueName", key);
                 le->setToolTip("Enter");
                 // значение присваивается по нажатию Enter

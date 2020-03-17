@@ -5,6 +5,7 @@
 #include <QVariant>
 
 const QString RE_FIRST_LAST_SPACES = "^\\s+|\\s+$"; // регексп на наличие стартовых и финальных пробелов
+const QSize WINDOW_SIZE(400, 300);
 
 class QGridLayout;
 class QToolBar;
@@ -14,10 +15,11 @@ class QToolBar;
  */
 enum DialogValueMode
 {
-    Default = 0,    // поумолчанию, для StringList - перечисление через запятую
-    Disabled,       // просто текстовое отображение значения
-    OneFromList,    // для StringList - один из списка
-    ManyFromList    // для StringList - несколько из списка
+    Default = 0,  // поумолчанию, для StringList - перечисление через запятую
+    Disabled,     // просто текстовое отображение значения
+    OneFromList,  // для StringList - один из списка
+    ManyFromList, // для StringList - несколько из списка
+    Base64Image   // для String - изображение в формате Base64, только отображение; minValue = width, maxValue = height
 };
 
 /*!
@@ -43,21 +45,22 @@ struct DialogValue
 class DialogValuesList : public QDialog
 {
 public:
-    DialogValuesList(const QString &icon,
+    DialogValuesList(QWidget* parent,
+                     const QString &icon,
                      const QString &caption,
-                     bool modal,
                      QMap<QString, DialogValue>* values,
-                     QWidget* parent = nullptr);
+                     bool dialogMode = true);
     void addToolbarButton(QAction* action);
 
 protected:
     void addWidgetContent(QWidget* widget);
-
-private:
     bool eventFilter(QObject *, QEvent *event);
+
+private:    
     QGridLayout* glContent;
     QToolBar* toolBar;
     QMap<QString, DialogValue>* m_Values;
+    bool m_DialogMode;
 
 public Q_SLOTS:
     void slotLoadContent(QMap<QString, DialogValue> *values);

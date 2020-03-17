@@ -47,6 +47,9 @@ DBBrowser::DBBrowser(QWidget *parent)
     actionComment = new QAction(QIcon(":/resources/img/edit.svg"), "Edit comments", this);
     actionComment->setShortcut(Qt::CTRL + Qt::Key_E);
     actionComment->setDisabled(true);
+    actionView = new QAction(QIcon(":/resources/img/eye.svg"), "View profile", this);
+    actionView->setShortcut(Qt::CTRL + Qt::Key_I);
+    actionView->setDisabled(true);
 
     connect(actionUpdateDB, &QAction::triggered, this, &DBBrowser::slotRefresh);
     connect(actionSchemaDB, &QAction::triggered, this, &DBBrowser::slotMetaData);
@@ -58,6 +61,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     connect(actionSearch, &QAction::triggered, this, &DBBrowser::slotSearch);
     connect(actionUpdateProfile, &QAction::triggered, this, &DBBrowser::slotUpdateProfile);
     connect(actionComment, &QAction::triggered, this, &DBBrowser::slotComment);
+    connect(actionView, &QAction::triggered, this, &DBBrowser::slotViewProfile);
 
     auto layout = new QVBoxLayout(this);
     layout->setSpacing(1);
@@ -70,6 +74,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     toolBar->addAction(actionSchemaDB);
     toolBar->addSeparator();
     toolBar->addSeparator();
+    toolBar->addAction(actionView);
     toolBar->addAction(actionUpdateProfile);
     toolBar->addAction(actionReport);
     toolBar->addAction(actionSearch);
@@ -154,6 +159,7 @@ void DBBrowser::slotRefresh()
 {
     actionDeleteRow->setEnabled(false);
     actionUpdateProfile->setEnabled(false);
+    actionView->setEnabled(false);
     actionComment->setEnabled(false);
     actionSearch->setEnabled(false);
     actionReport->setEnabled(false);
@@ -382,13 +388,15 @@ void DBBrowser::slotTableSelectionChanged()
         actionDeleteRow->setEnabled(false);
         actionUpdateProfile->setEnabled(false);
         actionComment->setEnabled(false);
+        actionView->setEnabled(false);
         return;
     }
 
     // проверка по конкретной таблице
     actionUpdateProfile->setEnabled(tableName() == "Profiles" &&
                                     table->selectionModel()->selectedRows().count() == 1);
-
+    actionView->setEnabled(tableName() == "Profiles" &&
+                           table->selectionModel()->selectedRows().count() > 0);
     actionComment->setEnabled(tableName() == "Profiles" &&
                               table->selectionModel()->selectedRows().count() > 0);
 }
@@ -547,7 +555,7 @@ void DBBrowser::slotSearch()
                  {keys.at(2), {QVariant::StringList, preclist.at(0), "", preclist, DialogValueMode::OneFromList}},
                  };
 
-    auto dvl = new DialogValuesList(":/resources/img/search.svg", "Find a profile", true, &map, this);
+    auto dvl = new DialogValuesList(this, ":/resources/img/search.svg", "Find a profile", &map);
     if(!dvl->exec()) return;
 
     auto time = QDateTime::currentMSecsSinceEpoch();
@@ -651,7 +659,7 @@ void DBBrowser::slotComment()
                                       {keys.at(1), {QVariant::String, uuid, "", "", DialogValueMode::Disabled}},
                                       {keys.at(2), {QVariant::String, comments}}};
 
-    auto dvl = new DialogValuesList(":/resources/img/edit.svg", "Edit comments", true, &map, this);
+    auto dvl = new DialogValuesList(this, ":/resources/img/edit.svg", "Edit comments", &map);
 
     if(!dvl->exec()) return;
 
@@ -667,6 +675,60 @@ void DBBrowser::slotComment()
         auto error = db.lastError().text().simplified();
         qCritical() << "DB error: '" << error << "', query: '" << text.simplified() << "'";
     }
+}
+
+void DBBrowser::slotViewProfile()
+{
+    auto model = qobject_cast<QSqlTableModel *>(table->model());
+    auto db = database();
+
+    if(!model || !db.isOpen() || table->selectionModel()->selectedRows().count() == 0)
+    { actionView->setEnabled(false); return; }
+
+    auto count = table->selectionModel()->selectedRows().count();
+    auto currentSelection = table->selectionModel()->selectedRows();
+    auto record = model->record(currentSelection.at(count - 1).row());
+
+    const QVector<QString> keys =
+        {"01. Uuid: ",
+         "02. DateTime: ",
+         "03. FirstName: ",
+         "04. CurrentName: ",
+         "05. Skin: ",
+         "06. SkinUrl: ",
+         "07. SkinModel: ",
+         "08. Cape: ",
+         "09. CapeUrl: ",
+         "10. Comments: "
+        };
+
+    QStringList fields;
+    fields.append(record.field("Uuid").value().toString()); // NOTE: 'Uuid' column
+    fields.append(record.field("DateTime").value().toString()); // NOTE: 'DateTime' column
+    fields.append(record.field("FirstName").value().toString()); // NOTE: 'FirstName' column
+    fields.append(record.field("CurrentName").value().toString()); // NOTE: 'CurrentName' column
+    fields.append(record.field("Skin").value().toString()); // NOTE: 'Skin' column
+    fields.append(record.field("SkinUrl").value().toString()); // NOTE: 'SkinUrl' column
+    fields.append(record.field("SkinModel").value().toString()); // NOTE: 'SkinModel' column
+    fields.append(record.field("Cape").value().toString()); // NOTE: 'Cape' column
+    fields.append(record.field("CapeUrl").value().toString()); // NOTE: 'CapeUrl' column
+    fields.append(record.field("Comments").value().toString()); // NOTE: 'Comments' column
+
+    QMap<QString, DialogValue> map =
+        {{keys.at(0), {QVariant::String, fields.at(0), "", "", DialogValueMode::Disabled}},
+         {keys.at(1), {QVariant::String, fields.at(1), "", "", DialogValueMode::Disabled}},
+         {keys.at(2), {QVariant::String, fields.at(2), "", "", DialogValueMode::Disabled}},
+         {keys.at(3), {QVariant::String, fields.at(3), "", "", DialogValueMode::Disabled}},
+         {keys.at(4), {QVariant::String, fields.at(4), config->ReportImgScale(), config->ReportImgScale(), DialogValueMode::Base64Image}},
+         {keys.at(5), {QVariant::String, fields.at(5), "", "", DialogValueMode::Disabled}},
+         {keys.at(6), {QVariant::String, fields.at(6), "", "", DialogValueMode::Disabled}},
+         {keys.at(7), {QVariant::String, fields.at(7), config->ReportImgScale(), config->ReportImgScale(), DialogValueMode::Base64Image}},
+         {keys.at(8), {QVariant::String, fields.at(8), "", "", DialogValueMode::Disabled}},
+         {keys.at(9), {QVariant::String, fields.at(9), "", "", DialogValueMode::Disabled}}
+        };
+
+    auto dvl = new DialogValuesList(this, ":/resources/img/eye.svg", "View profile", &map, false);
+    dvl->exec();
 }
 
 QVariant MySqlTableModel::data(const QModelIndex &idx, int role) const

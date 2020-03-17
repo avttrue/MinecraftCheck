@@ -53,5 +53,6 @@
         <file>resources/sql/update_profile_comment.sql</file>
         <file>resources/about_body.html</file>
         <file>resources/sql/select_uuid_profiles.sql</file>
+        <file>resources/img/eye.svg</file>
     </qresource>
 </RCC>
