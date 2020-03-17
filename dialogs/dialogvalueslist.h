@@ -5,6 +5,7 @@
 #include <QVariant>
 
 const QString RE_FIRST_LAST_SPACES = "^\\s+|\\s+$"; // регексп на наличие стартовых и финальных пробелов
+const QString IMG_STYLE = "border: 1px solid darkgray; border-radius: 9px; padding: %1px;";
 const QSize WINDOW_SIZE(400, 300);
 
 class QGridLayout;

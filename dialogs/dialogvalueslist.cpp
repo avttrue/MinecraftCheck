@@ -141,8 +141,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
                 auto limaga = new QLabel(widget);
                 int border = 5;
                 limaga->setBackgroundRole(QPalette::Base);
-                limaga->setStyleSheet(QString("border: 1px solid darkgray; border-radius: 9px; padding: %1px;").
-                                      arg(QString::number(border)));
+                limaga->setStyleSheet(IMG_STYLE.arg(QString::number(border)));
 
                 auto w = minv.toInt();
                 auto h = maxv.toInt();
