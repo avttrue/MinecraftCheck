@@ -18,11 +18,13 @@ DialogValuesList::DialogValuesList(QWidget* parent,
                                    const QString& icon,
                                    const QString& caption,
                                    QMap<QString, DialogValue> *values,
+                                   const QString &focusedKey,
                                    bool dialogMode) :
     QDialog(parent)
 {
     m_Values = values;
     m_DialogMode = dialogMode;
+    m_FocusedKey = focusedKey;
     setWindowFlags(Qt::Dialog |
                    Qt::CustomizeWindowHint |
                    Qt::WindowTitleHint);
@@ -97,6 +99,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
         QVariant v = values->value(key).value;
         QVariant minv = values->value(key).minValue;
         QVariant maxv = values->value(key).maxValue;
+        QString text = key; text.remove(QRegExp("(^.*)(#_)"));
 
         if(values->value(key).mode == DialogValueMode::Disabled)
         {
@@ -105,7 +108,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             bl->setMargin(0);
             bl->setSpacing(1);
             auto label = new QLabel(widget);
-            label->setText(QString("<b>%1</b>").arg(key));
+            label->setText(QString("<b>%1</b>").arg(text));
             label->setWordWrap(true);
             bl->addWidget(label, 0);
             auto le = new QLineEdit(v.toString(), widget);
@@ -128,7 +131,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             bl->setMargin(0);
             bl->setSpacing(1);
             auto label = new QLabel(widget);
-            label->setText(QString("<b>%1</b>").arg(key));
+            label->setText(QString("<b>%1</b>").arg(text));
             label->setWordWrap(true);
             bl->addWidget(label, 0);
 
@@ -177,7 +180,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             bl->setSpacing(1);
             auto label = new QLabel(widget);
             label->setWordWrap(true);
-            label->setText(QString("<b>%1</b>").arg(key));
+            label->setText(QString("<b>%1</b>").arg(text));
             bl->addWidget(label, 0);
             auto le = new QLineEdit(v.toString(), widget);
             le->setCursorPosition(0);
@@ -187,6 +190,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             bl->addWidget(le, 1);
             widget->setLayout(bl);
             addWidgetContent(widget);
+            if(key == m_FocusedKey) le->setFocus();
             continue;
         }
 
@@ -198,6 +202,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             QObject::connect(cbox, &QCheckBox::stateChanged,
                              this, &DialogValuesList::slotBoolValueChanged);
             addWidgetContent(cbox);
+            if(key == m_FocusedKey) cbox->setFocus();
             continue;
         }
 
@@ -213,6 +218,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             QObject::connect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged),
                              this, &DialogValuesList::slotIntValueChanged);
             addWidgetContent(spinbox);
+            if(key == m_FocusedKey) spinbox->setFocus();
             continue;
         }
 
@@ -220,7 +226,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
         {
             auto widget = new QWidget();
             auto label = new QLabel();
-            label->setText(QString("<b>%1</b>").arg(key));
+            label->setText(QString("<b>%1</b>").arg(text));
             label->setWordWrap(true);
             auto bl = new QHBoxLayout();
             bl->setMargin(0);
@@ -236,6 +242,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
                 QObject::connect(le, &QLineEdit::returnPressed,
                                  this, &DialogValuesList::slotStringListValueChanged);
                 bl->addWidget(le, 1);
+                if(key == m_FocusedKey) le->setFocus();
                 widget->setLayout(bl);
             }
             else if(values->value(key).mode == DialogValueMode::OneFromList)
@@ -255,6 +262,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
                 }
                 else cb->setDisabled(true);
                 bl->addWidget(cb, 1);
+                if(key == m_FocusedKey) cb->setFocus();
                 widget->setLayout(bl);
             }
             else if(values->value(key).mode == DialogValueMode::ManyFromList)
@@ -285,6 +293,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
                 }
                 else lv->setDisabled(true);
                 bl->addWidget(lv, 1);
+                if(key == m_FocusedKey) lv->setFocus();
                 widget->setLayout(bl);
             }
             addWidgetContent(widget);

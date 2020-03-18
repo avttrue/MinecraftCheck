@@ -5,6 +5,7 @@
 #include <QVariant>
 
 const QString RE_FIRST_LAST_SPACES = "^\\s+|\\s+$"; // регексп на наличие стартовых и финальных пробелов
+const QString RE_NUM_MARK = "(^.*)(#_)"; // регексп удаления символов до строки '#_' включительно
 const QString IMG_STYLE = "border: 1px solid darkgray; border-radius: 9px; padding: %1px;";
 const QSize WINDOW_SIZE(400, 300);
 
@@ -47,10 +48,12 @@ class DialogValuesList : public QDialog
 {
 public:
     DialogValuesList(QWidget* parent,
-                     const QString &icon,
-                     const QString &caption,
-                     QMap<QString, DialogValue>* values,
-                     bool dialogMode = true);
+                     const QString &icon,               // иконка окна
+                     const QString &caption,            // заголовок окна
+                     QMap<QString, DialogValue>* values,// значения для отображения;
+                                                        // для сортировки использовать нумерацию вида '00#_'
+                     const QString &focusedKey = "",    // элемент управления для фокуса по ключу values
+                     bool dialogMode = true);           // вариант диалога: true - ДА/ОК, false - OK
     void addToolbarButton(QAction* action);
 
 protected:
@@ -61,6 +64,7 @@ private:
     QGridLayout* glContent;
     QToolBar* toolBar;
     QMap<QString, DialogValue>* m_Values;
+    QString m_FocusedKey;
     bool m_DialogMode;
 
 public Q_SLOTS:

@@ -48,7 +48,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     actionComment->setShortcut(Qt::CTRL + Qt::Key_E);
     actionComment->setDisabled(true);
     actionView = new QAction(QIcon(":/resources/img/eye.svg"), "View profile", this);
-    actionView->setShortcut(Qt::CTRL + Qt::Key_I);
+    actionView->setShortcut(Qt::CTRL + Qt::Key_W);
     actionView->setDisabled(true);
 
     connect(actionUpdateDB, &QAction::triggered, this, &DBBrowser::slotRefresh);
@@ -542,7 +542,7 @@ void DBBrowser::slotSearch()
     }
 
         const QVector<QString> keys =
-            {"Value: ", "Area: ", "Precision: "};
+            {"3#_Value: ", "1#_Area: ", "2#_Precision: "};
     const QStringList arealist =
         {"NAMES in Profiles", "NAMES in Profiles and History", "Comments", "ID in Profiles"};
     const QStringList preclist =
@@ -555,7 +555,7 @@ void DBBrowser::slotSearch()
                  {keys.at(2), {QVariant::StringList, preclist.at(0), "", preclist, DialogValueMode::OneFromList}},
                  };
 
-    auto dvl = new DialogValuesList(this, ":/resources/img/search.svg", "Find a profile", &map);
+    auto dvl = new DialogValuesList(this, ":/resources/img/search.svg", "Find a profile", &map, keys.at(0));
     if(!dvl->exec()) return;
 
     auto time = QDateTime::currentMSecsSinceEpoch();
@@ -654,12 +654,12 @@ void DBBrowser::slotComment()
     auto curname = record.field("CurrentName").value().toString(); // NOTE: 'CurrentName' column
     auto comments = record.field("Comments").value().toString(); // NOTE: 'Comments' column
 
-    const QVector<QString> keys = {"1. Name: ", "2. ID: ", "Value: "};
+    const QVector<QString> keys = {"01#_Name: ", "02#_ID: ", "03#_Value: "};
     QMap<QString, DialogValue> map = {{keys.at(0), {QVariant::String, curname, "", "", DialogValueMode::Disabled}},
                                       {keys.at(1), {QVariant::String, uuid, "", "", DialogValueMode::Disabled}},
                                       {keys.at(2), {QVariant::String, comments}}};
 
-    auto dvl = new DialogValuesList(this, ":/resources/img/edit.svg", "Edit comments", &map);
+    auto dvl = new DialogValuesList(this, ":/resources/img/edit.svg", "Edit comments", &map, keys.at(2));
 
     if(!dvl->exec()) return;
 
@@ -690,16 +690,16 @@ void DBBrowser::slotViewProfile()
     auto record = model->record(currentSelection.at(count - 1).row());
 
     const QVector<QString> keys =
-        {"01. Uuid: ",
-         "02. DateTime: ",
-         "03. FirstName: ",
-         "04. CurrentName: ",
-         "05. Skin: ",
-         "06. SkinUrl: ",
-         "07. SkinModel: ",
-         "08. Cape: ",
-         "09. CapeUrl: ",
-         "10. Comments: "
+        {"01#_Uuid: ",
+         "02#_DateTime: ",
+         "03#_FirstName: ",
+         "04#_CurrentName: ",
+         "05#_Skin: ",
+         "06#_SkinUrl: ",
+         "07#_SkinModel: ",
+         "08#_Cape: ",
+         "09#_CapeUrl: ",
+         "10#_Comments: "
         };
 
     QStringList fields;
@@ -714,20 +714,26 @@ void DBBrowser::slotViewProfile()
     fields.append(record.field("CapeUrl").value().toString()); // NOTE: 'CapeUrl' column
     fields.append(record.field("Comments").value().toString()); // NOTE: 'Comments' column
 
+    auto scale = config->ReportImgScale();
     QMap<QString, DialogValue> map =
         {{keys.at(0), {QVariant::String, fields.at(0), "", "", DialogValueMode::Disabled}},
          {keys.at(1), {QVariant::String, fields.at(1), "", "", DialogValueMode::Disabled}},
          {keys.at(2), {QVariant::String, fields.at(2), "", "", DialogValueMode::Disabled}},
          {keys.at(3), {QVariant::String, fields.at(3), "", "", DialogValueMode::Disabled}},
-         {keys.at(4), {QVariant::String, fields.at(4), config->ReportImgScale(), config->ReportImgScale(), DialogValueMode::Base64Image}},
+         {keys.at(4), {QVariant::String, fields.at(4), scale, scale, DialogValueMode::Base64Image}},
          {keys.at(5), {QVariant::String, fields.at(5), "", "", DialogValueMode::Disabled}},
          {keys.at(6), {QVariant::String, fields.at(6), "", "", DialogValueMode::Disabled}},
-         {keys.at(7), {QVariant::String, fields.at(7), config->ReportImgScale(), config->ReportImgScale(), DialogValueMode::Base64Image}},
-         {keys.at(8), {QVariant::String, fields.at(8), "", "", DialogValueMode::Disabled}},
+
          {keys.at(9), {QVariant::String, fields.at(9), "", "", DialogValueMode::Disabled}}
         };
 
-    auto dvl = new DialogValuesList(this, ":/resources/img/eye.svg", "View profile", &map, false);
+    if(!fields.at(7).isEmpty())
+    {
+        map.insert(keys.at(7), {QVariant::String, fields.at(7), scale, scale, DialogValueMode::Base64Image});
+        map.insert(keys.at(8), {QVariant::String, fields.at(8), "", "", DialogValueMode::Disabled});
+    }
+
+    auto dvl = new DialogValuesList(this, ":/resources/img/eye.svg", "View profile", &map, "", false);
     dvl->exec();
 }
 
