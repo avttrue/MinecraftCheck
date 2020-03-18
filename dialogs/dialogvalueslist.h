@@ -47,13 +47,20 @@ struct DialogValue
 class DialogValuesList : public QDialog
 {
 public:
+    /*!
+     * \brief DialogValuesList
+     * \param icon - иконка окна;
+     * \param caption - заголовок окна;
+     * \param values - значения для отображения, для сортировки использовать нумерацию вида '00#_' (RE_NUM_MARK);
+     * \param focusedKey - контрол для фокуса по ключу values
+     * \param dialogMode - вариант диалога: true - ДА/ОК, false - OK
+     */
     DialogValuesList(QWidget* parent,
-                     const QString &icon,               // иконка окна
-                     const QString &caption,            // заголовок окна
-                     QMap<QString, DialogValue>* values,// значения для отображения;
-                                                        // для сортировки использовать нумерацию вида '00#_'
-                     const QString &focusedKey = "",    // элемент управления для фокуса по ключу values
-                     bool dialogMode = true);           // вариант диалога: true - ДА/ОК, false - OK
+                     const QString &icon,
+                     const QString &caption,
+                     QMap<QString, DialogValue>* values,
+                     const QString &focusedKey = "",
+                     bool dialogMode = true);
     void addToolbarButton(QAction* action);
 
 protected:
