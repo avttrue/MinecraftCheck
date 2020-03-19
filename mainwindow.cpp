@@ -14,7 +14,6 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QPlainTextEdit>
-#include <QPointer>
 #include <QProgressBar>
 #include <QStatusBar>
 #include <QTextBrowser>
@@ -223,14 +222,16 @@ void MainWindow::getServersStatus()
     lineEdit->setVisible(false);
     tabWidget->setCurrentIndex(2);
     setEnableActions(false);
+    progressBar->setVisible(true);
 
-    QPointer<ServerStatusReader> reader = new ServerStatusReader(this);
-    QObject::connect(this, &MainWindow::signalAbortQuery, [=]()
-                     { if(reader) reader->abort(true); });
+    auto reader = new ServerStatusReader(this);
+
     QObject::connect(reader, &ServerStatusReader::signalSuccess, [=]()
                      { queryDone(true); reader->deleteLater(); });
     QObject::connect(reader, &ServerStatusReader::signalError, [=]()
                      { queryDone(false); reader->deleteLater(); });
+    QObject::connect(this, &MainWindow::signalAbortQuery, [=]()
+                     { if(reader) reader->abort(true); });
     QObject::connect(reader, &ServerStatusReader::signalMessage, [=](QString text)
                      { textEvents->addText(text);
                      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
@@ -239,10 +240,10 @@ void MainWindow::getServersStatus()
                      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
     QObject::connect(reader, &ServerStatusReader::signalServers, this, &MainWindow::showServers);
 
-    progressBar->setVisible(true);
+    taskSeparator();
+
     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
-    taskSeparator();
     reader->sendQuery(config->QueryServers());
 }
 
@@ -253,14 +254,16 @@ void MainWindow::getPlayerProfile()
     tabWidget->setCurrentIndex(2);
     setEnableActions(false);    
     textBrowser->clear();
+    progressBar->setVisible(true);
 
-    QPointer<PlayerProfileReader> reader = new PlayerProfileReader(this);
-    QObject::connect(this, &MainWindow::signalAbortQuery, [=]()
-                     { if(reader) reader->abort(true); });
+    auto reader = new PlayerProfileReader(this);
+
     QObject::connect(reader, &PlayerProfileReader::signalSuccess, [=]()
                      { queryDone(true); reader->deleteLater(); });
     QObject::connect(reader, &PlayerProfileReader::signalError, [=]()
                      { queryDone(false); reader->deleteLater();
+    QObject::connect(this, &MainWindow::signalAbortQuery, [=]()
+                      { if(reader) reader->abort(true); });
                        textBrowser->setText("Failed to get data from Mojang"); });
     QObject::connect(reader, &PlayerProfileReader::signalMessage, [=](QString text)
                      { textEvents->addText(text);
@@ -270,7 +273,7 @@ void MainWindow::getPlayerProfile()
                        QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
     QObject::connect(reader, &PlayerProfileReader::signalProfile, this, &MainWindow::writeProfile);
 
-    progressBar->setVisible(true);
+    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
     taskSeparator();
     if(lineEdit->property("SearchMode").toInt() == 0)
@@ -294,9 +297,7 @@ void MainWindow::getPlayerProfile()
         qCritical() << __func__ << ": wrong 'SearchMode' (" << lineEdit->property("SearchMode") << ")";
         progressBar->setVisible(false);
     }
-
     lineEdit->clear();
-    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 }
 
 void MainWindow::saveReport()

@@ -59,7 +59,7 @@ class ServerStatusReader : public MojangApi
 {
     Q_OBJECT
 public:
-    explicit ServerStatusReader(QObject *parent);
+    explicit ServerStatusReader(QObject *parent = nullptr);
 
 protected:
     void interpretateReply(const QString& reply);
