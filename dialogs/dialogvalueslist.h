@@ -66,6 +66,7 @@ public:
 protected:
     void addWidgetContent(QWidget* widget);
     bool eventFilter(QObject *, QEvent *event);
+    void saveImage(QPixmap pixmap);
 
 private:    
     QGridLayout* glContent;

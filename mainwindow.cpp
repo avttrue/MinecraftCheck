@@ -301,11 +301,11 @@ void MainWindow::getPlayerProfile()
 
 void MainWindow::saveReport()
 {
-    QString filename = QFileDialog::getSaveFileName(this, "Save report",
-                                                    config->PathApp(), "HTML files (*.html)");
+    QString filename = QFileDialog::getSaveFileName(this, "Save report", config->LastDir(), "HTML files (*.html)");
 
     if(filename.isNull()) return;
-    if(!filename.endsWith(".html")) filename.append(".html");
+    config->setLastDir(QFileInfo(filename).dir().path());
+    if(!filename.endsWith(".html", Qt::CaseInsensitive)) filename.append(".html");
 
     QFile file(filename);
 

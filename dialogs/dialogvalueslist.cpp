@@ -1,5 +1,6 @@
 #include "dialogvalueslist.h"
 #include "controls.h"
+#include "properties.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -13,6 +14,7 @@
 #include <QGridLayout>
 #include <QToolBar>
 #include <QStandardItemModel>
+#include <QFileDialog>
 
 DialogValuesList::DialogValuesList(QWidget* parent,
                                    const QString& icon,
@@ -52,6 +54,7 @@ DialogValuesList::DialogValuesList(QWidget* parent,
 
     toolBar = new QToolBar();
     toolBar->setMovable(false);
+    toolBar->setIconSize(QSize(config->ButtonSize(), config->ButtonSize()));
 
     toolBar->addWidget(new WidgetSpacer());
 
@@ -135,29 +138,41 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             label->setWordWrap(true);
             bl->addWidget(label, 0);
 
-            QPixmap image;
-            image.loadFromData(QByteArray::fromBase64(v.toString().toLatin1()));
-            auto realw = image.width();
-            auto realh = image.height();
+            QPixmap pixmap;
+            pixmap.loadFromData(QByteArray::fromBase64(v.toString().toLatin1()));
+            auto realw = pixmap.width();
+            auto realh = pixmap.height();
             if(realw > 0 && realh)
             {
-                auto limaga = new QLabel(widget);
+                auto limg = new QLabel();
                 int border = 5;
-                limaga->setBackgroundRole(QPalette::Base);
-                limaga->setStyleSheet(IMG_STYLE.arg(QString::number(border)));
+                QPixmap p(pixmap);
+                limg->setBackgroundRole(QPalette::Base);
+                limg->setStyleSheet(IMG_STYLE.arg(QString::number(border)));
 
                 auto w = minv.toInt();
                 auto h = maxv.toInt();
-                if(w > 0 && h > 0) image = image.scaled(realw * w, realh * h,
-                                         Qt::KeepAspectRatio, Qt::FastTransformation);
+                if(w > 0 && h > 0)
+                    p = p.scaled(realw * w, realh * h, Qt::KeepAspectRatio, Qt::FastTransformation);
 
-                limaga->setPixmap(image);
-                limaga->setFixedSize(image.width() + 2 * border, image.height() + 2 * border);
-                bl->addWidget(limaga, 0);
-            }
-            auto lsize = new QLabel(QString("Size: %1X%2 px").
-                                    arg(QString::number(realw), QString::number(realh)), widget);
-            bl->addWidget(lsize, 0);
+                limg->setPixmap(p);
+                limg->setFixedSize(p.width() + 2 * border, p.height() + 2 * border);
+                bl->addWidget(limg, 0);
+            }            
+            auto tbimginfo = new QToolBar();
+            tbimginfo->setMovable(false);
+            tbimginfo->setIconSize(QSize(config->ButtonSize(), config->ButtonSize()));
+            tbimginfo->setOrientation(Qt::Horizontal);
+
+            auto actionSave = new QAction(QIcon(":/resources/img/save.svg"), "Save image", widget);
+            actionSave->setAutoRepeat(false);
+            QObject::connect(actionSave, &QAction::triggered, [=](){ saveImage(pixmap); });
+            tbimginfo->addAction(actionSave);
+
+            auto limgsize = new QLabel(QString("Size: %1X%2 px").
+                                       arg(QString::number(realw), QString::number(realh)), widget);
+            tbimginfo->addWidget(limgsize);
+            bl->addWidget(tbimginfo, 0);
 
             auto le = new QLineEdit(v.toString(), widget);
             le->setReadOnly(true);
@@ -309,6 +324,19 @@ bool DialogValuesList::eventFilter(QObject*, QEvent *event)
     if(event->type() == QEvent::Wheel) { return true; }
 
     return false;
+}
+
+void DialogValuesList::saveImage(QPixmap pixmap)
+{
+    QString filename = QFileDialog::getSaveFileName(this, "Save image", config->LastDir(), "PNG files (*.png)");
+
+    if(filename.isNull()) return;
+    config->setLastDir(QFileInfo(filename).dir().path());
+
+    if(!filename.endsWith(".png", Qt::CaseInsensitive)) filename.append(".png");
+    QFile file(filename);
+    if(!file.open(QIODevice::WriteOnly) || !pixmap.save(&file, "PNG"))
+        qCritical() << __func__ << "Error at file saving:" << filename;
 }
 
 void DialogValuesList::slotStringValueChanged(const QString &value)
