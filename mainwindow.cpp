@@ -332,8 +332,10 @@ void MainWindow::openDataBase()
     {
         if(database.isValid())
         {
+            setQueryDataBase("BEGIN TRANSACTION;");
             setQueryDataBase(getTextFromRes(":/resources/sql/create_table_profiles.sql"));
             setQueryDataBase(getTextFromRes(":/resources/sql/create_table_history.sql"));
+            setQueryDataBase("COMMIT;");
             dbBrowser->slotRefresh();
             getDBInfo();
         }
@@ -474,11 +476,12 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
                 if(checkAnswerDB(answer, 1, 1)) comments = answer.at(0).at(0).toString();
             }
 
+            setQueryDataBase("BEGIN TRANSACTION;");
             text = getTextFromRes(":/resources/sql/del_record_profile.sql").arg(profile.Id);
             setQueryDataBase(text);
-
             text = getTextFromRes(":/resources/sql/del_record_history.sql").arg(profile.Id);
             setQueryDataBase(text);
+            setQueryDataBase("COMMIT;");
         }
         else
             textEvents->addText(QString("[i]\tProfile '%1' is new, will be added").
@@ -524,7 +527,8 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile)
                                   "<td class='TDTEXT1'><h3>%1</h3></td></tr>").arg(profile.FirstName));
     if(!profile.NameHistory.isEmpty())
     {
-        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'><h2>Name&#160;history</h2></td></tr>"));
+        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'><h2>Name&#160;history&#160;(%1)</h2></td></tr>").
+                              arg(QString::number(profile.NameHistory.keys().count())));
         for(auto key: profile.NameHistory.keys())
         {
 
@@ -708,7 +712,8 @@ void MainWindow::getDBInfo()
 
 void MainWindow::taskSeparator()
 {
-    textEvents->addText("------------------------------");
+    QString s;
+    textEvents->addText(s.fill('-', 20));
 }
 
 bool MainWindow::checkAnswerDB(QVector<QVariantList> answer, int row, int col)

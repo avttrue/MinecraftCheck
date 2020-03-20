@@ -544,7 +544,8 @@ void DBBrowser::slotSearch()
         const QVector<QString> keys =
             {"3#_Value: ", "1#_Area: ", "2#_Precision: "};
     const QStringList arealist =
-        {"NAMES in Profiles", "NAMES in Profiles and History", "Comments", "ID in Profiles"};
+        {"NAMES in Profiles", "NAMES in Profiles and History",
+             "Comments", "ID in Profiles", "NAME_HISTORY !=0 (NOT REQ: Value, Precision)"};
     const QStringList preclist =
         {"Equal", "Like", "NOT Equal"};
 
@@ -613,6 +614,10 @@ void DBBrowser::slotSearch()
     else if(map.value(keys.at(1)).value.toString() == arealist.at(3))
     {
         where = QString("Uuid %1 '%2'").arg(prec, value); //NOTE: 'Uuid' column
+    }
+    else if(map.value(keys.at(1)).value.toString() == arealist.at(4))
+    {
+        where = QString("NameHistory != 0"); //NOTE: 'NameHistory' column
     }
 
     model->setFilter(where);
