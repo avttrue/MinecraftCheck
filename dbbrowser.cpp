@@ -137,7 +137,7 @@ DBBrowser::DBBrowser(QWidget *parent)
 
 static QString dbCaption(const QSqlDatabase &db)
 {
-    if(!db.isOpen()) return "error";
+    if(!db.isOpen()) return "ERROR";
 
     auto caption = QString("[%1] %2%3").
                    arg(db.driverName(),
@@ -276,7 +276,7 @@ void DBBrowser::showTable(const QString &tablename)
 
     if (model->lastError().type() != QSqlError::NoError)
     {
-        auto message = QString("[!]\tError at displaying the table '%1'.");
+        auto message = QString("[!]\tERROR at displaying the table '%1'.");
         auto error = model->lastError().text().simplified();
         if(error.isEmpty()) error = tablename;
         Q_EMIT signalMessage(message.arg(error));
@@ -413,7 +413,7 @@ void DBBrowser::clearTableView()
 
 QString DBBrowser::showTableInfo(const QString& where)
 {
-    QString info = "error";
+    QString info = "ERROR";
     auto db = database();
     auto model = qobject_cast<QSqlTableModel*>(table->model());
 

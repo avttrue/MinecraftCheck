@@ -16,8 +16,8 @@ MojangApi::MojangApi(QObject *parent) :
     QObject::connect(this, &QObject::destroyed, [=]()
                      {
                          abort();
-                         qInfo() << objectName() << "destroyed";
-                         qInfo() << "Lifetime MojangApi" << QDateTime::currentMSecsSinceEpoch() - m_Time << "ms";
+                         qInfo() << objectName() << "destroyed, lifetime:"
+                                 << QDateTime::currentMSecsSinceEpoch() - m_Time << "ms";
                      });
 }
 

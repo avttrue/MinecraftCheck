@@ -319,7 +319,7 @@ void MainWindow::saveReport()
         return;
     }
 
-    textEvents->addText(QString("[!]\tError at file saving: %1").arg(filename));
+    textEvents->addText(QString("[!]\tERROR at file saving: %1").arg(filename));
     tabWidget->setCurrentIndex(2);
 }
 
@@ -346,7 +346,7 @@ void MainWindow::openDataBase()
         }
         return;
     }
-    textEvents->addText(QString("[!]\tError connecting to local database '%1': %2\n").
+    textEvents->addText(QString("[!]\tFATAL ERROR connecting to local database '%1': %2\n").
                         arg(config->PathLocalDB(), database.lastError().text()));
     tabWidget->setCurrentIndex(2);
 }
@@ -360,7 +360,7 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
     {
         auto error = database.lastError().text().simplified();
         if(error.isEmpty()) error = "Incorrect query syntax";
-        textEvents->addText(QString("[!]\tFatal error at into local database query: %1\n").
+        textEvents->addText(QString("[!]\tFATAL ERROR at into local database query: %1\n").
                             arg(error));
         tabWidget->setCurrentIndex(2);
         return -1;
@@ -713,7 +713,7 @@ void MainWindow::getDBInfo()
 void MainWindow::taskSeparator()
 {
     QString s;
-    textEvents->addText(s.fill('-', 20));
+    textEvents->addText(s.fill('-', 34));
 }
 
 bool MainWindow::checkAnswerDB(QVector<QVariantList> answer, int row, int col)
