@@ -14,7 +14,11 @@ MojangApi::MojangApi(QObject *parent) :
     m_Time = QDateTime::currentMSecsSinceEpoch();
 
     QObject::connect(this, &QObject::destroyed, [=]()
-                     { abort(); qInfo() << objectName() << "destroyed"; });
+                     {
+                         abort();
+                         qInfo() << objectName() << "destroyed";
+                         qInfo() << "Lifetime MojangApi" << QDateTime::currentMSecsSinceEpoch() - m_Time << "ms";
+                     });
 }
 
 void MojangApi::sendQuery(const QString &query)
@@ -282,7 +286,7 @@ void PlayerProfileReader::interpretateData(const QByteArray &data)
 bool PlayerProfileReader::interpretate_Id(const QJsonDocument &document)
 {
     if(document.isEmpty()) return false;
-
+    auto time = QDateTime::currentMSecsSinceEpoch();
     auto map = document.toVariant().toMap();
     if(map.isEmpty())
     {
@@ -303,13 +307,16 @@ bool PlayerProfileReader::interpretate_Id(const QJsonDocument &document)
     m_Profile.Id = map.value("id").toString();
 
     Q_EMIT signalMessage(QString("[i]\tPlayer id: %1").arg(m_Profile.Id));
+
+    qDebug() << __func__ << "completed in" << QDateTime::currentMSecsSinceEpoch() - time << "ms";
+
     return true;
 }
 
 bool PlayerProfileReader::interpretate_History(const QJsonDocument &document)
 {
     if(document.isEmpty()) return false;
-
+    auto time = QDateTime::currentMSecsSinceEpoch();
     auto vl = document.toVariant().toList();
     for(auto v: vl)
     {
@@ -344,13 +351,16 @@ bool PlayerProfileReader::interpretate_History(const QJsonDocument &document)
     }
     Q_EMIT signalMessage(QString("[i]\tPlayer name history: %1 items").
                          arg(QString::number(m_Profile.NameHistory.count())));
+
+    qDebug() << __func__ << "completed in" << QDateTime::currentMSecsSinceEpoch() - time << "ms";
+
     return true;
 }
 
 bool PlayerProfileReader::interpretate_Profile(const QJsonDocument &document)
 {
     if(document.isEmpty()) return false;
-
+    auto time = QDateTime::currentMSecsSinceEpoch();
     auto map = document.toVariant().toMap();
 
     m_Profile.Legacy = map.contains("legacy") ? map.value("legacy").toBool() : false;
@@ -403,13 +413,16 @@ bool PlayerProfileReader::interpretate_Profile(const QJsonDocument &document)
     }
     m_SkinCapeValue = QString(QByteArray::fromBase64(textures.toLatin1()).data());
     Q_EMIT signalMessage(QString("[i]\tProperties.Textures value: %1").arg(m_SkinCapeValue));
+
+    qDebug() << __func__ << "completed in" << QDateTime::currentMSecsSinceEpoch() - time << "ms";
+
     return true;
 }
 
 bool PlayerProfileReader::interpretate_SkinCape(const QJsonDocument& document)
 {
     if(document.isEmpty()) return false;
-
+    auto time = QDateTime::currentMSecsSinceEpoch();
     auto map = document.toVariant().toMap();
 
     if(!map.contains("textures")) //NOTE: 'textures' key
@@ -456,6 +469,8 @@ bool PlayerProfileReader::interpretate_SkinCape(const QJsonDocument& document)
 
     Q_EMIT signalMessage(QString("[i]\tSKIN url: %1").arg(m_Profile.SkinUrl));
     Q_EMIT signalMessage(QString("[i]\tCAPE url: %1").arg(m_Profile.CapeUrl));
+
+    qDebug() << __func__ << "completed in" << QDateTime::currentMSecsSinceEpoch() - time << "ms";
 
     return true;
 }

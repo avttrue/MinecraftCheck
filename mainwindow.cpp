@@ -354,7 +354,7 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
     if(!database.isOpen()) return -1;
 
     QSqlQuery query(database);
-    if( !query.exec(text))
+    if(!query.exec(text))
     {
         auto error = database.lastError().text().simplified();
         if(error.isEmpty()) error = "Incorrect query syntax";
@@ -362,7 +362,8 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
                             arg(error));
         tabWidget->setCurrentIndex(2);
         return -1;
-    } else if (query.isSelect())
+    }
+    else if (query.isSelect())
     {
         int rows = 0;
         if(query.last())
@@ -498,9 +499,12 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
     if(!profile.NameHistory.isEmpty())
     {
         text = getTextFromRes(":/resources/sql/add_record_history.sql");
+        QStringList query;
 
         for(auto key: profile.NameHistory.keys())
-            setQueryDataBase(text.arg(profile.Id, QString::number(key), profile.NameHistory.value(key)));
+            query.append(QString("('%1', '%2', '%3')").
+                         arg(profile.Id, QString::number(key), profile.NameHistory.value(key)));
+        setQueryDataBase(text.arg(query.join(",\n")));
     }
 
     dbBrowser->slotRefresh();
