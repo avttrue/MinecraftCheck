@@ -545,7 +545,7 @@ void DBBrowser::slotSearch()
             {"3#_Value: ", "1#_Area: ", "2#_Precision: "};
     const QStringList arealist =
         {"NAMES in Profiles", "NAMES in Profiles and History",
-             "Comments", "ID in Profiles", "NAME_HISTORY !=0 (NOT REQ: Value, Precision)"};
+             "Comments", "ID in Profiles", "NAME HISTORY not empty"};
     const QStringList preclist =
         {"Equal", "Like", "NOT Equal"};
 
