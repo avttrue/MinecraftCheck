@@ -705,7 +705,7 @@ void MainWindow::getDBInfo()
     if(rowsinfo.isEmpty()) return;
 
     auto dbcount = QString::number(rowsinfo.at(0).at(0).toInt());
-    textEvents->addText(QString("[i]\tLocal database: %1 bytes size, %2 profiles count").
+    textEvents->addText(QString("[i]\tLocal database: %1 size, %2 profiles count").
                         arg(dbsize, dbcount));
     labelLocalDB->setText(QString("%1, %2 profiles").arg(dbsize, dbcount));
 }
