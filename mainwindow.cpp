@@ -78,7 +78,7 @@ void MainWindow::loadGui()
 
     actionCheckPerson = new QAction(QIcon(":/resources/img/person.svg"), "Check player by nick", this);
     actionCheckPerson->setShortcut(Qt::CTRL + Qt::Key_N);
-    QObject::connect(actionCheckPerson, &QAction::triggered, [=](){ showTextEdit(0); });
+    QObject::connect(actionCheckPerson, &QAction::triggered, [=]() { showTextEdit(0); });
 
     actionCheckPersonId = new QAction(QIcon(":/resources/img/person_id.svg"), "Check player by id", this);
     actionCheckPersonId->setShortcut(Qt::CTRL + Qt::Key_I);
@@ -205,9 +205,9 @@ void MainWindow::showTextEdit(int mode)
     lineEdit->setFocus();
     lineEdit->setProperty("SearchMode", mode);
     if(mode == 0)
-        lineEdit->setPlaceholderText("enter the player's NICK");
+        lineEdit->setPlaceholderText("enter the player's NICK here");
     else if(mode == 1)
-        lineEdit->setPlaceholderText("enter the player's ID");
+        lineEdit->setPlaceholderText("enter the player's ID here");
 }
 
 void MainWindow::queryDone(bool success)
