@@ -527,7 +527,7 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile)
                                   "<td class='TDTEXT1'><h3>%1</h3></td></tr>").arg(profile.FirstName));
     if(!profile.NameHistory.isEmpty())
     {
-        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'><h2>Name&#160;history&#160;(%1)</h2></td></tr>").
+        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'><h2>Name&#160;history&#160;[%1]</h2></td></tr>").
                               arg(QString::number(profile.NameHistory.keys().count())));
         for(auto key: profile.NameHistory.keys())
         {
@@ -626,7 +626,7 @@ void MainWindow::showDBProfiles(QStringList uuids)
     }
 
     QString content;
-    int number = 1;
+    int prof_count = 1;
     for(auto uuid: list)
     {
         MojangApiProfile profile;
@@ -663,11 +663,11 @@ void MainWindow::showDBProfiles(QStringList uuids)
         auto profiletable = createTableProfile(profile);
         content.isEmpty()
             ? content.append(QString("<ul><li><h2>%1</h2>").
-                             arg(QString::number(number))).append(profiletable).append("</li>")
+                             arg(QString::number(prof_count))).append(profiletable).append("</li>")
             : content.append(QString("<br><li><h2>%1</h2>").
-                             arg(QString::number(number))).append(profiletable).append("</li>");
+                             arg(QString::number(prof_count))).append(profiletable).append("</li>");
 
-        number++;
+        prof_count++;
         QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
     }
     content.append("</ul>");
@@ -681,8 +681,8 @@ void MainWindow::showDBProfiles(QStringList uuids)
     progressBar->setVisible(false);
 
     auto currenttime = QDateTime::currentMSecsSinceEpoch();
-    textEvents->addText(QString("[i]\tReport was completed in %1 ms").
-                        arg(QString::number(currenttime - time)));
+    textEvents->addText(QString("[i]\tReport was completed in %1 ms, %2 profiles").
+                        arg(QString::number(currenttime - time), QString::number(prof_count - 1)));
 }
 
 void MainWindow::writeProfile(const MojangApiProfile &profile)
