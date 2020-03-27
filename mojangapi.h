@@ -14,11 +14,12 @@ struct MojangApiProfile
     QString FirstName;
     QString Id;
     QMap<qlonglong, QString> NameHistory;
+    QMap<QString, QString> Capes;
     QString SkinUrl;
     QString Skin;
     QString SkinModel;
-    QString CapeUrl;
-    QString Cape;
+    //QString CapeUrl;
+    //QString Cape;
     int Legacy = 0;
     int Demo = 0;
     QString Comment;

@@ -184,7 +184,7 @@ void DBBrowser::slotRefresh()
         if(db.isOpen())
         {
             auto tables = db.tables();
-            for (int t = 0; t < tables.count(); ++t)
+            for(int t = 0; t < tables.count(); ++t)
             {
                 auto table = new QTreeWidgetItem(root);
                 table->setText(0, tables.at(t));
@@ -202,6 +202,8 @@ void DBBrowser::slotRefresh()
     }
 
     tree->doItemsLayout(); // hack
+    tree->sortItems(0, Qt::AscendingOrder);
+
     clearTableView();
     labelTree->setText(QString("<b>Tables: %1</b>").arg(tableCount));
 }
@@ -266,12 +268,13 @@ void DBBrowser::showTable(const QString &tablename)
     auto model = new MySqlTableModel(table, db);
     model->setEditStrategy(QSqlTableModel::OnRowChange);
     model->setTable(db.driver()->escapeIdentifier(tablename, QSqlDriver::TableName));
-    model->select();
 
     // настройка сортировки
     if(tablename == "Profiles") // NOTE: 'Profiles' table
         model->setSort(1, Qt::AscendingOrder);
     else if(tablename == "NameHistory") // NOTE: 'NameHistory' table
+        model->setSort(0, Qt::AscendingOrder);
+    else if(tablename == "Capes") // NOTE: 'Capes' table
         model->setSort(0, Qt::AscendingOrder);
 
     if (model->lastError().type() != QSqlError::NoError)
@@ -291,8 +294,7 @@ void DBBrowser::showTable(const QString &tablename)
 
     connect(table->selectionModel(), &QItemSelectionModel::selectionChanged, this, &DBBrowser::slotTableSelectionChanged);
 
-    model->select(); // применение сортировки
-
+    model->select();
     showTableInfo();
 }
 
@@ -373,7 +375,7 @@ void DBBrowser::slotDeleteRow()
     for(auto index: currentSelection) model->removeRow(index.row());
 
     model->select();
-    showTableInfo();
+    showTableInfo(model->filter());
 }
 
 // выбор строки в таблице
@@ -394,9 +396,11 @@ void DBBrowser::slotTableSelectionChanged()
 
     // проверка по конкретной таблице
     actionUpdateProfile->setEnabled(tableName() == "Profiles" &&
-                                    table->selectionModel()->selectedRows().count() == 1);
+                                    table->selectionModel()->selectedRows().count() > 0);
+
     actionView->setEnabled(tableName() == "Profiles" &&
                            table->selectionModel()->selectedRows().count() > 0);
+
     actionComment->setEnabled(tableName() == "Profiles" &&
                               table->selectionModel()->selectedRows().count() > 0);
 }
@@ -545,7 +549,7 @@ void DBBrowser::slotSearch()
             {"3#_Value: ", "1#_Area: ", "2#_Precision: "};
     const QStringList arealist =
         {"NAMES in Profiles", "NAMES in Profiles and History",
-             "COMMENTS", "ID in Profiles", "NAME HISTORY not empty"};
+             "COMMENTS", "ID in Profiles", "NAME HISTORY", "CAPES"};
     const QStringList preclist =
         {"Equal", "Like", "NOT Equal"};
 
@@ -617,13 +621,16 @@ void DBBrowser::slotSearch()
     }
     else if(map.value(keys.at(1)).value.toString() == arealist.at(4))
     {
-        where = QString("NameHistory != 0"); //NOTE: 'NameHistory' column
+        where = QString("NameHistory %1 '%2'").arg(prec, value); //NOTE: 'NameHistory' column
+    }
+    else if(map.value(keys.at(1)).value.toString() == arealist.at(5))
+    {
+        where = QString("Capes %1 '%2'").arg(prec, value); //NOTE: 'Capes' column
     }
 
     model->setFilter(where);
-    auto count = showTableInfo(where);
-
     model->select();
+    auto count = showTableInfo(model->filter());
     table->selectRow(0);
 
     Q_EMIT signalMessage(QString("[i]\tSearching was completed in %1 ms, found %2 records").
@@ -637,8 +644,11 @@ void DBBrowser::slotUpdateProfile()
     if(!model || table->selectionModel()->selectedRows().count() == 0)
     { actionUpdateProfile->setEnabled(false); return; }
 
+    auto count = table->selectionModel()->selectedRows().count();
     auto currentSelection = table->selectionModel()->selectedRows();
-    auto answer = model->record(currentSelection.at(0).row()).field("Uuid").value().toString(); // NOTE: 'Uuid' column
+    auto record = model->record(currentSelection.at(count - 1).row());
+
+    auto answer = record.field("Uuid").value().toString(); // NOTE: 'Uuid' column
 
     Q_EMIT signalUpdateProfile(answer);
 }
@@ -674,7 +684,11 @@ void DBBrowser::slotComment()
     QSqlQuery query(db);
     auto text = getTextFromRes(":/resources/sql/update_profile_comment.sql").arg(uuid, newcomments);
 
-    if(query.exec(text)) model->select();
+    if(query.exec(text))
+    {
+        model->select();
+        showTableInfo(model->filter());
+    }
     else
     {
         auto error = db.lastError().text().simplified();
@@ -702,9 +716,9 @@ void DBBrowser::slotViewProfile()
          "05#_Skin: ",
          "06#_SkinUrl: ",
          "07#_SkinModel: ",
-         "08#_Cape: ",
-         "09#_CapeUrl: ",
-         "10#_Comments: "
+         "08#_Comments: ",
+         "09#_Name history: ",
+         "10#_Capes: "
         };
 
     QStringList fields;
@@ -715,9 +729,9 @@ void DBBrowser::slotViewProfile()
     fields.append(record.field("Skin").value().toString()); // NOTE: 'Skin' column
     fields.append(record.field("SkinUrl").value().toString()); // NOTE: 'SkinUrl' column
     fields.append(record.field("SkinModel").value().toString()); // NOTE: 'SkinModel' column
-    fields.append(record.field("Cape").value().toString()); // NOTE: 'Cape' column
-    fields.append(record.field("CapeUrl").value().toString()); // NOTE: 'CapeUrl' column
     fields.append(record.field("Comments").value().toString()); // NOTE: 'Comments' column
+    fields.append(record.field("NameHistory").value().toString()); // NOTE: 'NameHistory' column
+    fields.append(record.field("Capes").value().toString()); // NOTE: 'Capes' column
 
     auto scale = config->ReportImgScale();
     QMap<QString, DialogValue> map =
@@ -728,15 +742,10 @@ void DBBrowser::slotViewProfile()
          {keys.at(4), {QVariant::String, fields.at(4), scale, scale, DialogValueMode::Base64Image}},
          {keys.at(5), {QVariant::String, fields.at(5), "", "", DialogValueMode::Disabled}},
          {keys.at(6), {QVariant::String, fields.at(6), "", "", DialogValueMode::Disabled}},
-
-         {keys.at(9), {QVariant::String, fields.at(9), "", "", DialogValueMode::Disabled}}
+         {keys.at(7), {QVariant::String, fields.at(7), "", "", DialogValueMode::Disabled}},
+         {keys.at(8), {QVariant::String, fields.at(8) == "0" ? "NO" : "YES", "", "", DialogValueMode::Disabled}},
+         {keys.at(9), {QVariant::String, fields.at(9) == "0" ? "NO" : "YES", "", "", DialogValueMode::Disabled}}
         };
-
-    if(!fields.at(7).isEmpty())
-    {
-        map.insert(keys.at(7), {QVariant::String, fields.at(7), scale, scale, DialogValueMode::Base64Image});
-        map.insert(keys.at(8), {QVariant::String, fields.at(8), "", "", DialogValueMode::Disabled});
-    }
 
     auto dvl = new DialogValuesList(this, ":/resources/img/eye.svg", "View profile", &map, "", false);
     dvl->exec();

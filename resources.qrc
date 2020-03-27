@@ -54,5 +54,11 @@
         <file>resources/about_body.html</file>
         <file>resources/sql/select_uuid_profiles.sql</file>
         <file>resources/img/eye.svg</file>
+        <file>resources/sql/create_table_capes.sql</file>
+        <file>resources/sql/add_record_cape.sql</file>
+        <file>resources/sql/is_profile_has_capes.sql</file>
+        <file>resources/sql/del_record_cape.sql</file>
+        <file>resources/sql/select_capes_uuid.sql</file>
+        <file>resources/tip_body.html</file>
     </qresource>
 </RCC>

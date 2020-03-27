@@ -250,18 +250,19 @@ void PlayerProfileReader::interpretateData(const QByteArray &data)
 
         m_Stage++;
 
-        if(m_Profile.CapeUrl.isEmpty()) interpretation_Final();
-        else downloadData(m_Profile.CapeUrl);
+        if(m_Profile.Capes.isEmpty()) interpretation_Final();
+        else downloadData(m_Profile.Capes.keys().at(0));
     }
     else if(m_Stage == 4) // cape
     {
+        auto key = m_Profile.Capes.keys().at(0);
         if(data.isNull() || data.isEmpty())
             Q_EMIT signalMessage("[!]\tWARNING. Cape image data: empty content");
         else
-            m_Profile.Cape = data.toBase64();
+            m_Profile.Capes.insert(key, data.toBase64());
 
         QImage image;
-        if(image.loadFromData(QByteArray::fromBase64(m_Profile.Cape.toLatin1()),
+        if(image.loadFromData(QByteArray::fromBase64(m_Profile.Capes.value(key).toLatin1()),
                                config->MojangImageFormat().toLocal8Bit().data()))
             Q_EMIT signalMessage(QString("[i]\tCape image size: %1 X %2").
                                  arg(QString::number(image.width()), QString::number(image.height())));
@@ -269,7 +270,7 @@ void PlayerProfileReader::interpretateData(const QByteArray &data)
         {
             Q_EMIT signalMessage(QString("[!]\tWARNING. Cape image data: non interpreted as %1 format").
                                  arg(config->MojangImageFormat()));
-            m_Profile.Cape = "";
+            m_Profile.Capes.insert(key, "");
         }
 
         interpretation_Final();
@@ -425,6 +426,8 @@ bool PlayerProfileReader::interpretate_SkinCape(const QJsonDocument& document)
     auto time = QDateTime::currentMSecsSinceEpoch();
     auto map = document.toVariant().toMap();
 
+    m_Profile.SkinModel = config->MojangModel2(); // default
+
     if(!map.contains("textures")) //NOTE: 'textures' key
     {
         Q_EMIT signalMessage("[!]\tERROR. Json parsing: Properties.Textures: 'textures' key is absent");
@@ -434,12 +437,7 @@ bool PlayerProfileReader::interpretate_SkinCape(const QJsonDocument& document)
     }
     map = map.value("textures").toMap();
 
-    if(map.isEmpty()) // может быть пустым
-    {
-        Q_EMIT signalMessage("[!]\tWARNING. Json parsing: Properties.Textures: 'textures' value not present");
-        m_Profile.SkinModel = config->MojangModel2();
-    }
-    else
+    if(!map.isEmpty())
     {
         if(map.contains("SKIN")) //NOTE: 'SKIN' key
         {
@@ -449,8 +447,10 @@ bool PlayerProfileReader::interpretate_SkinCape(const QJsonDocument& document)
             if(submap.contains("metadata")) //NOTE: 'SKIN.metadata' key
             {
                 submap = submap.value("metadata").toMap();
-                if(submap.value("model").toString() == "slim") m_Profile.SkinModel = config->MojangModel1(); //NOTE: 'SKIN.metadata.model' key
-                else m_Profile.SkinModel = submap.value("model").toString(); // unknown model
+                if(submap.value("model").toString() == "slim")
+                    m_Profile.SkinModel = config->MojangModel1(); //NOTE: 'SKIN.metadata.model' key
+                else
+                    m_Profile.SkinModel = submap.value("model").toString(); // unknown model
             }
             else m_Profile.SkinModel = config->MojangModel2();
         }
@@ -460,15 +460,18 @@ bool PlayerProfileReader::interpretate_SkinCape(const QJsonDocument& document)
         if(map.contains("CAPE")) //NOTE: 'CAPE' key
         {
             auto submap = map.value("CAPE").toMap();
-            m_Profile.CapeUrl = submap.value("url").toString(); //NOTE: 'CAPE.url' key
+            m_Profile.Capes.insert(submap.value("url").toString(), ""); //NOTE: 'CAPE.url' key
         }
     }
+    else // может быть пустым
+        Q_EMIT signalMessage("[i]\tJson parsing: Properties.Textures: 'textures' value not present");
 
     if(m_Profile.SkinUrl.isEmpty())
         m_Profile.SkinUrl = config->MojangDefaultSkin().arg(m_Profile.SkinModel.toLower());
 
     Q_EMIT signalMessage(QString("[i]\tSKIN url: %1").arg(m_Profile.SkinUrl));
-    Q_EMIT signalMessage(QString("[i]\tCAPE url: %1").arg(m_Profile.CapeUrl));
+    Q_EMIT signalMessage(QString("[i]\tCAPE url: %1").
+                         arg(m_Profile.Capes.isEmpty() ? "" : m_Profile.Capes.keys().at(0)));
 
     qDebug() << __func__ << "completed in" << QDateTime::currentMSecsSinceEpoch() - time << "ms";
 

@@ -24,6 +24,7 @@
 #include <QSqlQuery>
 #include <QDateTime>
 #include <QTimer>
+#include <QPointer>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -78,11 +79,20 @@ void MainWindow::loadGui()
 
     actionCheckPerson = new QAction(QIcon(":/resources/img/person.svg"), "Check player by nick", this);
     actionCheckPerson->setShortcut(Qt::CTRL + Qt::Key_N);
-    QObject::connect(actionCheckPerson, &QAction::triggered, [=]() { showTextEdit(0); });
+    QObject::connect(actionCheckPerson, &QAction::triggered, [=]()
+                     { showTextEdit(0);
+                         textBrowser->setText(getTextFromRes(":/resources/tip_body.html").
+                                              arg("Enter below a nickname to search using the Mojang Api"));
+                     });
 
     actionCheckPersonId = new QAction(QIcon(":/resources/img/person_id.svg"), "Check player by id", this);
     actionCheckPersonId->setShortcut(Qt::CTRL + Qt::Key_I);
-    QObject::connect(actionCheckPersonId, &QAction::triggered, [=](){ showTextEdit(1); });
+    QObject::connect(actionCheckPersonId, &QAction::triggered, [=]()
+                     {
+                         showTextEdit(1);
+                         textBrowser->setText(getTextFromRes(":/resources/tip_body.html").
+                                              arg("Enter below a Id to search using the Mojang Api"));
+                     });
 
     actionSave = new QAction(QIcon(":/resources/img/save.svg"), "Save report", this);
     actionSave->setShortcut(Qt::CTRL + Qt::Key_S);
@@ -155,7 +165,10 @@ void MainWindow::loadGui()
                        tabWidget->setCurrentIndex(2); });
     QObject::connect(dbBrowser, &DBBrowser::signalUpdateProfile, [=](const QString& text)
                      { showTextEdit(1);
-                       lineEdit->setText(text); });
+                         lineEdit->setText(text);
+                         textBrowser->setText(getTextFromRes(":/resources/tip_body.html").
+                                              arg("Confirm serch by uuid to continue<br>(press 'Enter')"));
+                     });
 
     textEvents = new TextLog(this);
     tabWidget->addTab(textEvents, QIcon(":/resources/img/log.svg"), "Events");
@@ -205,7 +218,7 @@ void MainWindow::showTextEdit(int mode)
     lineEdit->setFocus();
     lineEdit->setProperty("SearchMode", mode);
     if(mode == 0)
-        lineEdit->setPlaceholderText("enter the player's NICK here");
+        lineEdit->setPlaceholderText("enter the player's NICKNAME here");
     else if(mode == 1)
         lineEdit->setPlaceholderText("enter the player's ID here");
 }
@@ -224,7 +237,7 @@ void MainWindow::getServersStatus()
     setEnableActions(false);
     progressBar->setVisible(true);
 
-    auto reader = new ServerStatusReader(this);
+    QPointer<ServerStatusReader> reader = new ServerStatusReader(this);
 
     QObject::connect(reader, &ServerStatusReader::signalSuccess, [=]()
                      { queryDone(true); reader->deleteLater(); });
@@ -256,15 +269,16 @@ void MainWindow::getPlayerProfile()
     textBrowser->clear();
     progressBar->setVisible(true);
 
-    auto reader = new PlayerProfileReader(this);
+    QPointer<PlayerProfileReader> reader = new PlayerProfileReader(this);
 
     QObject::connect(reader, &PlayerProfileReader::signalSuccess, [=]()
                      { queryDone(true); reader->deleteLater(); });
     QObject::connect(reader, &PlayerProfileReader::signalError, [=]()
-                     { queryDone(false); reader->deleteLater();
+                     { queryDone(false); reader->deleteLater(); });
     QObject::connect(this, &MainWindow::signalAbortQuery, [=]()
-                      { if(reader) reader->abort(true); });
-                       textBrowser->setText("Failed to get data from Mojang"); });
+                     { if(reader) reader->abort(true);
+                         textBrowser->setText(getTextFromRes(":/resources/tip_body.html").
+                                              arg("Failed to get data from Mojang")); });
     QObject::connect(reader, &PlayerProfileReader::signalMessage, [=](QString text)
                      { textEvents->addText(text);
                        QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
@@ -335,6 +349,7 @@ void MainWindow::openDataBase()
             setQueryDataBase("BEGIN TRANSACTION;");
             setQueryDataBase(getTextFromRes(":/resources/sql/create_table_profiles.sql"));
             setQueryDataBase(getTextFromRes(":/resources/sql/create_table_history.sql"));
+            setQueryDataBase(getTextFromRes(":/resources/sql/create_table_capes.sql"));
             setQueryDataBase("COMMIT;");
             dbBrowser->slotRefresh();
             getDBInfo();
@@ -461,6 +476,7 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
     QVector<QVariantList> answer;
     QString text = getTextFromRes(":/resources/sql/is_profile_exists_uuid.sql").arg(profile.Id);
     QString comments;
+    QString hasCapes = "0";
     setQueryDataBase(text, &answer);
     if(checkAnswerDB(answer, 1, 1))
     {
@@ -474,6 +490,20 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
                 text = getTextFromRes(":/resources/sql/get_profile_comment.sql").arg(profile.Id);
                 setQueryDataBase(text, &answer);
                 if(checkAnswerDB(answer, 1, 1)) comments = answer.at(0).at(0).toString();
+                if(!comments.isEmpty())
+                    textEvents->addText(QString("[i]\tProfile comment will be saved"));
+            }
+
+            text = getTextFromRes(":/resources/sql/is_profile_has_capes.sql").arg(profile.Id);
+            setQueryDataBase(text, &answer);
+            if(checkAnswerDB(answer, 1, 1)) hasCapes = answer.at(0).at(0).toString();
+
+            if(hasCapes == "1")
+                textEvents->addText(QString("[i]\tProfile already had capes"));
+            else if(!profile.Capes.isEmpty())
+            {
+                hasCapes = "1";
+                textEvents->addText(QString("[i]\tProfile has a сape"));
             }
 
             setQueryDataBase("BEGIN TRANSACTION;");
@@ -481,6 +511,12 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
             setQueryDataBase(text);
             text = getTextFromRes(":/resources/sql/del_record_history.sql").arg(profile.Id);
             setQueryDataBase(text);
+            if(!profile.Capes.isEmpty())
+            {
+                text = getTextFromRes(":/resources/sql/del_record_cape.sql").
+                       arg(profile.Id, profile.Capes.keys().at(0));
+                setQueryDataBase(text);
+            }
             setQueryDataBase("COMMIT;");
         }
         else
@@ -492,11 +528,11 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
            arg(profile.Id, QString::number(profile.DateTime),
                profile.FirstName, profile.CurrentName,
                profile.SkinUrl, profile.Skin, profile.SkinModel,
-               profile.CapeUrl, profile.Cape,
                QString::number(profile.Legacy),
                QString::number(profile.Demo),
                comments,
-               profile.NameHistory.isEmpty() ? "0" : "1");
+               profile.NameHistory.isEmpty() ? "0" : "1",
+               hasCapes);
     setQueryDataBase(text);
 
     if(!profile.NameHistory.isEmpty())
@@ -508,6 +544,15 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
             query.append(QString("('%1', '%2', '%3')").
                          arg(profile.Id, QString::number(key), profile.NameHistory.value(key)));
         setQueryDataBase(text.arg(query.join(",\n")));
+    }
+
+    if(!profile.Capes.isEmpty())
+    {
+        text = getTextFromRes(":/resources/sql/add_record_cape.sql").
+               arg(profile.Id,
+                   profile.Capes.keys().at(0),
+                   profile.Capes.value(profile.Capes.keys().at(0)));
+        setQueryDataBase(text);
     }
 
     dbBrowser->slotRefresh();
@@ -525,6 +570,7 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile)
     report_content.append(QString("<tr><td class='TDTEXT1'>"
                                   "<h3>First name</h3></td>"
                                   "<td class='TDTEXT1'><h3>%1</h3></td></tr>").arg(profile.FirstName));
+
     if(!profile.NameHistory.isEmpty())
     {
         report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'><h2>Name&#160;history&#160;[%1]</h2></td></tr>").
@@ -562,31 +608,34 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile)
         QPixmap image;
         image.loadFromData(QByteArray::fromBase64(profile.Skin.toLatin1()));
 
-        report_content.append(QString("<tr><td class='TDIMG' colspan='2'>"
-                                      "<img src='data:image/png;base64,%1' width='%2' height='%3'></td></tr>").
+        report_content.append(QString("<tr><td class='TDIMG' colspan='2'><br>"
+                                      "<img src='data:image/png;base64,%1' width='%2' height='%3'><br>").
                               arg(profile.Skin,
                                   QString::number(image.width() * config->ReportImgScale()),
                                   QString::number(image.height() * config->ReportImgScale())));
-        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
-                                      "<a href='%1' title='%1'>link</a></td></tr>").arg(profile.SkinUrl));
+        report_content.append(QString("<a href='%1' title='%1'>link</a><br>&#160;</td></tr>").arg(profile.SkinUrl));
     }
 
-    if(!profile.Cape.isEmpty())
+    if(!profile.Capes.isEmpty())
     {
         report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
-                                      "<h2>Cape</h2></td></tr>"));
+                                      "<h2>Capes</h2></td></tr>"));
 
-        QPixmap image;
-        image.loadFromData(QByteArray::fromBase64(profile.Cape.toLatin1()));
+        for(auto key: profile.Capes.keys())
+        {
+            auto cape = profile.Capes.value(key);
+            QPixmap image;
+            image.loadFromData(QByteArray::fromBase64(cape.toLatin1()));
 
-        report_content.append(QString("<tr><td class='TDIMG' colspan='2'>"
-                                      "<img src='data:image/png;base64,%1' width='%2' height='%3'></td></tr>").
-                              arg(profile.Cape,
-                                  QString::number(image.width() * config->ReportImgScale()),
-                                  QString::number(image.height() * config->ReportImgScale())));
-        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
-                                      "<a href='%1' title='%1'>link</a></td></tr>").arg(profile.CapeUrl));
+            report_content.append(QString("<tr><td class='TDIMG' colspan='2'><br>"
+                                          "<img src='data:image/png;base64,%1' width='%2' height='%3'><br>").
+                                  arg(cape,
+                                      QString::number(image.width() * config->ReportImgScale()),
+                                      QString::number(image.height() * config->ReportImgScale())));
+            report_content.append(QString("<a href='%1' title='%1'>link</a><br>&#160;</td></tr>").arg(key));
+        }
     }
+
     if(!profile.Comment.isEmpty())
     {
         report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
@@ -632,10 +681,11 @@ void MainWindow::showDBProfiles(QStringList uuids)
         MojangApiProfile profile;
         QVector<QVariantList> answer_pofile;
         QVector<QVariantList> answer_history;
+        QVector<QVariantList> answer_capes;
 
-        setQueryDataBase(getTextFromRes(":/resources/sql/select_profile_uuid.sql").arg(uuid), &answer_pofile);
-
-        if(!checkAnswerDB(answer_pofile, 1, 13)) continue;
+        setQueryDataBase(getTextFromRes(":/resources/sql/select_profile_uuid.sql").
+                         arg(uuid), &answer_pofile);
+        if(!checkAnswerDB(answer_pofile, 1, 12)) continue;
 
         profile.Id = answer_pofile.at(0).at(0).toString();
         profile.DateTime = answer_pofile.at(0).at(1).toLongLong();
@@ -644,25 +694,35 @@ void MainWindow::showDBProfiles(QStringList uuids)
         profile.SkinUrl = answer_pofile.at(0).at(4).toString();
         profile.Skin = answer_pofile.at(0).at(5).toString();
         profile.SkinModel = answer_pofile.at(0).at(6).toString();
-        profile.CapeUrl = answer_pofile.at(0).at(7).toString();
-        profile.Cape = answer_pofile.at(0).at(8).toString();
-        profile.Legacy = answer_pofile.at(0).at(9).toInt();
-        profile.Demo = answer_pofile.at(0).at(10).toInt();
-        profile.Comment = answer_pofile.at(0).at(11).toString();
-        auto hasHistory = answer_pofile.at(0).at(12).toBool();
+        profile.Legacy = answer_pofile.at(0).at(7).toInt();
+        profile.Demo = answer_pofile.at(0).at(8).toInt();
+        profile.Comment = answer_pofile.at(0).at(9).toString();
+        auto hasHistory = answer_pofile.at(0).at(10).toBool();
+        auto hasCape = answer_pofile.at(0).at(11).toBool();
 
         if(hasHistory)
         {
-            setQueryDataBase(getTextFromRes(":/resources/sql/select_history_uuid.sql").arg(uuid), &answer_history);
+            setQueryDataBase(getTextFromRes(":/resources/sql/select_history_uuid.sql").
+                             arg(uuid), &answer_history);
             if(!checkAnswerDB(answer_history, 1, 2)) continue;
 
             for(auto list: answer_history)
                 profile.NameHistory.insert(list.at(0).toLongLong(), list.at(1).toString());
         }
 
+        if(hasCape)
+        {
+            setQueryDataBase(getTextFromRes(":/resources/sql/select_capes_uuid.sql").
+                             arg(uuid), &answer_capes);
+            if(!checkAnswerDB(answer_capes, 1, 2)) continue;
+
+            for(auto list: answer_capes)
+                profile.Capes.insert(list.at(0).toString(), list.at(1).toString());
+        }
+
         auto profiletable = createTableProfile(profile);
         content.isEmpty()
-            ? content.append(QString("<ul><li><h2>%1</h2>").
+            ? content.append(QString("<ul type='square'><li><h2>%1</h2>").
                              arg(QString::number(prof_count))).append(profiletable).append("</li>")
             : content.append(QString("<br><li><h2>%1</h2>").
                              arg(QString::number(prof_count))).append(profiletable).append("</li>");
