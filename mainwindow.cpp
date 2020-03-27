@@ -496,21 +496,18 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
 
             text = getTextFromRes(":/resources/sql/is_profile_has_capes.sql").arg(profile.Id);
             setQueryDataBase(text, &answer);
-            if(checkAnswerDB(answer, 1, 1)) hasCapes = answer.at(0).at(0).toString();
+            if(checkAnswerDB(answer, 1, 1))
+                hasCapes = answer.at(0).at(0).toString();
 
             if(hasCapes == "1")
                 textEvents->addText(QString("[i]\tProfile already had capes"));
-            else if(!profile.Capes.isEmpty())
-            {
-                hasCapes = "1";
-                textEvents->addText(QString("[i]\tProfile has a сape"));
-            }
 
             setQueryDataBase("BEGIN TRANSACTION;");
             text = getTextFromRes(":/resources/sql/del_record_profile.sql").arg(profile.Id);
             setQueryDataBase(text);
             text = getTextFromRes(":/resources/sql/del_record_history.sql").arg(profile.Id);
             setQueryDataBase(text);
+
             if(!profile.Capes.isEmpty())
             {
                 text = getTextFromRes(":/resources/sql/del_record_cape.sql").
@@ -522,6 +519,17 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
         else
             textEvents->addText(QString("[i]\tProfile '%1' is new, will be added").
                                 arg(profile.Id));
+    }
+
+    if(!profile.Capes.isEmpty())
+    {
+        hasCapes = "1";
+        textEvents->addText(QString("[i]\tProfile has a сape"));
+        text = getTextFromRes(":/resources/sql/add_record_cape.sql").
+               arg(profile.Id,
+                   profile.Capes.keys().at(0),
+                   profile.Capes.value(profile.Capes.keys().at(0)));
+        setQueryDataBase(text);
     }
 
     text = getTextFromRes(":/resources/sql/add_record_profile.sql").
@@ -544,15 +552,6 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
             query.append(QString("('%1', '%2', '%3')").
                          arg(profile.Id, QString::number(key), profile.NameHistory.value(key)));
         setQueryDataBase(text.arg(query.join(",\n")));
-    }
-
-    if(!profile.Capes.isEmpty())
-    {
-        text = getTextFromRes(":/resources/sql/add_record_cape.sql").
-               arg(profile.Id,
-                   profile.Capes.keys().at(0),
-                   profile.Capes.value(profile.Capes.keys().at(0)));
-        setQueryDataBase(text);
     }
 
     dbBrowser->slotRefresh();
