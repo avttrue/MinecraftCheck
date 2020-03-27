@@ -684,7 +684,12 @@ void MainWindow::showDBProfiles(QStringList uuids)
 
         setQueryDataBase(getTextFromRes(":/resources/sql/select_profile_uuid.sql").
                          arg(uuid), &answer_pofile);
-        if(!checkAnswerDB(answer_pofile, 1, 12)) continue;
+        if(!checkAnswerDB(answer_pofile, 1, 12))
+        {
+            textEvents->addText(QString("[!]\tERROR: Incorrect profile '%1' in local DB").
+                                arg(uuid));
+            continue;
+        }
 
         profile.Id = answer_pofile.at(0).at(0).toString();
         profile.DateTime = answer_pofile.at(0).at(1).toLongLong();
@@ -703,7 +708,8 @@ void MainWindow::showDBProfiles(QStringList uuids)
         {
             setQueryDataBase(getTextFromRes(":/resources/sql/select_history_uuid.sql").
                              arg(uuid), &answer_history);
-            if(!checkAnswerDB(answer_history, 1, 2)) continue;
+            if(!checkAnswerDB(answer_history, 1, 2))
+                textEvents->addText("[!]\tERROR: Name history not found in local DB");
 
             for(auto list: answer_history)
                 profile.NameHistory.insert(list.at(0).toLongLong(), list.at(1).toString());
@@ -713,7 +719,8 @@ void MainWindow::showDBProfiles(QStringList uuids)
         {
             setQueryDataBase(getTextFromRes(":/resources/sql/select_capes_uuid.sql").
                              arg(uuid), &answer_capes);
-            if(!checkAnswerDB(answer_capes, 1, 2)) continue;
+            if(!checkAnswerDB(answer_capes, 1, 2))
+                textEvents->addText("[!]\tERROR: Capes not found in local DB");
 
             for(auto list: answer_capes)
                 profile.Capes.insert(list.at(0).toString(), list.at(1).toString());
@@ -779,13 +786,13 @@ bool MainWindow::checkAnswerDB(QVector<QVariantList> answer, int row, int col)
 {
     if(answer.isEmpty() || answer.at(0).isEmpty())
     {
-        textEvents->addText("[!]\tError: empty answer from database");
+        textEvents->addText("[!]\tERROR: empty answer from database");
         return false;
     }
 
     if(answer.count() < row || answer.at(0).count() < col)
     {
-        textEvents->addText(QString("[!]\tError: incomplete answer from database: "
+        textEvents->addText(QString("[!]\tERROR: incomplete answer from database: "
                                     "%1 rows < %2, %3 columns < %4").
                             arg(QString::number(answer.count()),
                                 QString::number(row),
