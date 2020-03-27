@@ -203,6 +203,7 @@ void DBBrowser::slotRefresh()
 
     tree->doItemsLayout(); // hack
     tree->sortItems(0, Qt::AscendingOrder);
+    tree->expandAll();
 
     clearTableView();
     labelTree->setText(QString("<b>Tables: %1</b>").arg(tableCount));
@@ -338,6 +339,7 @@ void DBBrowser::showMetaData(const QString &t)
 
     table->setModel(model);
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    showTableInfo();
     actionInsertRow->setDisabled(true);
     actionDeleteRow->setDisabled(true);
 }
@@ -354,7 +356,7 @@ void DBBrowser::slotInsertRow()
     insertIndex = model->index(row, 0);
     table->setCurrentIndex(insertIndex);
     table->edit(insertIndex);
-    showTableInfo();
+    showTableInfo(model->filter());
 }
 
 // удалить строку из таблицы
@@ -417,7 +419,7 @@ void DBBrowser::clearTableView()
 
 QString DBBrowser::showTableInfo(const QString& where)
 {
-    QString info = "ERROR";
+    QString info = "-";
     auto db = database();
     auto model = qobject_cast<QSqlTableModel*>(table->model());
 
