@@ -18,8 +18,6 @@ struct MojangApiProfile
     QString SkinUrl;
     QString Skin;
     QString SkinModel;
-    //QString CapeUrl;
-    //QString Cape;
     int Legacy = 0;
     int Demo = 0;
     QString Comment;

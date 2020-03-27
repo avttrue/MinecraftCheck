@@ -128,7 +128,8 @@ DBBrowser::DBBrowser(QWidget *parent)
     splitter->setChildrenCollapsible(false);
     splitter->addWidget(frameTree);
     splitter->addWidget(frameTable);
-    splitter->setSizes(QList<int>({INT_MAX, INT_MAX}));
+    splitter->setStretchFactor(0, 0);
+    splitter->setStretchFactor(1, 1);
     layout->addWidget(splitter);
 
     QMetaObject::connectSlotsByName(this);
@@ -201,12 +202,12 @@ void DBBrowser::slotRefresh()
         setTreeItemActive(tree->topLevelItem(0));
     }
 
+    clearTableView();
+    labelTree->setText(QString("<b>Tables: %1</b>").arg(tableCount));
+
     tree->doItemsLayout(); // hack
     tree->sortItems(0, Qt::AscendingOrder);
     tree->expandAll();
-
-    clearTableView();
-    labelTree->setText(QString("<b>Tables: %1</b>").arg(tableCount));
 }
 
 QSqlDatabase DBBrowser::database() const { return QSqlDatabase::database(activeDB); }
@@ -311,13 +312,13 @@ void DBBrowser::showMetaData(const QString &t)
     model->insertRows(0, rec.count());
     model->insertColumns(0, 7);
 
-    model->setHeaderData(0, Qt::Horizontal, "Fieldname");
+    model->setHeaderData(0, Qt::Horizontal, "Field Name");
     model->setHeaderData(1, Qt::Horizontal, "Type");
     model->setHeaderData(2, Qt::Horizontal, "Length");
     model->setHeaderData(3, Qt::Horizontal, "Precision");
     model->setHeaderData(4, Qt::Horizontal, "Required");
-    model->setHeaderData(5, Qt::Horizontal, "AutoValue");
-    model->setHeaderData(6, Qt::Horizontal, "DefaultValue");
+    model->setHeaderData(5, Qt::Horizontal, "Auto Value");
+    model->setHeaderData(6, Qt::Horizontal, "Default Value");
 
     for(int i = 0; i < rec.count(); ++i)
     {

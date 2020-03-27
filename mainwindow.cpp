@@ -473,12 +473,13 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
 {
     if(!database.isOpen()) return;
 
-    QVector<QVariantList> answer;
-    QString text = getTextFromRes(":/resources/sql/is_profile_exists_uuid.sql").arg(profile.Id);
     QString comments;
     QString hasCapes = "0";
+    QString text = getTextFromRes(":/resources/sql/is_profile_exists_uuid.sql").arg(profile.Id);
+    QVector<QVariantList> answer;
+
     setQueryDataBase(text, &answer);
-    if(checkAnswerDB(answer, 1, 1))
+    if(checkAnswerDB(answer, 1, 1)) // если профиль уже есть
     {
         if(answer.at(0).at(0).toInt() > 0)
         {
@@ -521,15 +522,30 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
                                 arg(profile.Id));
     }
 
+    // внесение данных по профилю в БД
+    setQueryDataBase("BEGIN TRANSACTION;");
+
     if(!profile.Capes.isEmpty())
     {
-        hasCapes = "1";
         textEvents->addText(QString("[i]\tProfile has a сape"));
         text = getTextFromRes(":/resources/sql/add_record_cape.sql").
                arg(profile.Id,
                    profile.Capes.keys().at(0),
                    profile.Capes.value(profile.Capes.keys().at(0)));
         setQueryDataBase(text);
+        hasCapes = "1";
+    }
+
+    if(!profile.NameHistory.isEmpty())
+    {
+        textEvents->addText(QString("[i]\tProfile has a name history"));
+        text = getTextFromRes(":/resources/sql/add_record_history.sql");
+        QStringList query;
+
+        for(auto key: profile.NameHistory.keys())
+            query.append(QString("('%1', '%2', '%3')").
+                         arg(profile.Id, QString::number(key), profile.NameHistory.value(key)));
+        setQueryDataBase(text.arg(query.join(",\n")));
     }
 
     text = getTextFromRes(":/resources/sql/add_record_profile.sql").
@@ -543,16 +559,7 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
                hasCapes);
     setQueryDataBase(text);
 
-    if(!profile.NameHistory.isEmpty())
-    {
-        text = getTextFromRes(":/resources/sql/add_record_history.sql");
-        QStringList query;
-
-        for(auto key: profile.NameHistory.keys())
-            query.append(QString("('%1', '%2', '%3')").
-                         arg(profile.Id, QString::number(key), profile.NameHistory.value(key)));
-        setQueryDataBase(text.arg(query.join(",\n")));
-    }
+    setQueryDataBase("COMMIT;");
 
     dbBrowser->slotRefresh();
     getDBInfo();
@@ -756,7 +763,8 @@ void MainWindow::writeProfile(const MojangApiProfile &profile)
     if(config->AutoCollectProfiles()) writeProfileToDB(profile);
 
     auto dts = longTimeToString(profile.DateTime, config->DateTimeFormat()).replace(' ', "&#160;");
-    auto caption = QString("Player profile '%1'<br>%2").arg(profile.CurrentName, dts);
+    auto caption = QString("Player profile '%1' %2").
+                   arg(profile.CurrentName, dts);
 
     auto profiletable = createTableProfile(profile);
     showProfile(caption, profiletable);
