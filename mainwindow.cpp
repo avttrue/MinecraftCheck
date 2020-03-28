@@ -726,7 +726,8 @@ void MainWindow::showDBProfiles(QStringList uuids)
             setQueryDataBase(getTextFromRes(":/resources/sql/select_history_uuid.sql").
                              arg(uuid), &answer_history);
             if(!checkAnswerDB(answer_history, 1, 2))
-                textEvents->addText("[!]\tERROR: Name history not found in local DB");
+                textEvents->addText(QString("[!]\tERROR: Name history not found in local DB, uuid: %1").
+                                    arg(uuid));
 
             for(auto list: answer_history)
                 profile.NameHistory.insert(list.at(0).toLongLong(), list.at(1).toString());
@@ -737,7 +738,8 @@ void MainWindow::showDBProfiles(QStringList uuids)
             setQueryDataBase(getTextFromRes(":/resources/sql/select_capes_uuid.sql").
                              arg(uuid), &answer_capes);
             if(!checkAnswerDB(answer_capes, 1, 2))
-                textEvents->addText("[!]\tERROR: Capes not found in local DB");
+                textEvents->addText(QString("[!]\tERROR: Capes not found in local DB, uuid: %1").
+                                    arg(uuid));
 
             for(auto list: answer_capes)
                 profile.Capes.insert(list.at(0).toString(), list.at(1).toString());
