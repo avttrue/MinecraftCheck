@@ -681,6 +681,7 @@ void MainWindow::showDBProfiles(QStringList uuids)
     QStringList list(uuids);
     if(list.isEmpty())
     {
+        qDebug() << __func__ << "uuids is empty";
         QVector<QVariantList> answer;
         setQueryDataBase(getTextFromRes(":/resources/sql/select_uuid_profiles.sql"), &answer);
         for(auto v: answer)
@@ -688,6 +689,12 @@ void MainWindow::showDBProfiles(QStringList uuids)
             if(v.isEmpty()) continue;
             list.append(v.at(0).toString());
         }
+    }
+
+    if(list.isEmpty())
+    {
+        qDebug() << __func__ << "profile list is empty";
+        return;
     }
 
     QString content;
