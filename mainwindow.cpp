@@ -352,7 +352,7 @@ void MainWindow::openDataBase()
             setQueryDataBase(getTextFromRes(":/resources/sql/create_table_capes.sql"));
             setQueryDataBase("COMMIT;");
             dbBrowser->slotRefresh();
-            getDBInfo();
+            showDBInfo();
         }
         else
         {
@@ -407,6 +407,7 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
                 row.append(value);
 
                 if(!log) continue;
+
                 srow.isEmpty()
                     ? srow.append(value.toString())
                     : srow.append(QString(";%1").arg(value.toString()));
@@ -419,16 +420,21 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
             sanswer.append(QString("\n\t%1").arg(srow));
         } while(query.next());
 
-        if(log) textEvents->addText(QString("[i]\tDatabase query answer: %1").arg(sanswer));
+        if(log)
+        {
+            taskSeparator();
+            textEvents->addText(QString("[i]\tDatabase query answer: %1").arg(sanswer));
+            taskSeparator();
+            textEvents->addText(QString("[i]\tAnswer len: %1 rows").arg(QString::number(rows)));
+        }
         return rows;
     }
     else
     {
         auto raffected =query.numRowsAffected();
-
-        if(raffected > 0)
+        if(raffected > 0 || log)
             textEvents->addText(QString("[i]\tDatabase rows affected: %1").
-                                arg(QString::number(raffected)));
+                                arg(QString::number(raffected)));            
         return raffected;
     }
 }
@@ -469,7 +475,7 @@ void MainWindow::showServers(QMap<QString, QString> servers)
     textBrowser->setText(html);
 }
 
-void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
+void MainWindow::writeProfileToDB(const MojangApiProfile &profile, bool* updated)
 {
     if(!database.isOpen()) return;
 
@@ -483,7 +489,8 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
     {
         if(answer.at(0).at(0).toInt() > 0)
         {
-            textEvents->addText(QString("[i]\tProfile '%1' already exists, rewrites").
+            if(updated) *updated = true;
+            textEvents->addText(QString("[i]\tProfile '%1' already EXISTS, rewrites").
                                 arg(profile.Id));
 
             if(config->KeepCommentsAtUpd())
@@ -501,7 +508,7 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
                 hasCapes = answer.at(0).at(0).toString();
 
             if(hasCapes == "1")
-                textEvents->addText(QString("[i]\tProfile already had capes"));
+                textEvents->addText(QString("[i]\tProfile already had CAPES"));
 
             setQueryDataBase("BEGIN TRANSACTION;");
             text = getTextFromRes(":/resources/sql/del_record_profile.sql").arg(profile.Id);
@@ -518,7 +525,7 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
             setQueryDataBase("COMMIT;");
         }
         else
-            textEvents->addText(QString("[i]\tProfile '%1' is new, will be added").
+            textEvents->addText(QString("[i]\tProfile '%1' is NEW, will be added").
                                 arg(profile.Id));
     }
 
@@ -527,7 +534,7 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
 
     if(!profile.Capes.isEmpty())
     {
-        textEvents->addText(QString("[i]\tProfile has a сape"));
+        textEvents->addText(QString("[i]\tProfile has a CAPE"));
         text = getTextFromRes(":/resources/sql/add_record_cape.sql").
                arg(profile.Id,
                    profile.Capes.keys().at(0),
@@ -538,7 +545,7 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
 
     if(!profile.NameHistory.isEmpty())
     {
-        textEvents->addText(QString("[i]\tProfile has a name history"));
+        textEvents->addText(QString("[i]\tProfile has a NAME HISTORY"));
         text = getTextFromRes(":/resources/sql/add_record_history.sql");
         QStringList query;
 
@@ -562,13 +569,16 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile)
     setQueryDataBase("COMMIT;");
 
     dbBrowser->slotRefresh();
-    getDBInfo();
+    showDBInfo();
 }
 
-QString MainWindow::createTableProfile(const MojangApiProfile &profile)
+QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool updated)
 {
     auto dts = longTimeToString(profile.DateTime, config->DateTimeFormat()).replace(' ', "&#160;");
-    auto caption = QString("Player profile '%1'<br>%2").arg(profile.CurrentName, dts);
+    auto caption = QString("Player profile '%1'<br>%2%3").
+                   arg(profile.CurrentName,
+                       dts,
+                       updated ? "<br>(updated)" : "");
 
     QString report_content;
     report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
@@ -760,17 +770,18 @@ void MainWindow::showDBProfiles(QStringList uuids)
 
 void MainWindow::writeProfile(const MojangApiProfile &profile)
 {
-    if(config->AutoCollectProfiles()) writeProfileToDB(profile);
+    bool updated = false;
+    if(config->AutoCollectProfiles()) writeProfileToDB(profile, &updated);
 
     auto dts = longTimeToString(profile.DateTime, config->DateTimeFormat()).replace(' ', "&#160;");
     auto caption = QString("Player profile '%1' %2").
                    arg(profile.CurrentName, dts);
 
-    auto profiletable = createTableProfile(profile);
+    auto profiletable = createTableProfile(profile, updated);
     showProfile(caption, profiletable);
 }
 
-void MainWindow::getDBInfo()
+void MainWindow::showDBInfo()
 {
     auto dbsize = humanReadableByteCount(QFileInfo(config->PathLocalDB()).size(), config->SIMetric());
     QVector<QVariantList> rowsinfo;
@@ -787,7 +798,7 @@ void MainWindow::getDBInfo()
 void MainWindow::taskSeparator()
 {
     QString s;
-    textEvents->addText(s.fill('-', 34));
+    textEvents->addText(s.fill('-', TASK_SEPARATOR_LEN));
 }
 
 bool MainWindow::checkAnswerDB(QVector<QVariantList> answer, int row, int col)

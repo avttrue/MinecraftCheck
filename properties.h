@@ -36,6 +36,7 @@ const auto SPLASH_FIN_TIME = 50;
 const auto BUTTON_SIZE = 32;
 const auto SEARCH_LINE_WIDTH = 400;
 const auto LOG_SIZE = 0;
+const auto TASK_SEPARATOR_LEN = 42;
 const auto REPORT_AUTOOPEN = false;
 const auto AUTOVACUUM = true;
 const auto AUTOCOLLECT_PROFILES = true;
