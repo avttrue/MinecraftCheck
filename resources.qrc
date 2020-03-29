@@ -60,5 +60,7 @@
         <file>resources/sql/del_record_cape.sql</file>
         <file>resources/sql/select_capes_uuid.sql</file>
         <file>resources/tip_body.html</file>
+        <file>resources/img/down_arrow.svg</file>
+        <file>resources/img/up_arrow.svg</file>
     </qresource>
 </RCC>

@@ -9,31 +9,30 @@
             H2 { margin: 1px; }
             H3 { margin: 4px; }
             .TABLE1 {
-                padding: 4px; 
-                border-collapse: collapse; 
-                border-spacing: 0; 
-                margin: 5px;
-                border-style: dotted; 
-                border-width: 1px; 
-                border-color: gray; 
-                font-size: medium;
-                font-family: monospace;
-                font-weight: bold;
+                padding: 4px;
+                margin: 0px;
+                border-collapse: collapse;
+                border-spacing: 0;
+                border-style: none;
+                border-width: 0px;
                 width: 100%;
                 table-layout: fixed; }
             .TABLE2 {
                 padding: 4px;
-                border-collapse: collapse;
-                border-spacing: 0;
-                margin: 0px;
-                border-style: none;
-                border-width: 0px;
+                margin: 6px;
+                border-collapse: collapse; 
+                border-spacing: 0; 
+                border-style: dotted; 
+                border-width: 1px; 
+                border-color: gray; 
+                width: 100%;
+                table-layout: fixed; }
+            .TABSPAN {
                 font-size: medium;
                 font-family: monospace;
                 font-weight: bold;
-                width: 100%;
-                table-layout: fixed; }
-            .TABDIV { max-width:600px; text-align: center; }
+                max-width:600px;
+                text-align: center; }
             .TDTEXT1 {
                 border-style: dotted;
                 border-width: 1px;
@@ -58,10 +57,10 @@
         <title>%1</title>
     </head>
     <body>
-        <div class='TABDIV'>
-            <table class='TABLE2'>
+        <span class = 'TABSPAN'>
+            <table class = 'TABLE1'>
             %2
             </table>
-        </div>
+        </span>
     </body>
     </html>

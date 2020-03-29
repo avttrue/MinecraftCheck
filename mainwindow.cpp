@@ -589,7 +589,8 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool upd
 
     if(!profile.NameHistory.isEmpty())
     {
-        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'><h2>Name&#160;history&#160;[%1]</h2></td></tr>").
+        report_content.append(QString("<tr><th class='TDTEXT2' colspan='2'>"
+                                      "<h2>Name&#160;history&#160;[%1]</h2></th></tr>").
                               arg(QString::number(profile.NameHistory.keys().count())));
         for(auto key: profile.NameHistory.keys())
         {
@@ -599,7 +600,8 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool upd
                                           "<td class='TDTEXT1'><h3>%2</h3></td></tr>").
                                   arg(dts, profile.NameHistory.value(key)));
         }
-        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>&#8212;&#160;&#8212;&#160;&#8212;</td></tr>"));
+        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
+                                      "&#8212;&#160;&#8212;&#160;&#8212;</td></tr>"));
     }
 
     auto legacy = profile.Legacy ? "not migrated to mojang.com" : "Ok";
@@ -618,8 +620,8 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool upd
 
     if(!profile.Skin.isEmpty())
     {
-        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
-                                      "<h2>Skin</h2></td></tr>"));
+        report_content.append(QString("<tr><th class='TDTEXT2' colspan='2'>"
+                                      "<h2>Skin</h2></th></tr>"));
 
         QPixmap image;
         image.loadFromData(QByteArray::fromBase64(profile.Skin.toLatin1()));
@@ -629,13 +631,14 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool upd
                               arg(profile.Skin,
                                   QString::number(image.width() * config->ReportImgScale()),
                                   QString::number(image.height() * config->ReportImgScale())));
-        report_content.append(QString("<a href='%1' title='%1'>link</a><br>&#160;</td></tr>").arg(profile.SkinUrl));
+        report_content.append(QString("<a href='%1' title='%1'>link</a><br>&#160;</td></tr>").
+                              arg(profile.SkinUrl));
     }
 
     if(!profile.Capes.isEmpty())
     {
-        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
-                                      "<h2>Capes</h2></td></tr>"));
+        report_content.append(QString("<tr><th class='TDTEXT2' colspan='2'>"
+                                      "<h2>Capes</h2></th></tr>"));
 
         for(auto key: profile.Capes.keys())
         {
@@ -648,14 +651,15 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool upd
                                   arg(cape,
                                       QString::number(image.width() * config->ReportImgScale()),
                                       QString::number(image.height() * config->ReportImgScale())));
-            report_content.append(QString("<a href='%1' title='%1'>link</a><br>&#160;</td></tr>").arg(key));
+            report_content.append(QString("<a href='%1' title='%1'>link</a><br>&#160;</td></tr>").
+                                  arg(key));
         }
     }
 
     if(!profile.Comment.isEmpty())
     {
-        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
-                                      "<h2>Comment</h2></td></tr>"));
+        report_content.append(QString("<tr><th class='TDTEXT2' colspan='2'>"
+                                      "<h2>Comment</h2></th></tr>"));
         report_content.append(QString("<tr><td class='TDTEXT1' colspan='2'>"
                                       "<h3>%1</h3></td></tr>").arg(profile.Comment));
     }
