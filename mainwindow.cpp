@@ -753,16 +753,15 @@ void MainWindow::showDBProfiles(QStringList uuids)
         }
 
         auto profiletable = createTableProfile(profile);
-        content.isEmpty()
-            ? content.append(QString("<ul type='square'><li><h2>%1</h2>").
-                             arg(QString::number(prof_count))).append(profiletable).append("</li>")
-            : content.append(QString("<br><li><h2>%1</h2>").
-                             arg(QString::number(prof_count))).append(profiletable).append("</li>");
+
+        content.append(QString("<tr><td class='TDTEXT3'><h2>%1</h2></tr></td>"
+                               "<tr><td class='TDTEXT3'>%2</tr></td>"
+                               "<tr><td>&#160;</tr></td>").
+                       arg(QString::number(prof_count), profiletable));
 
         prof_count++;
         QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
     }
-    content.append("</ul>");
 
     auto dts = longTimeToString(QDateTime::currentMSecsSinceEpoch(),
                                 config->DateTimeFormat()).replace(' ', "&#160;");

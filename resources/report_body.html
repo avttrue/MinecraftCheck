@@ -4,19 +4,33 @@
         <style type='text/css'>
             CAPTION { 
                 text-align: center; 
-                background: #B0E0E6;}
-            BODY { 
-                font-family: monospace; 
-                font-weight: bold; }
-            TABLE { 
+                background: #B0E0E6;
+                 margin: 0px; }
+            H2 { margin: 1px; }
+            H3 { margin: 4px; }
+            .TABLE1 {
                 padding: 4px; 
                 border-collapse: collapse; 
                 border-spacing: 0; 
-                margin: 5 auto; 
+                margin: 5px;
                 border-style: dotted; 
                 border-width: 1px; 
                 border-color: gray; 
                 font-size: medium;
+                font-family: monospace;
+                font-weight: bold;
+                width: 100%;
+                table-layout: fixed; }
+            .TABLE2 {
+                padding: 4px;
+                border-collapse: collapse;
+                border-spacing: 0;
+                margin: 0px;
+                border-style: none;
+                border-width: 0px;
+                font-size: medium;
+                font-family: monospace;
+                font-weight: bold;
                 width: 100%;
                 table-layout: fixed; }
             .TABDIV { max-width:600px; text-align: center; }
@@ -24,14 +38,15 @@
                 border-style: dotted;
                 border-width: 1px;
                 border-color: gray;
-                padding: 4px;
                 text-align: left; 
                 vertical-align: middle; }
             .TDTEXT2 {
                 border-style: dotted;
                 border-width: 1px;
                 border-color: gray;
-                padding: 4px;
+                text-align: center; }
+            .TDTEXT3 {
+                margin: 0px;
                 text-align: center; }
             .TDIMG {
                 border-style: dotted; 
@@ -44,7 +59,9 @@
     </head>
     <body>
         <div class='TABDIV'>
+            <table class='TABLE2'>
             %2
+            </table>
         </div>
     </body>
     </html>
