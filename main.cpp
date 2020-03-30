@@ -4,7 +4,6 @@
 #include "splashscreen.h"
 
 #include <QApplication>
-#include <QPointer>
 #include <QTextCodec>
 #include <QTimer>
 
