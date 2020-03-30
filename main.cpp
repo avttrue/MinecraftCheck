@@ -22,8 +22,12 @@ int main(int argc, char *argv[])
     window.show();
 
     QEventLoop loop;
-    QTimer::singleShot(config->SplashTime(), [&window, &splash, &loop]()
-                       { splash.finish(&window); loop.quit();});
+    QTimer::singleShot(config->SplashTime(), [&application, &window, &splash, &loop]()
+                       {
+                           splash.finish(&window);
+                           application.setActiveWindow(&window);
+                           loop.quit();
+                       });
     loop.exec();
 
     return application.exec();
