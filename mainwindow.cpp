@@ -32,8 +32,8 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowIcon(QIcon(":/resources/img/mainicon512.png"));
     setWindowTitle(QString("%1 %2").arg(APP_NAME, APP_VERS));
     loadGui();
-    setWidgetToScreenCenter(this);
     openDataBase();
+    setWidgetToScreenCenter(this);
     slotAbout();
 }
 
@@ -81,8 +81,8 @@ void MainWindow::loadGui()
     actionCheckPerson->setShortcut(Qt::CTRL + Qt::Key_N);
     QObject::connect(actionCheckPerson, &QAction::triggered, [=]()
                      { showTextEdit(0);
-                         textBrowser->setText(getTextFromRes(":/resources/tip_body.html").
-                                              arg("Enter below a nickname to search using the Mojang Api"));
+                         setInformation(getTextFromRes(":/resources/tip_body.html").
+                                        arg("Enter below a nickname to search using the Mojang Api"));
                      });
 
     actionCheckPersonId = new QAction(QIcon(":/resources/img/person_id.svg"), "Check player by id", this);
@@ -90,8 +90,8 @@ void MainWindow::loadGui()
     QObject::connect(actionCheckPersonId, &QAction::triggered, [=]()
                      {
                          showTextEdit(1);
-                         textBrowser->setText(getTextFromRes(":/resources/tip_body.html").
-                                              arg("Enter below a Id to search using the Mojang Api"));
+                         setInformation(getTextFromRes(":/resources/tip_body.html").
+                                        arg("Enter below a Id to search using the Mojang Api"));
                      });
 
     actionSave = new QAction(QIcon(":/resources/img/save.svg"), "Save report", this);
@@ -137,6 +137,14 @@ void MainWindow::loadGui()
     textBrowser = new QTextBrowser(this);
     textBrowser->setOpenLinks(false);
     textBrowser->setUndoRedoEnabled(false);
+    QObject::connect(textBrowser, &QTextBrowser::anchorClicked, [=](const QUrl &link)
+                     {
+                         if(!config->OpenUrls()) return;
+                         if(link.isEmpty() || !link.isValid()) return;
+                         if (!QDesktopServices::openUrl(link))
+                             qCritical() << ": error at QDesktopServices::openUrl(" << link.toString() << ")";
+                     });
+
     auto infoWidget = new QWidget(this);
     auto vblInfo = new QVBoxLayout();
     vblInfo->setSpacing(1);
@@ -166,8 +174,8 @@ void MainWindow::loadGui()
     QObject::connect(dbBrowser, &DBBrowser::signalUpdateProfile, [=](const QString& text)
                      { showTextEdit(1);
                          lineEdit->setText(text);
-                         textBrowser->setText(getTextFromRes(":/resources/tip_body.html").
-                                              arg("Confirm serch by uuid to continue<br>(press 'Enter')"));
+                         setInformation(getTextFromRes(":/resources/tip_body.html").
+                                        arg("Confirm serch by uuid to continue<br>(press 'Enter')"));
                      });
 
     textEvents = new TextLog(this);
@@ -277,7 +285,7 @@ void MainWindow::getPlayerProfile()
                      { queryDone(false); reader->deleteLater(); });
     QObject::connect(this, &MainWindow::signalAbortQuery, [=]()
                      { if(reader) reader->abort(true);
-                         textBrowser->setText(getTextFromRes(":/resources/tip_body.html").
+                         setInformation(getTextFromRes(":/resources/tip_body.html").
                                               arg("Failed to get data from Mojang")); });
     QObject::connect(reader, &PlayerProfileReader::signalMessage, [=](QString text)
                      { textEvents->addText(text);
@@ -285,7 +293,7 @@ void MainWindow::getPlayerProfile()
     QObject::connect(reader, &PlayerProfileReader::signalStatus, [=](QString text)
                      { labelStatus->setText(text);
                        QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
-    QObject::connect(reader, &PlayerProfileReader::signalProfile, this, &MainWindow::writeProfile);
+    QObject::connect(reader, &PlayerProfileReader::signalProfile, this, &MainWindow::showProfile);
 
     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
@@ -324,7 +332,11 @@ void MainWindow::saveReport()
 
     QFile file(filename);
 
-    if(textToFile(textBrowser->toHtml(), filename))
+    QString text = config->UseQtHtmlContent()
+                       ? textBrowser->toHtml()
+                       : textBrowser->property("RealTextContent").toString();
+
+    if(textToFile(text, filename))
     {
         if(!config->ReportAutoOpen()) return;
 
@@ -471,8 +483,11 @@ void MainWindow::showServers(QMap<QString, QString> servers)
     }
 
     auto table = getTextFromRes(":/resources/table_body.html").arg(caption, report_content);
-    auto html = getTextFromRes(":/resources/report_body.html").arg(caption, table);
-    textBrowser->setText(html);
+    table.prepend("<tr><td>");
+    table.append("</td></tr>");
+    auto html = getTextFromRes(":/resources/report_body.html").
+                arg(caption, table, QString::number(config->ReportMargins()));
+    setInformation(html);
 }
 
 void MainWindow::writeProfileToDB(const MojangApiProfile &profile, bool* updated)
@@ -589,8 +604,8 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool upd
 
     if(!profile.NameHistory.isEmpty())
     {
-        report_content.append(QString("<tr><th class='TDTEXT2' colspan='2'>"
-                                      "<h2>Name&#160;history&#160;[%1]</h2></th></tr>").
+        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
+                                      "<h2>Name&#160;history&#160;[%1]</h2></td></tr>").
                               arg(QString::number(profile.NameHistory.keys().count())));
         for(auto key: profile.NameHistory.keys())
         {
@@ -620,15 +635,17 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool upd
 
     if(!profile.Skin.isEmpty())
     {
-        report_content.append(QString("<tr><th class='TDTEXT2' colspan='2'>"
-                                      "<h2>Skin</h2></th></tr>"));
+        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
+                                      "<h2>Skin</h2></td></tr>"));
 
         QPixmap image;
         image.loadFromData(QByteArray::fromBase64(profile.Skin.toLatin1()));
 
         report_content.append(QString("<tr><td class='TDIMG' colspan='2'><br>"
-                                      "<img src='data:image/png;base64,%1' width='%2' height='%3'><br>").
+                                      "<img src='data:image/png;base64,%1' "
+                                      "alt='%2' width='%3' height='%4'><br>").
                               arg(profile.Skin,
+                                  profile.SkinUrl,
                                   QString::number(image.width() * config->ReportImgScale()),
                                   QString::number(image.height() * config->ReportImgScale())));
         report_content.append(QString("<a href='%1' title='%1'>link</a><br>&#160;</td></tr>").
@@ -637,8 +654,8 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool upd
 
     if(!profile.Capes.isEmpty())
     {
-        report_content.append(QString("<tr><th class='TDTEXT2' colspan='2'>"
-                                      "<h2>Capes</h2></th></tr>"));
+        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
+                                      "<h2>Capes</h2></td></tr>"));
 
         for(auto key: profile.Capes.keys())
         {
@@ -647,8 +664,10 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool upd
             image.loadFromData(QByteArray::fromBase64(cape.toLatin1()));
 
             report_content.append(QString("<tr><td class='TDIMG' colspan='2'><br>"
-                                          "<img src='data:image/png;base64,%1' width='%2' height='%3'><br>").
+                                          "<img src='data:image/png;base64,%1' "
+                                          "alt='%2' width='%3' height='%4'><br>").
                                   arg(cape,
+                                      key,
                                       QString::number(image.width() * config->ReportImgScale()),
                                       QString::number(image.height() * config->ReportImgScale())));
             report_content.append(QString("<a href='%1' title='%1'>link</a><br>&#160;</td></tr>").
@@ -658,8 +677,8 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool upd
 
     if(!profile.Comment.isEmpty())
     {
-        report_content.append(QString("<tr><th class='TDTEXT2' colspan='2'>"
-                                      "<h2>Comment</h2></th></tr>"));
+        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
+                                      "<h2>Comment</h2></td></tr>"));
         report_content.append(QString("<tr><td class='TDTEXT1' colspan='2'>"
                                       "<h3>%1</h3></td></tr>").arg(profile.Comment));
     }
@@ -667,10 +686,11 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool upd
     return getTextFromRes(":/resources/table_body.html").arg(caption, report_content);
 }
 
-void MainWindow::showProfile(const QString &caption, const QString &profiletable)
+void MainWindow::buildProfileTable(const QString &caption, const QString &profiletable)
 {
-    auto html = getTextFromRes(":/resources/report_body.html").arg(caption, profiletable);
-    textBrowser->setText(html);
+    auto html = getTextFromRes(":/resources/report_body.html").
+                arg(caption, profiletable, QString::number(config->ReportMargins()));
+    setInformation(html);
 }
 
 void MainWindow::showDBProfiles(QStringList uuids)
@@ -758,9 +778,9 @@ void MainWindow::showDBProfiles(QStringList uuids)
 
         auto profiletable = createTableProfile(profile);
 
-        content.append(QString("<tr><td class='TDTEXT3'><h2>%1</h2></tr></td>"
-                               "<tr><td class='TDTEXT3'>%2</tr></td>"
-                               "<tr><td>&#160;</tr></td>").
+        content.append(QString("<tr><td class='TDTEXT3'><h2>%1</h2></td></tr>"
+                               "<tr><td class='TDTEXT3'>%2</td></tr>"
+                               "<tr><td>&#160;</td></tr>").
                        arg(QString::number(prof_count), profiletable));
 
         prof_count++;
@@ -771,7 +791,7 @@ void MainWindow::showDBProfiles(QStringList uuids)
                                 config->DateTimeFormat()).replace(' ', "&#160;");
     auto caption = QString("Profiles report %1").arg(dts);
 
-    showProfile(caption, content);
+    buildProfileTable(caption, content);
     setEnableActions(true);
     progressBar->setVisible(false);
 
@@ -780,7 +800,7 @@ void MainWindow::showDBProfiles(QStringList uuids)
                         arg(QString::number(currenttime - time), QString::number(prof_count - 1)));
 }
 
-void MainWindow::writeProfile(const MojangApiProfile &profile)
+void MainWindow::showProfile(const MojangApiProfile &profile)
 {
     bool updated = false;
     if(config->AutoCollectProfiles()) writeProfileToDB(profile, &updated);
@@ -790,7 +810,10 @@ void MainWindow::writeProfile(const MojangApiProfile &profile)
                    arg(profile.CurrentName, dts);
 
     auto profiletable = createTableProfile(profile, updated);
-    showProfile(caption, profiletable);
+
+    profiletable.prepend("<tr><td>");
+    profiletable.append("</td></tr>");
+    buildProfileTable(caption, profiletable);
 }
 
 void MainWindow::showDBInfo()
@@ -834,10 +857,16 @@ bool MainWindow::checkAnswerDB(QVector<QVariantList> answer, int row, int col)
     return true;
 }
 
+void MainWindow::setInformation(const QString &text)
+{
+    textBrowser->setText(text);
+    if(!config->UseQtHtmlContent()) textBrowser->setProperty("RealTextContent", text);
+}
+
 void MainWindow::slotAbout()
 {
     auto html = getTextFromRes(":/resources/about_body.html").
                 arg(APP_NAME, APP_VERS, GIT_VERS, BUILD_DATE, getSystemInfo(), QT_VERSION_STR);
-    textBrowser->setText(html);
+    setInformation(html);
     tabWidget->setCurrentIndex(0);
 }

@@ -63,6 +63,12 @@ public:
     void setLogSize(int value);
     bool SIMetric() const;
     void setSIMetric(bool value);
+    bool OpenUrls() const;
+    void setOpenUrls(bool value);
+    int ReportMargins() const;
+    void setReportMargins(int value);
+    bool UseQtHtmlContent() const;
+    void setUseQtHtmlContent(bool value);
 
 protected:
     void load();
@@ -89,12 +95,15 @@ private:
     int m_ReportLedSize;                // размер картинки индикатора серверов
     int m_ReportImgScale;               // масштаб картинок в отображении профиля игрока
     int m_LogSize;                      // количество строк лога событий
+    int m_ReportMargins;                // отступы в % от краёв окна при выводе отчёта
     bool m_ReportAutoOpen;              // открывать отчёт после сохранения
     bool m_AutoVacuum;                  // выполнять vacuum при выходе
     bool m_AutoCollectProfiles;         // сохранять все профили игроков в БД
     bool m_AdvancedDBMode;              // возможность редактировать БД
     bool m_KeepCommentsAtUpd;           // сохранять комментарии при обновлении профиля
     bool m_SI_metric;                   // использовать систему СИ в отображении размеров файлов
+    bool m_OpenUrls;                    // открывать URLы системным браузером
+    bool m_UseQtHtmlContent;            // разрешать Qt фрматировать содержание html документов
 };
 
 #endif // CONFIG_H

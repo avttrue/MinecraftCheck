@@ -19,6 +19,7 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
+    void openDataBase();
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -29,17 +30,17 @@ protected:
     void getServersStatus();
     void getPlayerProfile();
     void saveReport();
-    void openDataBase();
     int setQueryDataBase(const QString &text, QVector<QVariantList> *answer = nullptr, bool log = false);
     void showServers(QMap<QString, QString> servers);
     void writeProfileToDB(const MojangApiProfile& profile, bool *updated = nullptr);
     QString createTableProfile(const MojangApiProfile& profile, bool updated = false);
-    void showProfile(const QString &caption, const QString &profiletable);
+    void buildProfileTable(const QString &caption, const QString &profiletable);
     void showDBProfiles(QStringList uuids);
-    void writeProfile(const MojangApiProfile& profile);
+    void showProfile(const MojangApiProfile& profile);
     void showDBInfo();
     void taskSeparator();
     bool checkAnswerDB(QVector<QVariantList> answer, int row, int col);
+    void setInformation(const QString &text);
 
 private:
     QSqlDatabase database;

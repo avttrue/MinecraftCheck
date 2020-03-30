@@ -2,28 +2,43 @@
     <head>
         <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
         <style type='text/css'>
-            BODY { 
-                font-family: monospace; 
-                font-weight: bold; }
+            HR {
+                width: 80%;
+                }
+            .MAINDIV {
+                font-size: large;
+                font-family: monospace;
+                font-weight: bold;
+                text-align: center;
+                margin-left: 25%;
+                margin-right: 25%;
+                background: gold;
+                padding: 10px;
+                }
+            .LISTDIV {
+                text-align: left;
+                }
         </style>
         <title>%1</title>
     </head>
     <body>
-        <div align='center'>
-        <h2>%1 %2</h2><h3>%3 (%4)</h3><hr width='80%'>System: %5<br> Qt: %6<hr width='80%'>
-        </div>
-        <br><h3>This application is designed for
+        <div class = 'MAINDIV'>
+        <h2>%1 %2</h2><h3>%3 (%4)</h3><hr>System: %5<br> Qt: %6<hr>
+        <div class = 'LISTDIV'>
+        <br><h3>This application is designed for</h3>
         <ul>
-        <li>getting information about the status of <a href='https://www.minecraft.net'>Minecraft</a> services;</li>
-        <li>getting information about <a href='https://www.minecraft.net'>Minecraft</a> player profiles;</li>
-        <li>saving Minecraft player profiles to a local database (SQLITE3);</li>
-        <li>search, filtering, and profile queries;</li>
-        <li>generating profiles view in HTML format.</li>
-        </ul></h3>
-        <br><br>Data is accessed using the open
-        <a href='https://wiki.vg/Mojang_API'>Mojang Api</a>.
-        <div align='center'>
-        <hr width='80%'>truetrifonov@yandex.ru
+        <li><h3>getting information about the status of
+        <a href='https://www.minecraft.net'>Minecraft</a> services;</h3></li>
+        <li><h3>getting information about
+        <a href='https://www.minecraft.net'>Minecraft</a> player profiles;</h3></li>
+        <li><h3>saving Minecraft player profiles to a local database (SQLITE3);</h3></li>
+        <li><h3>search, filtering, and profile queries;</h3></li>
+        <li><h3>generating profiles view in HTML format.</h3></li>
+        </ul>
+        <br><h3>Data is accessed using the open
+        <a href='https://wiki.vg/Mojang_API'>Mojang Api</a>.</h3>
+        </div>
+        <hr>truetrifonov@yandex.ru
         </div>
     </body>
     </html>

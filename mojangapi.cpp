@@ -70,7 +70,7 @@ void MojangApi::abort(bool forced)
 
     if(forced) // вынужденное завершение
     {
-        Q_EMIT signalMessage(QString("[X]\tQuery aborted\n^^^^^^^^^^"));
+        Q_EMIT signalMessage(QString("[X]\tQuery ABORTED\n^^^^^^^^^^"));
         Q_EMIT signalStatus("ABORTED");
         Q_EMIT signalError();
     }

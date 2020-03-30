@@ -37,6 +37,10 @@ void Config::load()
     if(!m_Settings->contains("MainWindow/Width"))
         m_Settings->setValue("MainWindow/Width", WINDOW_WIDTH);
 
+    if(!m_Settings->contains("MainWindow/OpenURLs"))
+        m_Settings->setValue("MainWindow/OpenURLs", OPEN_URLS);
+    m_OpenUrls = m_Settings->value("MainWindow/OpenURLs").toBool();
+
     if(!m_Settings->contains("MainWindow/SplashTime"))
         m_Settings->setValue("MainWindow/SplashTime", SPLASH_TIME);
     m_SplashTime = m_Settings->value("MainWindow/SplashTime").toInt();
@@ -101,9 +105,17 @@ void Config::load()
         m_Settings->setValue("Report/ImgScale", REPORT_IMG_SCALE);
     m_ReportImgScale = m_Settings->value("Report/ImgScale").toInt();
 
+    if(!m_Settings->contains("Report/Margins"))
+        m_Settings->setValue("Report/Margins", REPORT_MARGINS);
+    m_ReportMargins = m_Settings->value("Report/Margins").toInt();
+
     if(!m_Settings->contains("Report/AutoOpen"))
         m_Settings->setValue("Report/AutoOpen", REPORT_AUTOOPEN);
     m_ReportAutoOpen = m_Settings->value("Report/AutoOpen").toBool();
+
+    if(!m_Settings->contains("Report/UseQtHtmlContent"))
+        m_Settings->setValue("Report/UseQtHtmlContent", USE_QT_HTML_CONTENT);
+    m_UseQtHtmlContent = m_Settings->value("Report/UseQtHtmlContent").toBool();
 
     if(!m_Settings->contains("Database/AutoVacuum"))
         m_Settings->setValue("Database/AutoVacuum", AUTOVACUUM);
@@ -122,9 +134,34 @@ void Config::load()
     m_KeepCommentsAtUpd = m_Settings->value("Database/KeepCommentsAtUpd").toBool();
 }
 
+void Config::setUseQtHtmlContent(bool value)
+{
+    if(m_UseQtHtmlContent == value) return;
+
+    m_UseQtHtmlContent = value;
+    m_Settings->setValue("Report/UseQtHtmlContent", m_UseQtHtmlContent);
+}
+
+void Config::setReportMargins(int value)
+{
+    if(m_ReportMargins == value) return;
+    
+    m_ReportMargins = value;
+    m_Settings->setValue("Report/Margins", m_ReportMargins);
+}
+
+void Config::setOpenUrls(bool value)
+{
+    if(m_OpenUrls == value) return;
+
+    m_OpenUrls = value;
+    m_Settings->setValue("MainWindow/OpenURLs", m_OpenUrls);
+}
+
 void Config::setSIMetric(bool value)
 {
     if(m_SI_metric == value) return;
+
     m_SI_metric = value;
     m_Settings->setValue("SIMetric", m_SI_metric);
 }
@@ -267,7 +304,7 @@ void Config::setQueryProfileUuid(const QString &value)
 
 void Config::setQueryPersonName(const QString &value)
 {
-   if(m_QueryPersonName == value) return;
+    if(m_QueryPersonName == value) return;
 
     m_QueryPersonName = value;
     m_Settings->setValue("ApiQueries/PersonName", m_QueryPersonName);
@@ -289,6 +326,9 @@ void Config::setQueryServers(const QString &value)
     m_Settings->setValue("ApiQueries/Servers", m_QueryServers);
 }
 
+bool Config::UseQtHtmlContent() const { return m_UseQtHtmlContent; }
+int Config::ReportMargins() const { return m_ReportMargins; }
+bool Config::OpenUrls() const { return m_OpenUrls; }
 bool Config::SIMetric() const { return m_SI_metric; }
 int Config::LogSize() const { return m_LogSize; }
 bool Config::KeepCommentsAtUpd() const { return m_KeepCommentsAtUpd; }

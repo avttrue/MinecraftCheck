@@ -28,6 +28,7 @@ const QString MOJANG_MODEL2 = "Steve";
 const QString DATABASE_TYPE = "QSQLITE";
 const auto REPORT_LED_SIZE = 32;
 const auto REPORT_IMG_SCALE = 3;
+const auto REPORT_MARGINS = 30;
 const auto WINDOW_HEIGHT = 700;
 const auto WINDOW_WIDTH = 900;
 const auto SPLASH_TIME = 1000;
@@ -38,10 +39,12 @@ const auto SEARCH_LINE_WIDTH = 400;
 const auto LOG_SIZE = 0;
 const auto TASK_SEPARATOR_LEN = 42;
 const auto REPORT_AUTOOPEN = false;
+const auto USE_QT_HTML_CONTENT = false;
 const auto AUTOVACUUM = true;
 const auto AUTOCOLLECT_PROFILES = true;
 const auto ADVANCED_DB_MODE = false;
 const auto KEEP_COMMENTS_AT_UPD = true;
 const auto SI_METRIC = false;
+const auto OPEN_URLS = true;
 
 #endif // PROPERTIES_H
