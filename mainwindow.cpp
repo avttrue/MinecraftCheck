@@ -224,7 +224,7 @@ void MainWindow::showTextEdit(int mode)
     lineEdit->clear();
     lineEdit->setVisible(true);
     lineEdit->setFocus();
-    lineEdit->setProperty("SearchMode", mode);
+    lineEdit->setProperty(LE_PROPERTY_SEARCH, mode);
     if(mode == 0)
         lineEdit->setPlaceholderText("enter the player's NICKNAME here");
     else if(mode == 1)
@@ -298,14 +298,14 @@ void MainWindow::getPlayerProfile()
     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
     taskSeparator();
-    if(lineEdit->property("SearchMode").toInt() == 0)
+    if(lineEdit->property(LE_PROPERTY_SEARCH).toInt() == 0)
     {
         auto nick = lineEdit->text().simplified();
         auto query = config->QueryPersonName().arg(nick);
         textEvents->addText(QString("[i]\tSearching by player's name '%1'\n").arg(nick));
         reader->sendQuery(query);
     }
-    else if(lineEdit->property("SearchMode").toInt() == 1)
+    else if(lineEdit->property(LE_PROPERTY_SEARCH).toInt() == 1)
     {
         auto id = lineEdit->text().simplified().remove('{').remove('}').remove('-');
         auto query = config->QueryPersonUuid().arg(id);
@@ -316,7 +316,7 @@ void MainWindow::getPlayerProfile()
     else // error
     {
         labelStatus->setText("FATAL ERROR");
-        qCritical() << __func__ << ": wrong 'SearchMode' (" << lineEdit->property("SearchMode") << ")";
+        qCritical() << __func__ << ": wrong 'SearchMode' (" << lineEdit->property(LE_PROPERTY_SEARCH) << ")";
         progressBar->setVisible(false);
     }
     lineEdit->clear();
@@ -334,7 +334,7 @@ void MainWindow::saveReport()
 
     QString text = config->UseQtHtmlContent()
                        ? textBrowser->toHtml()
-                       : textBrowser->property("RealTextContent").toString();
+                       : textBrowser->property(TB_PROPERTY_CONTENT).toString();
 
     if(textToFile(text, filename))
     {
@@ -860,7 +860,8 @@ bool MainWindow::checkAnswerDB(QVector<QVariantList> answer, int row, int col)
 void MainWindow::setInformation(const QString &text)
 {
     textBrowser->setText(text);
-    if(!config->UseQtHtmlContent()) textBrowser->setProperty("RealTextContent", text);
+    if(!config->UseQtHtmlContent())
+        textBrowser->setProperty(TB_PROPERTY_CONTENT, text);
 }
 
 void MainWindow::slotAbout()

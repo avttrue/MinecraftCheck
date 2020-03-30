@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QSqlDatabase>
 
+const auto TB_PROPERTY_CONTENT = "RealTextContent";
+const auto LE_PROPERTY_SEARCH = "SearchMode";
 class QLabel;
 class QProgressBar;
 class QPlainTextEdit;
