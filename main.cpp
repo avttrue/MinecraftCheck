@@ -4,6 +4,7 @@
 #include "splashscreen.h"
 
 #include <QApplication>
+#include <QPointer>
 #include <QTextCodec>
 #include <QTimer>
 
@@ -28,7 +29,7 @@ int main(int argc, char *argv[])
                            application.setActiveWindow(&window);
                            loop.quit();
                        });
-    loop.exec();
+    loop.exec(QEventLoop::ExcludeUserInputEvents);
 
     return application.exec();
 }
