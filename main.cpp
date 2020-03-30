@@ -17,13 +17,14 @@ int main(int argc, char *argv[])
 
     SplashScreen splash;
     splash.show();
-    QEventLoop loop;
-    QTimer::singleShot(config->SplashTime(), &loop, &QEventLoop::quit);
-    loop.exec();
 
     MainWindow window;
     window.show();
-    splash.finish(&window);
+
+    QEventLoop loop;
+    QTimer::singleShot(config->SplashTime(), [&window, &splash, &loop]()
+                       { splash.finish(&window); loop.quit();});
+    loop.exec();
 
     return application.exec();
 }

@@ -22,11 +22,11 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
-    void openDataBase();
 
 protected:
     void closeEvent(QCloseEvent *event);
     void loadGui();
+    void openDataBase();
     void setEnableActions(bool value);
     void showTextEdit(int mode); // mode = 0 - by nick, 1- by id
     void queryDone(bool success);
