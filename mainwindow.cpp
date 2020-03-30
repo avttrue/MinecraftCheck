@@ -32,8 +32,8 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowIcon(QIcon(":/resources/img/mainicon512.png"));
     setWindowTitle(QString("%1 %2").arg(APP_NAME, APP_VERS));
     loadGui();
-    openDataBase();
     setWidgetToScreenCenter(this);
+    openDataBase();    
     slotAbout();
 }
 
