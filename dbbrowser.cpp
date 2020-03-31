@@ -486,7 +486,7 @@ void DBBrowser::rowToDialogValueMap(QMap<QString, DialogValue>* map, int row)
     auto model = qobject_cast<QSqlTableModel *>(table->model());
     if(!model) return;
 
-    auto count = getTableSize();
+    auto count = getTableSize(model->filter());
     if(count <= row || row < 0) return;
 
     auto record = model->record(row);
@@ -768,11 +768,13 @@ void DBBrowser::slotViewProfile()
 {
     auto db = database();
 
-    if(!db.isOpen())
-    { actionView->setEnabled(false); return; }
+    if(!db.isOpen()) { actionView->setEnabled(false); return; }
+
+    auto model = qobject_cast<QSqlTableModel *>(table->model());
+    if(!model) { actionView->setEnabled(false); return; }
 
     QMap<QString, DialogValue> map;
-    auto count = getTableSize();
+    auto count = getTableSize(model->filter());
     auto countsel = table->selectionModel()->selectedRows().count();
     auto currentSelection = table->selectionModel()->selectedRows();
     auto currentrow = currentSelection.at(countsel - 1).row();
