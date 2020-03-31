@@ -51,17 +51,17 @@ DBBrowser::DBBrowser(QWidget *parent)
     actionView->setShortcut(Qt::CTRL + Qt::Key_W);
     actionView->setDisabled(true);
 
-    connect(actionUpdateDB, &QAction::triggered, this, &DBBrowser::slotRefresh);
-    connect(actionSchemaDB, &QAction::triggered, this, &DBBrowser::slotMetaData);
-    connect(actionInsertRow, &QAction::triggered, this, &DBBrowser::slotInsertRow);
-    connect(actionDeleteRow, &QAction::triggered, this, &DBBrowser::slotDeleteRow);
-    connect(actionClearTable, &QAction::triggered, this, &DBBrowser::slotClearTable);
-    connect(actionReport, &QAction::triggered, this, &DBBrowser::slotReport);
-    connect(actionLoad, &QAction::triggered, this, &DBBrowser::slotLoadQuery);
-    connect(actionSearch, &QAction::triggered, this, &DBBrowser::slotSearch);
-    connect(actionUpdateProfile, &QAction::triggered, this, &DBBrowser::slotUpdateProfile);
-    connect(actionComment, &QAction::triggered, this, &DBBrowser::slotComment);
-    connect(actionView, &QAction::triggered, this, &DBBrowser::slotViewProfile);
+    QObject::connect(actionUpdateDB, &QAction::triggered, this, &DBBrowser::slotRefresh);
+    QObject::connect(actionSchemaDB, &QAction::triggered, this, &DBBrowser::slotMetaData);
+    QObject::connect(actionInsertRow, &QAction::triggered, this, &DBBrowser::slotInsertRow);
+    QObject::connect(actionDeleteRow, &QAction::triggered, this, &DBBrowser::slotDeleteRow);
+    QObject::connect(actionClearTable, &QAction::triggered, this, &DBBrowser::slotClearTable);
+    QObject::connect(actionReport, &QAction::triggered, this, &DBBrowser::slotReport);
+    QObject::connect(actionLoad, &QAction::triggered, this, &DBBrowser::slotLoadQuery);
+    QObject::connect(actionSearch, &QAction::triggered, this, &DBBrowser::slotSearch);
+    QObject::connect(actionUpdateProfile, &QAction::triggered, this, &DBBrowser::slotUpdateProfile);
+    QObject::connect(actionComment, &QAction::triggered, this, &DBBrowser::slotComment);
+    QObject::connect(actionView, &QAction::triggered, this, &DBBrowser::slotViewProfile);
 
     auto layout = new QVBoxLayout(this);
     layout->setSpacing(1);
@@ -90,8 +90,8 @@ DBBrowser::DBBrowser(QWidget *parent)
     tree = new QTreeWidget();
     tree->setIconSize(QSize(config->ButtonSize(), config->ButtonSize()));
     tree->header()->hide();
-    connect(tree, &QTreeWidget::currentItemChanged, this, &DBBrowser::slotTreeCurrentItemChanged);
-    connect(tree, &QTreeWidget::itemActivated, this, &DBBrowser::slotTreeItemActivated);
+    QObject::connect(tree, &QTreeWidget::currentItemChanged, this, &DBBrowser::slotTreeCurrentItemChanged);
+    QObject::connect(tree, &QTreeWidget::itemActivated, this, &DBBrowser::slotTreeItemActivated);
 
     auto frameTree = new QFrame();
     auto layoutTree = new QVBoxLayout();
@@ -294,7 +294,7 @@ void DBBrowser::showTable(const QString &tablename)
     else
         table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-    connect(table->selectionModel(), &QItemSelectionModel::selectionChanged, this, &DBBrowser::slotTableSelectionChanged);
+    QObject::connect(table->selectionModel(), &QItemSelectionModel::selectionChanged, this, &DBBrowser::slotTableSelectionChanged);
 
     model->select();
     showTableInfo();
@@ -418,9 +418,19 @@ void DBBrowser::clearTableView()
     model->clear();
 }
 
+// отобразить информацию о таблице
 QString DBBrowser::showTableInfo(const QString& where)
 {
-    QString info = "-";
+    auto size = getTableSize(where);
+    QString info = size < 0 ? "-" : QString::number(size);
+    labelTable->setText(QString("<b>Records: %1</b>").arg(info));
+    return info;
+}
+
+// получить количество строк в таблице
+int DBBrowser::getTableSize(const QString& where)
+{
+    int size = -1;
     auto db = database();
     auto model = qobject_cast<QSqlTableModel*>(table->model());
 
@@ -428,13 +438,17 @@ QString DBBrowser::showTableInfo(const QString& where)
     {
         QSqlQuery query(db);
         auto text = where.isEmpty()
-                        ? getTextFromRes(":/resources/sql/get_table_rows_count.sql").arg(tableName())
-                        : getTextFromRes(":/resources/sql/get_table_rows_count_where.sql").arg(tableName(), where);
+                        ? getTextFromRes(":/resources/sql/get_table_rows_count.sql").
+                          arg(tableName())
+                        : getTextFromRes(":/resources/sql/get_table_rows_count_where.sql").
+                          arg(tableName(), where);
         if(query.exec(text))
         {
             query.first();
             auto value = query.value(0);
-            if(value.isValid()) info = value.toString();
+            bool ok = false;
+            if(value.isValid()) size = value.toInt(&ok);
+            if(!ok) return -1;
         }
         else
         {
@@ -443,8 +457,7 @@ QString DBBrowser::showTableInfo(const QString& where)
         }
     }
 
-    labelTable->setText(QString("<b>Records: %1</b>").arg(info));
-    return info;
+    return size;
 }
 
 // выбрать таблицу по имени
@@ -464,6 +477,58 @@ void DBBrowser::selectTable(const QString &name)
         }
         ++item;
     }
+}
+
+void DBBrowser::rowToDialogValueMap(QMap<QString, DialogValue>* map, int row)
+{
+    if(!map) return;
+
+    auto model = qobject_cast<QSqlTableModel *>(table->model());
+    if(!model) return;
+
+    auto count = getTableSize();
+    if(count <= row || row < 0) return;
+
+    auto record = model->record(row);
+
+    const QVector<QString> keys =
+        {"01#_Uuid: ",
+         "02#_DateTime: ",
+         "03#_FirstName: ",
+         "04#_CurrentName: ",
+         "05#_Skin: ",
+         "06#_SkinUrl: ",
+         "07#_SkinModel: ",
+         "08#_Comments: ",
+         "09#_Name history: ",
+         "10#_Capes: "
+        };
+
+    QStringList fields;
+    fields.append(record.field("Uuid").value().toString()); // NOTE: 'Uuid' column
+    fields.append(record.field("DateTime").value().toString()); // NOTE: 'DateTime' column
+    fields.append(record.field("FirstName").value().toString()); // NOTE: 'FirstName' column
+    fields.append(record.field("CurrentName").value().toString()); // NOTE: 'CurrentName' column
+    fields.append(record.field("Skin").value().toString()); // NOTE: 'Skin' column
+    fields.append(record.field("SkinUrl").value().toString()); // NOTE: 'SkinUrl' column
+    fields.append(record.field("SkinModel").value().toString()); // NOTE: 'SkinModel' column
+    fields.append(record.field("Comments").value().toString()); // NOTE: 'Comments' column
+    fields.append(record.field("NameHistory").value().toString()); // NOTE: 'NameHistory' column
+    fields.append(record.field("Capes").value().toString()); // NOTE: 'Capes' column
+
+    auto scale = config->ReportImgScale();
+    *map =
+        {{keys.at(0), {QVariant::String, fields.at(0), "", "", DialogValueMode::Disabled}},
+         {keys.at(1), {QVariant::String, fields.at(1), "", "", DialogValueMode::Disabled}},
+         {keys.at(2), {QVariant::String, fields.at(2), "", "", DialogValueMode::Disabled}},
+         {keys.at(3), {QVariant::String, fields.at(3), "", "", DialogValueMode::Disabled}},
+         {keys.at(4), {QVariant::String, fields.at(4), scale, scale, DialogValueMode::Base64Image}},
+         {keys.at(5), {QVariant::String, fields.at(5), "", "", DialogValueMode::Disabled}},
+         {keys.at(6), {QVariant::String, fields.at(6), "", "", DialogValueMode::Disabled}},
+         {keys.at(7), {QVariant::String, fields.at(7), "", "", DialogValueMode::Disabled}},
+         {keys.at(8), {QVariant::String, fields.at(8) == "0" ? "NO" : "YES", "", "", DialogValueMode::Disabled}},
+         {keys.at(9), {QVariant::String, fields.at(9) == "0" ? "NO" : "YES", "", "", DialogValueMode::Disabled}}
+        };
 }
 
 // очистить содержимое таблицы
@@ -552,7 +617,7 @@ void DBBrowser::slotSearch()
             {"3#_Value: ", "1#_Area: ", "2#_Precision: "};
     const QStringList arealist =
         {"NAMES in Profiles", "NAMES in Profiles and History",
-             "COMMENTS", "ID in Profiles", "NAME HISTORY", "CAPES"};
+         "COMMENTS", "ID in Profiles", "NAME HISTORY", "CAPES"};
     const QStringList preclist =
         {"Equal", "Like", "NOT Equal"};
 
@@ -701,56 +766,59 @@ void DBBrowser::slotComment()
 
 void DBBrowser::slotViewProfile()
 {
-    auto model = qobject_cast<QSqlTableModel *>(table->model());
     auto db = database();
 
-    if(!model || !db.isOpen() || table->selectionModel()->selectedRows().count() == 0)
+    if(!db.isOpen())
     { actionView->setEnabled(false); return; }
 
-    auto count = table->selectionModel()->selectedRows().count();
+    QMap<QString, DialogValue> map;
+    auto count = getTableSize();
+    auto countsel = table->selectionModel()->selectedRows().count();
     auto currentSelection = table->selectionModel()->selectedRows();
-    auto record = model->record(currentSelection.at(count - 1).row());
-
-    const QVector<QString> keys =
-        {"01#_Uuid: ",
-         "02#_DateTime: ",
-         "03#_FirstName: ",
-         "04#_CurrentName: ",
-         "05#_Skin: ",
-         "06#_SkinUrl: ",
-         "07#_SkinModel: ",
-         "08#_Comments: ",
-         "09#_Name history: ",
-         "10#_Capes: "
-        };
-
-    QStringList fields;
-    fields.append(record.field("Uuid").value().toString()); // NOTE: 'Uuid' column
-    fields.append(record.field("DateTime").value().toString()); // NOTE: 'DateTime' column
-    fields.append(record.field("FirstName").value().toString()); // NOTE: 'FirstName' column
-    fields.append(record.field("CurrentName").value().toString()); // NOTE: 'CurrentName' column
-    fields.append(record.field("Skin").value().toString()); // NOTE: 'Skin' column
-    fields.append(record.field("SkinUrl").value().toString()); // NOTE: 'SkinUrl' column
-    fields.append(record.field("SkinModel").value().toString()); // NOTE: 'SkinModel' column
-    fields.append(record.field("Comments").value().toString()); // NOTE: 'Comments' column
-    fields.append(record.field("NameHistory").value().toString()); // NOTE: 'NameHistory' column
-    fields.append(record.field("Capes").value().toString()); // NOTE: 'Capes' column
-
-    auto scale = config->ReportImgScale();
-    QMap<QString, DialogValue> map =
-        {{keys.at(0), {QVariant::String, fields.at(0), "", "", DialogValueMode::Disabled}},
-         {keys.at(1), {QVariant::String, fields.at(1), "", "", DialogValueMode::Disabled}},
-         {keys.at(2), {QVariant::String, fields.at(2), "", "", DialogValueMode::Disabled}},
-         {keys.at(3), {QVariant::String, fields.at(3), "", "", DialogValueMode::Disabled}},
-         {keys.at(4), {QVariant::String, fields.at(4), scale, scale, DialogValueMode::Base64Image}},
-         {keys.at(5), {QVariant::String, fields.at(5), "", "", DialogValueMode::Disabled}},
-         {keys.at(6), {QVariant::String, fields.at(6), "", "", DialogValueMode::Disabled}},
-         {keys.at(7), {QVariant::String, fields.at(7), "", "", DialogValueMode::Disabled}},
-         {keys.at(8), {QVariant::String, fields.at(8) == "0" ? "NO" : "YES", "", "", DialogValueMode::Disabled}},
-         {keys.at(9), {QVariant::String, fields.at(9) == "0" ? "NO" : "YES", "", "", DialogValueMode::Disabled}}
-        };
+    auto currentrow = currentSelection.at(countsel - 1).row();
+    auto pcurrentrow = &currentrow;
+    rowToDialogValueMap(&map, currentrow);
 
     auto dvl = new DialogValuesList(this, ":/resources/img/eye.svg", "View profile", &map, "", false);
+
+    auto actionPrev = new QAction(QIcon(":/resources/img/up_arrow.svg"), "Previous profile", dvl);
+    auto actionNext = new QAction(QIcon(":/resources/img/down_arrow.svg"), "Next profile", dvl);
+
+    if(currentrow == 0) actionPrev->setDisabled(true);
+    if(count == currentrow + 1) actionNext->setDisabled(true);
+
+    QObject::connect(actionPrev, &QAction::triggered, [=]()
+                     {
+                         (*pcurrentrow)--;
+                         QMap<QString, DialogValue> map;
+                         rowToDialogValueMap(&map, *pcurrentrow);
+                         dvl->slotLoadContent(&map);
+
+                         auto index = table->model()->index(*pcurrentrow, 0);
+                         table->clearSelection();
+                         table->setCurrentIndex(index);
+
+                         if(*pcurrentrow == 0) actionPrev->setDisabled(true);
+                         if(count > 0) actionNext->setEnabled(true);
+                     });
+    QObject::connect(actionNext, &QAction::triggered, [=]()
+                     {
+                         (*pcurrentrow)++;
+                         QMap<QString, DialogValue> map;
+                         rowToDialogValueMap(&map, *pcurrentrow);
+                         dvl->slotLoadContent(&map);
+
+                         auto index = table->model()->index(*pcurrentrow, 0);
+                         table->clearSelection();
+                         table->setCurrentIndex(index);
+
+                         if(*pcurrentrow > 0) actionPrev->setEnabled(true);
+                         if(count == *pcurrentrow + 1) actionNext->setDisabled(true);
+                     });
+
+    dvl->addToolbarButton(actionNext);
+    dvl->addToolbarButton(actionPrev);
+
     dvl->exec();
 }
 

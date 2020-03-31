@@ -9,6 +9,7 @@ class QTreeWidgetItem;
 class QTreeWidget;
 class QLabel;
 class QTableView;
+struct DialogValue;
 
 class DBBrowser: public QWidget
 {
@@ -24,7 +25,9 @@ protected:
     void showMetaData(const QString &table);
     void clearTableView();
     QString showTableInfo(const QString &where = "");
+    int getTableSize(const QString &where = "");
     void selectTable(const QString& name);
+    void rowToDialogValueMap(QMap<QString, DialogValue> *map, int row);
 
 private:
     QAction* actionSchemaDB;
