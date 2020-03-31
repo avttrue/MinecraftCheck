@@ -273,11 +273,20 @@ void DBBrowser::showTable(const QString &tablename)
 
     // настройка сортировки
     if(tablename == "Profiles") // NOTE: 'Profiles' table
-        model->setSort(1, Qt::AscendingOrder);
+    {
+        auto index = getColumnIndex(model, "DateTime"); // NOTE: 'DateTime' column
+        if(index > -1) model->setSort(index, Qt::AscendingOrder);
+    }
     else if(tablename == "NameHistory") // NOTE: 'NameHistory' table
-        model->setSort(0, Qt::AscendingOrder);
+    {
+        auto index = getColumnIndex(model, "Uuid"); // NOTE: 'Uuid' column
+        if(index > -1) model->setSort(index, Qt::AscendingOrder);
+    }
     else if(tablename == "Capes") // NOTE: 'Capes' table
-        model->setSort(0, Qt::AscendingOrder);
+    {
+        auto index = getColumnIndex(model, "Uuid"); // NOTE: 'Uuid' column
+        if(index > -1) model->setSort(index, Qt::AscendingOrder);
+    }
 
     if (model->lastError().type() != QSqlError::NoError)
     {
@@ -708,7 +717,6 @@ void DBBrowser::slotSearch()
 void DBBrowser::slotUpdateProfile()
 {
     auto model = qobject_cast<QSqlTableModel *>(table->model());
-
     if(!model || table->selectionModel()->selectedRows().count() == 0)
     { actionUpdateProfile->setEnabled(false); return; }
 
@@ -767,7 +775,6 @@ void DBBrowser::slotComment()
 void DBBrowser::slotViewProfile()
 {
     auto db = database();
-
     if(!db.isOpen()) { actionView->setEnabled(false); return; }
 
     auto model = qobject_cast<QSqlTableModel *>(table->model());
@@ -822,6 +829,16 @@ void DBBrowser::slotViewProfile()
     dvl->addToolbarButton(actionPrev);
 
     dvl->exec();
+}
+
+int DBBrowser::getColumnIndex(QSqlTableModel *model, const QString& name)
+{
+    if(!model) return -1;
+
+    for(int i = 0; i < model->columnCount(); i++)
+        if(model->record().fieldName(i) == name) return i;
+
+    return -1;
 }
 
 QVariant MySqlTableModel::data(const QModelIndex &idx, int role) const

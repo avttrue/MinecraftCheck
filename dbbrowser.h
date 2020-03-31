@@ -28,6 +28,7 @@ protected:
     int getTableSize(const QString &where = "");
     void selectTable(const QString& name);
     void rowToDialogValueMap(QMap<QString, DialogValue> *map, int row);
+    int getColumnIndex(QSqlTableModel *model, const QString& name);
 
 private:
     QAction* actionSchemaDB;
