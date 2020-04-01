@@ -38,9 +38,9 @@ DBBrowser::DBBrowser(QWidget *parent)
     actionReport = new QAction(QIcon(":/resources/img/text.svg"), "Report", this);
     actionReport->setDisabled(true);
     auto actionLoad = new QAction(QIcon(":/resources/img/load.svg"), "Load query", this);
-    actionSearch = new QAction(QIcon(":/resources/img/search.svg"), "Search player by name", this);
-    actionSearch->setShortcut(Qt::CTRL + Qt::Key_F);
-    actionSearch->setDisabled(true);
+    actionFilter = new QAction(QIcon(":/resources/img/search.svg"), "Set filter", this);
+    actionFilter->setShortcut(Qt::CTRL + Qt::Key_F);
+    actionFilter->setDisabled(true);
     actionUpdateProfile = new QAction(QIcon(":/resources/img/refresh.svg"), "Reload profile", this);
     actionUpdateProfile->setShortcut(Qt::CTRL + Qt::Key_R);
     actionUpdateProfile->setDisabled(true);
@@ -58,7 +58,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     QObject::connect(actionClearTable, &QAction::triggered, this, &DBBrowser::slotClearTable);
     QObject::connect(actionReport, &QAction::triggered, this, &DBBrowser::slotReport);
     QObject::connect(actionLoad, &QAction::triggered, this, &DBBrowser::slotLoadQuery);
-    QObject::connect(actionSearch, &QAction::triggered, this, &DBBrowser::slotSearch);
+    QObject::connect(actionFilter, &QAction::triggered, this, &DBBrowser::slotSearch);
     QObject::connect(actionUpdateProfile, &QAction::triggered, this, &DBBrowser::slotUpdateProfile);
     QObject::connect(actionComment, &QAction::triggered, this, &DBBrowser::slotComment);
     QObject::connect(actionView, &QAction::triggered, this, &DBBrowser::slotViewProfile);
@@ -77,7 +77,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     toolBar->addAction(actionView);
     toolBar->addAction(actionUpdateProfile);
     toolBar->addAction(actionReport);
-    toolBar->addAction(actionSearch);
+    toolBar->addAction(actionFilter);
     toolBar->addAction(actionComment);
     toolBar->addSeparator();
     toolBar->addAction(actionLoad);
@@ -162,7 +162,7 @@ void DBBrowser::slotRefresh()
     actionUpdateProfile->setEnabled(false);
     actionView->setEnabled(false);
     actionComment->setEnabled(false);
-    actionSearch->setEnabled(false);
+    actionFilter->setEnabled(false);
     actionReport->setEnabled(false);
 
     tree->clear();
@@ -192,7 +192,7 @@ void DBBrowser::slotRefresh()
                 table->setIcon(0,QIcon(":/resources/img/grid.svg"));
                 tableCount++;
             }
-            actionSearch->setEnabled(true);
+            actionFilter->setEnabled(true);
             actionReport->setEnabled(true);
         }
     }
@@ -609,7 +609,7 @@ void DBBrowser::slotSearch()
     auto db = database();
     if(!db.isOpen())
     {
-        actionSearch->setEnabled(false);
+        actionFilter->setEnabled(false);
         return;
     }
 
@@ -618,7 +618,7 @@ void DBBrowser::slotSearch()
     auto model = qobject_cast<QSqlTableModel *>(table->model());
     if(!model)
     {
-        actionSearch->setEnabled(false);
+        actionFilter->setEnabled(false);
         return;
     }
 
@@ -739,7 +739,8 @@ void DBBrowser::slotComment()
 
     auto count = table->selectionModel()->selectedRows().count();
     auto currentSelection = table->selectionModel()->selectedRows();
-    auto record = model->record(currentSelection.at(count - 1).row());
+    auto currentrow = currentSelection.at(count - 1).row();
+    auto record = model->record(currentrow);
 
     auto uuid = record.field("Uuid").value().toString(); // NOTE: 'Uuid' column
     auto curname = record.field("CurrentName").value().toString(); // NOTE: 'CurrentName' column
@@ -762,8 +763,17 @@ void DBBrowser::slotComment()
 
     if(query.exec(text))
     {
+        table->clearSelection();
         model->select();
         showTableInfo(model->filter());
+
+        // кэшируем
+        while(model->canFetchMore() && model->rowCount() < currentrow)
+            model->fetchMore();
+
+        auto index = table->model()->index(currentrow, 0);
+        table->scrollTo(index, QAbstractItemView::EnsureVisible);
+        table->setCurrentIndex(index);
     }
     else
     {

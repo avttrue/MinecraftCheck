@@ -36,7 +36,7 @@ private:
     QAction* actionDeleteRow;
     QAction* actionClearTable;
     QAction* actionReport;
-    QAction* actionSearch;
+    QAction* actionFilter;
     QAction* actionUpdateProfile;
     QAction* actionComment;
     QAction* actionView;
