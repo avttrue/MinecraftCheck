@@ -494,6 +494,7 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile, bool* updated
 {
     if(!database.isOpen()) return;
 
+    bool rezult = false;
     QString comments;
     QString hasCapes = "0";
     QString text = getTextFromRes(":/resources/sql/is_profile_exists_uuid.sql").arg(profile.Id);
@@ -504,7 +505,7 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile, bool* updated
     {
         if(answer.at(0).at(0).toInt() > 0)
         {
-            if(updated) *updated = true;
+            rezult = true;
             textEvents->addText(QString("[i]\tProfile '%1' already EXISTS, rewrites").
                                 arg(profile.Id));
 
@@ -540,8 +541,11 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile, bool* updated
             setQueryDataBase("COMMIT;");
         }
         else
+        {
             textEvents->addText(QString("[i]\tProfile '%1' is NEW, will be added").
                                 arg(profile.Id));
+            rezult = false;
+        }
     }
 
     // внесение данных по профилю в БД
@@ -585,6 +589,7 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile, bool* updated
 
     dbBrowser->slotRefresh();
     showDBInfo();
+    if(updated) *updated = rezult;
 }
 
 QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool updated)
@@ -601,6 +606,15 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool upd
     report_content.append(QString("<tr><td class='TDTEXT1'>"
                                   "<h3>First name</h3></td>"
                                   "<td class='TDTEXT1'><h3>%1</h3></td></tr>").arg(profile.FirstName));
+
+    if(config->ReportAddPortrait())
+    {
+        QPixmap portrait = getProfilePortrait(profile.Skin, config->ReportPortraitSize());
+        report_content.append(QString("<tr><td class='TDIMG' colspan='2'>"
+                                      "<img src='data:image/png;base64,%1' "
+                                      "alt='portrait'></td></tr>").
+                              arg(getBase64Image(portrait)));
+    }
 
     if(!profile.NameHistory.isEmpty())
     {
@@ -633,24 +647,19 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool upd
                                   "<td class='TDTEXT1'><h3>%1</h3></td></tr>").
                           arg(profile.SkinModel));
 
-    if(!profile.Skin.isEmpty())
-    {
-        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
-                                      "<h2>Skin</h2></td></tr>"));
+    report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
+                                  "<h2>Skin</h2></td></tr>"));
 
-        QPixmap image;
-        image.loadFromData(QByteArray::fromBase64(profile.Skin.toLatin1()));
-
-        report_content.append(QString("<tr><td class='TDIMG' colspan='2'><br>"
-                                      "<img src='data:image/png;base64,%1' "
-                                      "alt='%2' width='%3' height='%4'><br>").
-                              arg(profile.Skin,
-                                  profile.SkinUrl,
-                                  QString::number(image.width() * config->ReportImgScale()),
-                                  QString::number(image.height() * config->ReportImgScale())));
-        report_content.append(QString("<a href='%1' title='%1'>link</a><br>&#160;</td></tr>").
-                              arg(profile.SkinUrl));
-    }
+    QPixmap image = getPixmapFromBase64(profile.Skin);
+    report_content.append(QString("<tr><td class='TDIMG' colspan='2'><br>"
+                                  "<img src='data:image/png;base64,%1' "
+                                  "alt='%2' width='%3' height='%4'><br>").
+                          arg(profile.Skin,
+                              profile.SkinUrl,
+                              QString::number(image.width() * config->ReportImgScale()),
+                              QString::number(image.height() * config->ReportImgScale())));
+    report_content.append(QString("<a href='%1' title='%1'>link</a><br>&#160;</td></tr>").
+                          arg(profile.SkinUrl));
 
     if(!profile.Capes.isEmpty())
     {
@@ -660,8 +669,7 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool upd
         for(auto key: profile.Capes.keys())
         {
             auto cape = profile.Capes.value(key);
-            QPixmap image;
-            image.loadFromData(QByteArray::fromBase64(cape.toLatin1()));
+            QPixmap image = getPixmapFromBase64(cape);
 
             report_content.append(QString("<tr><td class='TDIMG' colspan='2'><br>"
                                           "<img src='data:image/png;base64,%1' "

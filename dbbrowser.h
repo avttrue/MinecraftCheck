@@ -79,7 +79,7 @@ public:
         : QSqlTableModel(parent, db)
     {}
 
-    QVariant data(const QModelIndex &idx, int role) const override;
+    QVariant data(const QModelIndex &index, int role) const override;
 };
 
 #endif

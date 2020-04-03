@@ -1,6 +1,7 @@
 #include "dialogvalueslist.h"
 #include "controls.h"
 #include "properties.h"
+#include "helpergraphics.h"
 
 #include <QCheckBox>
 #include <QComboBox>
@@ -138,8 +139,8 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             label->setWordWrap(true);
             bl->addWidget(label, 0);
 
-            QPixmap pixmap;
-            pixmap.loadFromData(QByteArray::fromBase64(v.toString().toLatin1()));
+            QPixmap pixmap = getPixmapFromBase64(v.toString(), nullptr, config->ButtonSize());
+
             auto realw = pixmap.width();
             auto realh = pixmap.height();
             if(realw > 0 && realh)
@@ -174,14 +175,6 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             tbimginfo->addWidget(limgsize);
             bl->addWidget(tbimginfo, 0);
 
-            auto le = new QLineEdit(v.toString(), widget);
-            le->setReadOnly(true);
-            le->setCursorPosition(0);
-            QPalette pal;
-            pal.setColor(QPalette::Base, palette().color(QPalette::Button));
-            pal.setColor(QPalette::Text, palette().color(QPalette::ButtonText));
-            le->setPalette(pal);
-            bl->addWidget(le, 1);
             widget->setLayout(bl);
             addWidgetContent(widget);
             continue;

@@ -57,9 +57,21 @@ void Config::load()
         m_Settings->setValue("MainWindow/ButtonSize", BUTTON_SIZE);
     m_ButtonSize = m_Settings->value("MainWindow/ButtonSize").toInt();
 
+    if(!m_Settings->contains("MainWindow/TablePortraitSize"))
+        m_Settings->setValue("MainWindow/TablePortraitSize", TABLE_PORTRAIT_SIZE);
+    m_TablePortraitSize = m_Settings->value("MainWindow/TablePortraitSize").toInt();
+
+    if(!m_Settings->contains("MainWindow/TableSkinSize"))
+        m_Settings->setValue("MainWindow/TableSkinSize", TABLE_SKIN_SIZE);
+    m_TableSkinSize = m_Settings->value("MainWindow/TableSkinSize").toInt();
+
     if(!m_Settings->contains("MainWindow/FontNameEvents"))
         m_Settings->setValue("MainWindow/FontNameEvents", FONT_NAME_EVENTS);
     m_FontNameEvents = m_Settings->value("MainWindow/FontNameEvents").toString();
+
+    if(!m_Settings->contains("MainWindow/TableSkinMode"))
+        m_Settings->setValue("MainWindow/TableSkinMode", TABLE_SKIN_MODE);
+    m_TableSkinMode = m_Settings->value("MainWindow/TableSkinMode").toString();
 
     if(!m_Settings->contains("MainWindow/DateTimeFormat"))
         m_Settings->setValue("MainWindow/DateTimeFormat", DT_FORMAT);
@@ -105,6 +117,10 @@ void Config::load()
         m_Settings->setValue("Report/ImgScale", REPORT_IMG_SCALE);
     m_ReportImgScale = m_Settings->value("Report/ImgScale").toInt();
 
+    if(!m_Settings->contains("Report/PortraitSize"))
+        m_Settings->setValue("Report/PortraitSize", REPORT_PORTRAIT_SIZE);
+    m_ReportPortraitSize = m_Settings->value("Report/PortraitSize").toInt();
+
     if(!m_Settings->contains("Report/Margins"))
         m_Settings->setValue("Report/Margins", REPORT_MARGINS);
     m_ReportMargins = m_Settings->value("Report/Margins").toInt();
@@ -112,6 +128,10 @@ void Config::load()
     if(!m_Settings->contains("Report/AutoOpen"))
         m_Settings->setValue("Report/AutoOpen", REPORT_AUTOOPEN);
     m_ReportAutoOpen = m_Settings->value("Report/AutoOpen").toBool();
+
+    if(!m_Settings->contains("Report/AddPortrait"))
+        m_Settings->setValue("Report/AddPortrait", REPORT_ADD_PORTRAIT);
+    m_ReportAddPortrait = m_Settings->value("Report/AddPortrait").toBool();
 
     if(!m_Settings->contains("Report/UseQtHtmlContent"))
         m_Settings->setValue("Report/UseQtHtmlContent", USE_QT_HTML_CONTENT);
@@ -132,6 +152,46 @@ void Config::load()
     if(!m_Settings->contains("Database/KeepCommentsAtUpd"))
         m_Settings->setValue("Database/KeepCommentsAtUpd", KEEP_COMMENTS_AT_UPD);
     m_KeepCommentsAtUpd = m_Settings->value("Database/KeepCommentsAtUpd").toBool();
+}
+
+void Config::setReportAddPortrait(bool value)
+{
+    if(m_ReportAddPortrait == value) return;
+
+    m_ReportAddPortrait = value;
+    m_Settings->setValue("Report/AddPortrait", m_ReportAddPortrait);
+}
+
+void Config::setReportPortraitSize(int value)
+{
+    if(m_ReportPortraitSize == value) return;
+
+    m_ReportPortraitSize = value;
+    m_Settings->setValue("Report/PortraitSize", m_ReportPortraitSize);
+}
+
+void Config::setTableSkinSize(int value)
+{
+    if(m_TableSkinSize == value) return;
+
+    m_TableSkinSize = value;
+    m_Settings->setValue("MainWindow/TableSkinSize", m_TableSkinSize);
+}
+
+void Config::setTablePortraitSize(int value)
+{
+    if(m_TablePortraitSize == value) return;
+
+    m_TablePortraitSize = value;
+    m_Settings->setValue("MainWindow/TablePortraitSize", m_TablePortraitSize);
+}
+
+void Config::setTableSkinMode(const QString &value)
+{
+    if(m_TableSkinMode == value) return;
+
+    m_TableSkinMode = value;
+    m_Settings->setValue("MainWindow/TableSkinMode", m_TableSkinMode);
 }
 
 void Config::setUseQtHtmlContent(bool value)
@@ -326,6 +386,11 @@ void Config::setQueryServers(const QString &value)
     m_Settings->setValue("ApiQueries/Servers", m_QueryServers);
 }
 
+bool Config::ReportAddPortrait() const { return m_ReportAddPortrait; }
+int Config::ReportPortraitSize() const { return m_ReportPortraitSize; }
+int Config::TableSkinSize() const { return m_TableSkinSize; }
+int Config::TablePortraitSize() const { return m_TablePortraitSize; }
+QString Config::TableSkinMode() const { return m_TableSkinMode; }
 bool Config::UseQtHtmlContent() const { return m_UseQtHtmlContent; }
 int Config::ReportMargins() const { return m_ReportMargins; }
 bool Config::OpenUrls() const { return m_OpenUrls; }

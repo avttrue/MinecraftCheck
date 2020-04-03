@@ -2,6 +2,7 @@
 #include "dbbrowser.h"
 #include "properties.h"
 #include "helper.h"
+#include "helpergraphics.h"
 #include "dialogs/dialogvalueslist.h"
 
 #include <QDebug>
@@ -109,6 +110,17 @@ DBBrowser::DBBrowser(QWidget *parent)
     table->setSelectionBehavior(QAbstractItemView::SelectRows);
     //table->setSelectionMode(QAbstractItemView::SingleSelection);
     table->setSelectionMode(QAbstractItemView::MultiSelection);
+
+    if(config->TableSkinMode().toLower() == "portrait" )
+    {
+        auto verticalHeader = table->verticalHeader();
+        verticalHeader->setDefaultSectionSize(config->TablePortraitSize());
+    }
+    else if(config->TableSkinMode().toLower() == "skin" )
+    {
+        auto verticalHeader = table->verticalHeader();
+        verticalHeader->setDefaultSectionSize(config->TableSkinSize());
+    }
 
     auto frameTable = new QFrame();
     auto layoutTable = new QVBoxLayout();
@@ -297,6 +309,16 @@ void DBBrowser::showTable(const QString &tablename)
     }
 
     table->setModel(model);
+
+    // перенос колонки Profiles.Skin на первое место
+    if(tablename == "Profiles" && // NOTE: 'Profiles' table
+        (config->TableSkinMode().toLower() == "portrait" ||
+         config->TableSkinMode().toLower() == "skin"))
+    {
+        QHeaderView *header = table->horizontalHeader();
+        auto index = getColumnIndex(model, "Skin"); // NOTE: 'Skin' column
+        if(index > -1) header->moveSection(index, 0);
+    }
 
     if(config->AdvancedDBMode())
         table->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
@@ -502,7 +524,7 @@ void DBBrowser::rowToDialogValueMap(QMap<QString, DialogValue>* map, int row)
 
     const QVector<QString> keys =
         {"01#_Uuid: ",
-         "02#_DateTime: ",
+         "02#_Portrait: ",
          "03#_FirstName: ",
          "04#_CurrentName: ",
          "05#_Skin: ",
@@ -515,7 +537,6 @@ void DBBrowser::rowToDialogValueMap(QMap<QString, DialogValue>* map, int row)
 
     QStringList fields;
     fields.append(record.field("Uuid").value().toString()); // NOTE: 'Uuid' column
-    fields.append(record.field("DateTime").value().toString()); // NOTE: 'DateTime' column
     fields.append(record.field("FirstName").value().toString()); // NOTE: 'FirstName' column
     fields.append(record.field("CurrentName").value().toString()); // NOTE: 'CurrentName' column
     fields.append(record.field("Skin").value().toString()); // NOTE: 'Skin' column
@@ -526,17 +547,18 @@ void DBBrowser::rowToDialogValueMap(QMap<QString, DialogValue>* map, int row)
     fields.append(record.field("Capes").value().toString()); // NOTE: 'Capes' column
 
     auto scale = config->ReportImgScale();
+    auto portrait = getBase64Image(getProfilePortrait(fields.at(3), config->ReportPortraitSize()));
     *map =
-        {{keys.at(0), {QVariant::String, fields.at(0), "", "", DialogValueMode::Disabled}},
-         {keys.at(1), {QVariant::String, fields.at(1), "", "", DialogValueMode::Disabled}},
-         {keys.at(2), {QVariant::String, fields.at(2), "", "", DialogValueMode::Disabled}},
-         {keys.at(3), {QVariant::String, fields.at(3), "", "", DialogValueMode::Disabled}},
-         {keys.at(4), {QVariant::String, fields.at(4), scale, scale, DialogValueMode::Base64Image}},
-         {keys.at(5), {QVariant::String, fields.at(5), "", "", DialogValueMode::Disabled}},
-         {keys.at(6), {QVariant::String, fields.at(6), "", "", DialogValueMode::Disabled}},
-         {keys.at(7), {QVariant::String, fields.at(7), "", "", DialogValueMode::Disabled}},
-         {keys.at(8), {QVariant::String, fields.at(8) == "0" ? "NO" : "YES", "", "", DialogValueMode::Disabled}},
-         {keys.at(9), {QVariant::String, fields.at(9) == "0" ? "NO" : "YES", "", "", DialogValueMode::Disabled}}
+        {{keys.at(0), {QVariant::String, fields.at(0), 0, 0, DialogValueMode::Disabled}},
+         {keys.at(1), {QVariant::String, portrait, 0, 0, DialogValueMode::Base64Image}},
+         {keys.at(2), {QVariant::String, fields.at(1), 0, 0, DialogValueMode::Disabled}},
+         {keys.at(3), {QVariant::String, fields.at(2), 0, 0, DialogValueMode::Disabled}},
+         {keys.at(4), {QVariant::String, fields.at(3), scale, scale, DialogValueMode::Base64Image}},
+         {keys.at(5), {QVariant::String, fields.at(4), 0, 0, DialogValueMode::Disabled}},
+         {keys.at(6), {QVariant::String, fields.at(5), 0, 0, DialogValueMode::Disabled}},
+         {keys.at(7), {QVariant::String, fields.at(6), 0, 0, DialogValueMode::Disabled}},
+         {keys.at(8), {QVariant::String, fields.at(7) == "0" ? "NO" : "YES", "", "", DialogValueMode::Disabled}},
+         {keys.at(9), {QVariant::String, fields.at(8) == "0" ? "NO" : "YES", "", "", DialogValueMode::Disabled}}
         };
 }
 
@@ -851,8 +873,29 @@ int DBBrowser::getColumnIndex(QSqlTableModel *model, const QString& name)
     return -1;
 }
 
-QVariant MySqlTableModel::data(const QModelIndex &idx, int role) const
+QVariant MySqlTableModel::data(const QModelIndex &index, int role) const
 {
-    if (role == Qt::BackgroundRole && isDirty(idx)) return QBrush(QColor(Qt::yellow));
-    return QSqlTableModel::data(idx, role);
+    if(role == Qt::BackgroundRole && isDirty(index)) return QBrush(QColor(Qt::yellow));
+
+    auto tableskinmode = config->TableSkinMode().toLower();
+    if(tableskinmode == "portrait" || tableskinmode == "skin")
+    {
+        auto columnname = headerData(index.column(), Qt::Horizontal, Qt::DisplayRole).toString();
+        auto tablename = tableName().remove('"'); // tableName() возвращает значение в кавычках
+        if(tablename == "Profiles" && columnname == "Skin") // NOTE: 'Profiles.Skin' column
+        {
+            QString s_img = QSqlTableModel::data(index, Qt::DisplayRole).toString();
+            QPixmap pixmap;
+            if(tableskinmode == "portrait")
+                pixmap = getProfilePortrait(s_img, config->TablePortraitSize());
+            else if(tableskinmode == "skin")
+                pixmap = getPixmapFromBase64(s_img, nullptr, config->TableSkinSize());
+
+            if(role == Qt::DisplayRole) return QString();
+            if(role == Qt::DecorationRole) return pixmap;
+            if(role == Qt::SizeHintRole) return pixmap.size();
+        }
+    }
+
+    return QSqlTableModel::data(index, role);
 }

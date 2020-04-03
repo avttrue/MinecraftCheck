@@ -69,6 +69,16 @@ public:
     void setReportMargins(int value);
     bool UseQtHtmlContent() const;
     void setUseQtHtmlContent(bool value);
+    QString TableSkinMode() const;
+    void setTableSkinMode(const QString &value);
+    int TablePortraitSize() const;
+    void setTablePortraitSize(int value);
+    int TableSkinSize() const;
+    void setTableSkinSize(int value);
+    int ReportPortraitSize() const;
+    void setReportPortraitSize(int value);
+    bool ReportAddPortrait() const;
+    void setReportAddPortrait(bool value);
 
 protected:
     void load();
@@ -89,6 +99,10 @@ private:
     QString m_MojangModel2;             // модель Alex
     QString m_MojangImageFormat;        // формат картинок
     QString m_FontNameEvents;           // семейство шрифта лога событий
+    QString m_TableSkinMode;            // отображение скина в таблице: 'portrait', 'skin', 'none' (любое)
+    int m_TableSkinSize;                // размер скина в таблице
+    int m_TablePortraitSize;            // размер портрета в таблице
+    int m_ReportPortraitSize;           // размер портрета в отчёте
     int m_SplashTime;                   // время отображения сплеш-заставки
     int m_SplashSize;                   // размер сплеш-заставки
     int m_ButtonSize;                   // размеры кнопок интерфейса
@@ -96,6 +110,7 @@ private:
     int m_ReportImgScale;               // масштаб картинок в отображении профиля игрока
     int m_LogSize;                      // количество строк лога событий
     int m_ReportMargins;                // отступы в % от краёв окна при выводе отчёта
+    bool m_ReportAddPortrait;           // добавлять портреты в отчёт
     bool m_ReportAutoOpen;              // открывать отчёт после сохранения
     bool m_AutoVacuum;                  // выполнять vacuum при выходе
     bool m_AutoCollectProfiles;         // сохранять все профили игроков в БД
