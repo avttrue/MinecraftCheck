@@ -28,7 +28,7 @@ QPixmap getPixmapFromBase64(const QString& img, bool* ok, int defsize)
     bool result = true;
     if(!pixmap.loadFromData(QByteArray::fromBase64(img.toLatin1())))
     {
-        pixmap = QIcon(":/resources/img/question.svg").pixmap(defsize, defsize);
+        pixmap = QIcon(":/resources/img/error.svg").pixmap(defsize, defsize);
         result = false;
         qCritical() << __func__ << ": Error loading from Base64";
     }

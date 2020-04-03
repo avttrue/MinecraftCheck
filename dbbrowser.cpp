@@ -604,8 +604,12 @@ void DBBrowser::slotReport()
 
     if(answer.isEmpty())
     {
+        auto count = getTableSize(model->filter());
         QMessageBox::StandardButton reply;
-        reply = QMessageBox::question(this, "Confirm", "No profiles are selected. Create a report for all profiles?",
+        reply = QMessageBox::question(this, "Confirm",
+                                      QString("No profiles are selected. "
+                                              "Create a report for all (%1) profiles?").
+                                      arg(QString::number(count)),
                                       QMessageBox::Yes | QMessageBox::No);
 
         if (reply == QMessageBox::No) return;

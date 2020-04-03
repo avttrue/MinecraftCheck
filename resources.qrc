@@ -62,5 +62,6 @@
         <file>resources/tip_body.html</file>
         <file>resources/img/down_arrow.svg</file>
         <file>resources/img/up_arrow.svg</file>
+        <file>resources/img/error.svg</file>
     </qresource>
 </RCC>
