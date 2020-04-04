@@ -608,7 +608,8 @@ void DBBrowser::slotReport()
         QMessageBox::StandardButton reply;
         reply = QMessageBox::question(this, "Confirm",
                                       QString("No profiles are selected. "
-                                              "Create a report for all (%1) profiles?").
+                                              "Create a report for all (%1) profiles?"
+                                              "\nIt may take a long time!").
                                       arg(QString::number(count)),
                                       QMessageBox::Yes | QMessageBox::No);
 
