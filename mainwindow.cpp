@@ -382,6 +382,10 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
 {
     if(!database.isOpen()) return -1;
 
+    if(log) taskSeparator();
+
+    auto time = QDateTime::currentMSecsSinceEpoch();
+
     QSqlQuery query(database);
     if(!query.exec(text))
     {
@@ -401,7 +405,16 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
             query.first();
         }
 
-        if(answer == nullptr || rows <= 0) return rows;
+        if(answer == nullptr || rows <= 0)
+        {
+            if(log)
+            {
+                textEvents->addText("[i]\tDatabase query: answer is empty");
+                textEvents->addText(QString("[i]\tQuery was completed in %1 ms").
+                                    arg(QString::number(QDateTime::currentMSecsSinceEpoch() - time)));
+            }
+            return rows;
+        }
 
         answer->clear();
 
@@ -434,10 +447,11 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
 
         if(log)
         {
-            taskSeparator();
             textEvents->addText(QString("[i]\tDatabase query answer: %1").arg(sanswer));
             taskSeparator();
             textEvents->addText(QString("[i]\tAnswer len: %1 rows").arg(QString::number(rows)));
+            textEvents->addText(QString("[i]\tQuery was completed in %1 ms").
+                                arg(QString::number(QDateTime::currentMSecsSinceEpoch() - time)));
         }
         return rows;
     }
@@ -446,7 +460,12 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
         auto raffected =query.numRowsAffected();
         if(raffected > 0 || log)
             textEvents->addText(QString("[i]\tDatabase rows affected: %1").
-                                arg(QString::number(raffected)));            
+                                arg(QString::number(raffected)));
+        if(log)
+        {
+            textEvents->addText(QString("[i]\tQuery was completed in %1 ms").
+                                arg(QString::number(QDateTime::currentMSecsSinceEpoch() - time)));
+        }
         return raffected;
     }
 }
