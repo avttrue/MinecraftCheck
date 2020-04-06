@@ -106,7 +106,8 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
         QVariant maxv = values->value(key).maxValue;
         QString text = key; text.remove(QRegExp(RE_NUM_MARK));
 
-        if(values->value(key).mode == DialogValueMode::Caption)
+        if(t == QVariant::Invalid ||
+            values->value(key).mode == DialogValueMode::Caption)
         {
             auto widget = new QWidget();
             auto bl = new QHBoxLayout();
