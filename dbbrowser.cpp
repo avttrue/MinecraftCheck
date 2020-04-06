@@ -317,7 +317,8 @@ void DBBrowser::showTable(const QString &tablename)
     {
         QHeaderView *header = table->horizontalHeader();
         auto index = getColumnIndex(model, "Skin"); // NOTE: 'Skin' column
-        if(index > -1) header->moveSection(index, 0);
+        if(index > -1 && header->sectionPosition(index) != 0)
+            header->moveSection(index, 0);
     }
 
     if(config->AdvancedDBMode())
