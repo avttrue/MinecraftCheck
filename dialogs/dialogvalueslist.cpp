@@ -16,6 +16,7 @@
 #include <QToolBar>
 #include <QStandardItemModel>
 #include <QFileDialog>
+#include <QGraphicsDropShadowEffect>
 
 DialogValuesList::DialogValuesList(QWidget* parent,
                                    const QString& icon,
@@ -103,7 +104,33 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
         QVariant v = values->value(key).value;
         QVariant minv = values->value(key).minValue;
         QVariant maxv = values->value(key).maxValue;
-        QString text = key; text.remove(QRegExp("(^.*)(#_)"));
+        QString text = key; text.remove(QRegExp(RE_NUM_MARK));
+
+        if(values->value(key).mode == DialogValueMode::Caption)
+        {
+            auto widget = new QWidget();
+            auto bl = new QHBoxLayout();
+            bl->setMargin(0);
+
+            auto label = new QLabel(widget);
+            label->setText(QString("<b>%1</b>").arg(text));
+            label->setWordWrap(true);
+
+            auto effect = new QGraphicsDropShadowEffect(widget);
+            effect->setOffset(-1, -1);
+            effect->setColor(widget->palette().color(QPalette::Base));
+            label->setGraphicsEffect(effect);
+
+            QFont font = label->font();
+            font.setPointSize(font.pointSize() + 2);
+            font.setUnderline(true);
+            label->setFont(font);
+
+            bl->addWidget(label, 0);
+            widget->setLayout(bl);
+            addWidgetContent(widget);
+            continue;
+        }
 
         if(values->value(key).mode == DialogValueMode::Disabled)
         {
@@ -204,7 +231,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
 
         if(t == QVariant::Bool)
         {
-            auto cbox = new QCheckBox(key);
+            auto cbox = new QCheckBox(text);
             cbox->setChecked(v.toBool());
             cbox->setProperty("ValueName", key);
             QObject::connect(cbox, &QCheckBox::stateChanged,
@@ -217,8 +244,11 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
         if(t == QVariant::Int || t == QVariant::Double)
         {
             auto spinbox = new QSpinBox();
-            spinbox->setPrefix(QString("%1: ").arg(key));
-            spinbox->setRange(minv.toInt(), maxv.toInt());
+            spinbox->setPrefix(QString("%1: ").arg(text));
+            spinbox->setRange(minv.toInt(),
+                              maxv.toInt() == minv.toInt()
+                                  ? std::numeric_limits<int>::max()
+                                  : maxv.toInt());
             spinbox->setSingleStep(1);
             spinbox->setValue(v.toInt());
             spinbox->installEventFilter(this);

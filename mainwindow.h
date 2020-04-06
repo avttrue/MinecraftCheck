@@ -65,6 +65,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
     void slotAbout();
+    void slotSetup();
 
 };
 #endif // MAINWINDOW_H

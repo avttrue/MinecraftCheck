@@ -7,6 +7,7 @@
 #include "dbbrowser.h"
 #include "splashscreen.h"
 #include "textlog.h"
+#include <dialogs/dialogvalueslist.h>
 
 #include <QDebug>
 #include <QApplication>
@@ -105,6 +106,9 @@ void MainWindow::loadGui()
     auto actionAbout = new QAction(QIcon(":/resources/img/question.svg"), "About", this);
     QObject::connect(actionAbout, &QAction::triggered, this, &MainWindow::slotAbout);
 
+    auto actionSetup = new QAction(QIcon(":/resources/img/setup.svg"), "Settings", this);
+    QObject::connect(actionSetup, &QAction::triggered, this, &MainWindow::slotSetup);
+
     //    auto testAction = new QAction(QIcon(":/resources/img/question.svg"), "TEST", this);
     //    QObject::connect(testAction, &QAction::triggered, [=]()
     //                     {});
@@ -124,6 +128,8 @@ void MainWindow::loadGui()
     tbMain->addAction(actionSave);
     //tbMain->addAction(testAction);
     tbMain->addWidget(new WidgetSpacer(this));
+    tbMain->addAction(actionSetup);
+    tbMain->addSeparator();
     tbMain->addAction(actionAbout);
     tbMain->addAction(actionQt);
     tbMain->addAction(actionExit);
@@ -897,4 +903,63 @@ void MainWindow::slotAbout()
                 arg(APP_NAME, APP_VERS, GIT_VERS, BUILD_DATE, getSystemInfo(), QT_VERSION_STR);
     setInformation(html);
     tabWidget->setCurrentIndex(0);
+}
+
+void MainWindow::slotSetup()
+{
+    const QVector<QString> keys = {"00#_DataBase options (after reload application)",
+                                   "01#_Advanced mode",
+                                   "02#_Skin mode",
+                                   "03#_Skin size ('skin' mode)",
+                                   "04#_Portrait size ('portrait' mode)",
+                                   "05#_Report options (at next report)",
+                                   "06#_Show portrait",
+                                   "07#_Portrait size",
+                                   "08#_Skin scale",
+                                   "09#_Led size (servise status)",
+                                   "10#_Margin (%)",
+                                   "11#_Open in system handler",
+                                   "12#_Use Qt html",
+                                   "13#_Common",
+                                   "14#_Event log size (0 = maximum)",
+                                   "15#_Use SI metric (at next recalc)",
+                                   "16#_Date and time format"};
+    QMap<QString, DialogValue> map =
+        {{keys.at(0), {QVariant::Invalid, 0, 0, 0, DialogValueMode::Caption}},
+         {keys.at(1), {QVariant::Bool, config->AdvancedDBMode(), 0, 0}},
+         {keys.at(2), {QVariant::StringList, config->TableSkinMode(), 0, QStringList({"none", "portrait", "skin"}), DialogValueMode::OneFromList}},
+         {keys.at(3), {QVariant::Int, config->TableSkinSize(), 8, 256}},
+         {keys.at(4), {QVariant::Int, config->TablePortraitSize(), 8, 256}},
+         {keys.at(5), {QVariant::Invalid, 0, 0, 0, DialogValueMode::Caption}},
+         {keys.at(6), {QVariant::Bool, config->ReportAddPortrait(), 0, 0}},
+         {keys.at(7), {QVariant::Int, config->ReportPortraitSize(), 8, 256}},
+         {keys.at(8), {QVariant::Int, config->ReportImgScale(), 1, 10}},
+         {keys.at(9), {QVariant::Int, config->ReportLedSize(), 8, 256}},
+         {keys.at(10), {QVariant::Int, config->ReportMargins(), 0, 30}},
+         {keys.at(11), {QVariant::Bool, config->ReportAutoOpen(), 0, 0}},
+         {keys.at(12), {QVariant::Bool, config->UseQtHtmlContent(), 0, 0}},
+         {keys.at(13), {QVariant::Invalid, 0, 0, 0, DialogValueMode::Caption}},
+         {keys.at(14), {QVariant::Int, config->LogSize(), 0, 0}},
+         {keys.at(15), {QVariant::Bool, config->SIMetric(), 0, 0}},
+         {keys.at(16), {QVariant::String, config->DateTimeFormat(), 0, 0}}
+        };
+
+    auto dvl = new DialogValuesList(this, ":/resources/img/setup.svg", "Settings", &map);
+
+    if(!dvl->exec()) return;
+
+    config->setAdvancedDBMode(map.value(keys.at(1)).value.toBool());
+    config->setTableSkinMode(map.value(keys.at(2)).value.toString());
+    config->setTableSkinSize(map.value(keys.at(3)).value.toInt());
+    config->setTablePortraitSize(map.value(keys.at(4)).value.toInt());
+    config->setReportAddPortrait(map.value(keys.at(6)).value.toBool());
+    config->setReportPortraitSize(map.value(keys.at(7)).value.toInt());
+    config->setReportImgScale(map.value(keys.at(8)).value.toInt());
+    config->setReportLedSize(map.value(keys.at(9)).value.toInt());
+    config->setReportMargins(map.value(keys.at(10)).value.toInt());
+    config->setReportAutoOpen(map.value(keys.at(11)).value.toBool());
+    config->setUseQtHtmlContent(map.value(keys.at(12)).value.toBool());
+    config->setLogSize(map.value(keys.at(14)).value.toInt());
+    config->setSIMetric(map.value(keys.at(15)).value.toBool());
+    config->setDateTimeFormat(map.value(keys.at(16)).value.toString());
 }

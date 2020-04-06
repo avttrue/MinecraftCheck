@@ -21,7 +21,8 @@ enum DialogValueMode
     Disabled,     // просто текстовое отображение значения
     OneFromList,  // для StringList - один из списка
     ManyFromList, // для StringList - несколько из списка
-    Base64Image   // для String - изображение в формате Base64, только отображение; minValue = width, maxValue = height
+    Base64Image,  // для String - изображение в формате Base64, только отображение; minValue = width, maxValue = height
+    Caption       // Заголовок
 };
 
 /*!

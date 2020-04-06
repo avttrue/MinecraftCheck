@@ -894,7 +894,10 @@ QVariant MySqlTableModel::data(const QModelIndex &index, int role) const
             if(tableskinmode == "portrait")
                 pixmap = getProfilePortrait(s_img, config->TablePortraitSize());
             else if(tableskinmode == "skin")
-                pixmap = getPixmapFromBase64(s_img, nullptr, config->TableSkinSize());
+                pixmap = getPixmapFromBase64(s_img, nullptr, config->TableSkinSize()).
+                         scaled(config->TableSkinSize(),
+                                config->TableSkinSize(),
+                                Qt::KeepAspectRatio, Qt::FastTransformation);
 
             if(role == Qt::DisplayRole) return QString();
             if(role == Qt::DecorationRole) return pixmap;

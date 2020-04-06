@@ -97,7 +97,7 @@ private:
     QString m_MojangDefaultSkin;        // скин по-умолчанию
     QString m_MojangModel1;             // модель Steve
     QString m_MojangModel2;             // модель Alex
-    QString m_MojangImageFormat;        // формат картинок
+    QString m_MojangImageFormat;        // формат картинок в Mojang API
     QString m_FontNameEvents;           // семейство шрифта лога событий
     QString m_TableSkinMode;            // отображение скина в таблице: 'portrait', 'skin', 'none' (любое)
     int m_TableSkinSize;                // размер скина в таблице
