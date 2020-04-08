@@ -145,7 +145,6 @@ DBBrowser::DBBrowser(QWidget *parent)
     layout->addWidget(splitter);
 
     QMetaObject::connectSlotsByName(this);
-    if(!config->AdvancedDBMode()) qInfo() << "Advanced DB Mode OFF, see" << APP_CFG << "file";
 }
 
 static QString dbCaption(const QSqlDatabase &db)
