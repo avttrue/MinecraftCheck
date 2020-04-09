@@ -43,14 +43,17 @@ QPixmap getProfilePortrait(const QString &img, int size)
     if(!ok) return pixmap;
 
     QImage image = pixmap.toImage();
-    auto face1 = image.copy(8, 8, 8, 8);
-    auto face2 = image.copy(40, 8, 8, 8);
-    auto pos = QPoint(0, 0);
+    auto alfacolor = image.pixelColor(32, 0); // назначение маски прзрачности пока не готово
 
-    QPainter painter(&face1);
-    painter.drawImage(pos, face2);
+    QImage face(8, 8, QImage::Format_ARGB32_Premultiplied);
+    face.fill(alfacolor);
 
-    pixmap = QPixmap::fromImage(face1);
+    QPainter painter(&face);
+    painter.drawImage(QPoint(0, 0), image.copy(8, 8, 8, 8));
+    painter.drawImage(QPoint(0, 0), image.copy(40, 8, 8, 8));
+    painter.end();
+
+    pixmap = QPixmap::fromImage(face);
     if(size > 0)
         pixmap = pixmap.scaled(size, size, Qt::IgnoreAspectRatio, Qt::FastTransformation);
 
