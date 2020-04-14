@@ -38,7 +38,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     actionClearTable->setDisabled(true);
     actionReport = new QAction(QIcon(":/resources/img/text.svg"), "Report", this);
     actionReport->setDisabled(true);
-    auto actionLoad = new QAction(QIcon(":/resources/img/load.svg"), "Load query", this);
+    auto actionLoad = new QAction(QIcon(":/resources/img/sql_file.svg"), "Load query", this);
     actionFilter = new QAction(QIcon(":/resources/img/search.svg"), "Set filter", this);
     actionFilter->setShortcut(Qt::CTRL + Qt::Key_F);
     actionFilter->setDisabled(true);
