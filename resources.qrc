@@ -64,5 +64,6 @@
         <file>resources/img/error.svg</file>
         <file>resources/img/setup.svg</file>
         <file>resources/img/sql_file.svg</file>
+        <file>resources/img/grid_green.svg</file>
     </qresource>
 </RCC>

@@ -199,8 +199,13 @@ void DBBrowser::slotRefresh()
             for(int t = 0; t < tables.count(); ++t)
             {
                 auto table = new QTreeWidgetItem(root);
-                table->setText(0, tables.at(t));
-                table->setIcon(0,QIcon(":/resources/img/grid.svg"));
+                auto table_name = tables.at(t);
+
+                table->setText(0, table_name);
+                if(table_name == "Profiles")
+                    table->setIcon(0,QIcon(":/resources/img/grid_green.svg"));
+                else
+                    table->setIcon(0,QIcon(":/resources/img/grid.svg"));
                 tableCount++;
             }
             actionFilter->setEnabled(true);
