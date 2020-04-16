@@ -882,12 +882,13 @@ QVariant MySqlTableModel::data(const QModelIndex &index, int role) const
 {
     if(role == Qt::BackgroundRole && isDirty(index)) return QBrush(QColor(Qt::yellow));
 
-    auto tableskinmode = config->TableSkinMode().toLower();
-    if(tableskinmode == "portrait" || tableskinmode == "skin")
+    auto columnname = headerData(index.column(), Qt::Horizontal, Qt::DisplayRole).toString();
+    auto tablename = tableName().remove('"'); // tableName() возвращает значение в кавычках
+
+    if(tablename == "Profiles" && columnname == "Skin") // NOTE: 'Profiles.Skin' column
     {
-        auto columnname = headerData(index.column(), Qt::Horizontal, Qt::DisplayRole).toString();
-        auto tablename = tableName().remove('"'); // tableName() возвращает значение в кавычках
-        if(tablename == "Profiles" && columnname == "Skin") // NOTE: 'Profiles.Skin' column
+        auto tableskinmode = config->TableSkinMode().toLower();
+        if(tableskinmode == "portrait" || tableskinmode == "skin")
         {
             QString s_img = QSqlTableModel::data(index, Qt::DisplayRole).toString();
             QPixmap pixmap;
@@ -903,6 +904,13 @@ QVariant MySqlTableModel::data(const QModelIndex &index, int role) const
             if(role == Qt::DecorationRole) return pixmap;
             if(role == Qt::SizeHintRole) return pixmap.size();
         }
+    }
+
+    else if(columnname == "DateTime" || columnname == "ChangedToAt")
+    {
+        if(role == Qt::DisplayRole)
+            return longTimeToString(QSqlTableModel::data(index, role).toLongLong(),
+                                    config->DateTimeFormat());
     }
 
     return QSqlTableModel::data(index, role);
