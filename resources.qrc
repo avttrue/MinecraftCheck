@@ -25,7 +25,6 @@
         <file>resources/img/led_red.svg</file>
         <file>resources/img/led_green.svg</file>
         <file>resources/img/info.svg</file>
-        <file>resources/img/grid.svg</file>
         <file>resources/img/exit.svg</file>
         <file>resources/img/delete.svg</file>
         <file>resources/img/database.svg</file>
@@ -64,6 +63,7 @@
         <file>resources/img/error.svg</file>
         <file>resources/img/setup.svg</file>
         <file>resources/img/sql_file.svg</file>
-        <file>resources/img/grid_green.svg</file>
+        <file>resources/img/grid_gray.svg</file>
+        <file>resources/img/grid_black.svg</file>
     </qresource>
 </RCC>

@@ -203,9 +203,9 @@ void DBBrowser::slotRefresh()
 
                 table->setText(0, table_name);
                 if(table_name == "Profiles")
-                    table->setIcon(0,QIcon(":/resources/img/grid_green.svg"));
+                    table->setIcon(0,QIcon(":/resources/img/grid_black.svg"));
                 else
-                    table->setIcon(0,QIcon(":/resources/img/grid.svg"));
+                    table->setIcon(0,QIcon(":/resources/img/grid_gray.svg"));
                 tableCount++;
             }
             actionFilter->setEnabled(true);
