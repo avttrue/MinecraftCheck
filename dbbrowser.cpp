@@ -143,8 +143,6 @@ DBBrowser::DBBrowser(QWidget *parent)
     splitter->setStretchFactor(0, 0);
     splitter->setStretchFactor(1, 1);
     layout->addWidget(splitter);
-
-    QMetaObject::connectSlotsByName(this);
 }
 
 static QString dbCaption(const QSqlDatabase &db)
@@ -748,6 +746,8 @@ void DBBrowser::slotSearch()
 
 void DBBrowser::slotUpdateProfile()
 {
+    selectTable("Profiles"); //NOTE: 'Profiles' table
+
     auto model = qobject_cast<QSqlTableModel *>(table->model());
     if(!model || table->selectionModel()->selectedRows().count() == 0)
     { actionUpdateProfile->setEnabled(false); return; }
@@ -765,6 +765,8 @@ void DBBrowser::slotComment()
 {
     auto model = qobject_cast<QSqlTableModel *>(table->model());
     auto db = database();
+
+    selectTable("Profiles"); //NOTE: 'Profiles' table
 
     if(!model || !db.isOpen() || table->selectionModel()->selectedRows().count() == 0)
     { actionComment->setEnabled(false); return; }
@@ -816,11 +818,13 @@ void DBBrowser::slotComment()
 
 void DBBrowser::slotViewProfile()
 {
-    auto db = database();
-    if(!db.isOpen()) { actionView->setEnabled(false); return; }
-
     auto model = qobject_cast<QSqlTableModel *>(table->model());
-    if(!model) { actionView->setEnabled(false); return; }
+    auto db = database();
+
+    selectTable("Profiles"); //NOTE: 'Profiles' table
+
+    if(!db.isOpen() || !model || table->selectionModel()->selectedRows().count() == 0)
+    { actionView->setEnabled(false); return; }
 
     QMap<QString, DialogValue> map;
     auto count = getTableSize(model->filter());
