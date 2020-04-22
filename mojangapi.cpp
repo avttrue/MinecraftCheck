@@ -86,11 +86,11 @@ void MojangApi::readQueryReply(QNetworkReply *reply)
         return;
     }
 
-    QByteArray answer = reply->readLine();
+    QByteArray answer = reply->readAll();//reply->readLine();
     Q_EMIT signalMessage(QString("[i]\tanswer size %1 bytes").arg(answer.size()));
     QString string = QString::fromStdString(answer.toStdString());
 
-    Q_EMIT signalMessage(QString("[A]\t%1\n^^^^^^^^^^").arg(string));
+    Q_EMIT signalMessage(QString("[A]\t%1\n^^^^^^^^^^").arg(string.simplified()));
     Q_EMIT signalStatus("Interpretation...");
 
     if(string.isEmpty())
@@ -138,7 +138,8 @@ QJsonDocument MojangApi::getJsonDocument(const QString &string)
 
 void MojangApi::slotProgress(qint64 received, qint64 total)
 {
-    Q_EMIT signalMessage(QString("[<]\treceived: %1/%2 bytes").arg(QString::number(received), QString::number(total)));
+    Q_EMIT signalMessage(QString("[<]\treceived: %1/%2 bytes").
+                         arg(QString::number(received), total < 0 ? "unknown" : QString::number(total)));
 }
 
 // ServerStatusReader
@@ -413,7 +414,7 @@ bool PlayerProfileReader::interpretate_Profile(const QJsonDocument &document)
         }
     }
     m_SkinCapeValue = QString(QByteArray::fromBase64(textures.toLatin1()).data());
-    Q_EMIT signalMessage(QString("[i]\tProperties.Textures value: %1").arg(m_SkinCapeValue));
+    Q_EMIT signalMessage(QString("[i]\tProperties.Textures value: %1").arg(m_SkinCapeValue.simplified()));
 
     qDebug() << __func__ << "completed in" << QDateTime::currentMSecsSinceEpoch() - time << "ms";
 
