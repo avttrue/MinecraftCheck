@@ -26,6 +26,7 @@
 #include <QDateTime>
 #include <QTimer>
 #include <QPointer>
+#include <QSqlDatabase>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -47,14 +48,16 @@ void MainWindow::closeEvent(QCloseEvent *event)
     QTimer::singleShot(SPLASH_FIN_TIME, &loop, &QEventLoop::quit); // без этого не отображается
     loop.exec();
 
-    if(database.isOpen())
+    auto db = QSqlDatabase::database();
+
+    if(db.isOpen())
     {
         if(config->AutoVacuum())
         {
             QString text = getTextFromRes(":/resources/sql/vacuum.sql");
             setQueryDataBase(text);
         }
-        database.close();
+        db.close();
     }
 
     QSettings settings(config->PathAppConfig(), QSettings::IniFormat);
@@ -109,10 +112,6 @@ void MainWindow::loadGui()
     auto actionSetup = new QAction(QIcon(":/resources/img/setup.svg"), "Settings", this);
     QObject::connect(actionSetup, &QAction::triggered, this, &MainWindow::slotSetup);
 
-    //    auto testAction = new QAction(QIcon(":/resources/img/question.svg"), "TEST", this);
-    //    QObject::connect(testAction, &QAction::triggered, [=]()
-    //                     {});
-
     // тулбар
     auto tbMain = new QToolBar(this);
     tbMain->setMovable(false);
@@ -126,7 +125,6 @@ void MainWindow::loadGui()
     tbMain->addAction(actionAbort);
     tbMain->addSeparator();
     tbMain->addAction(actionSave);
-    //tbMain->addAction(testAction);
     tbMain->addWidget(new WidgetSpacer(this));
     tbMain->addAction(actionSetup);
     tbMain->addSeparator();
@@ -357,12 +355,12 @@ void MainWindow::saveReport()
 
 void MainWindow::openDataBase()
 {
-    database = QSqlDatabase::addDatabase(DATABASE_TYPE);
-    database.setDatabaseName(config->PathLocalDB());
+    auto db = QSqlDatabase::addDatabase(DATABASE_TYPE);
+    db.setDatabaseName(config->PathLocalDB());
 
-    if(database.open())
+    if(db.open())
     {
-        if(database.isValid())
+        if(db.isValid())
         {
             setQueryDataBase("BEGIN TRANSACTION;");
             setQueryDataBase(getTextFromRes(":/resources/sql/create_table_profiles.sql"));
@@ -380,22 +378,28 @@ void MainWindow::openDataBase()
         return;
     }
     textEvents->addText(QString("[!]\tFATAL ERROR connecting to local database '%1': %2\n").
-                        arg(config->PathLocalDB(), database.lastError().text()));
+                        arg(config->PathLocalDB(), db.lastError().text()));
     tabWidget->setCurrentIndex(2);
 }
 
 int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* answer, bool log)
 {
-    if(!database.isOpen()) return -1;
+    auto db = QSqlDatabase::database();
 
-    if(log) taskSeparator();
+    if(!db.isOpen()) return -1;
+
+    if(log)
+    {
+        taskSeparator();
+        textEvents->addText(QString("[i]\tLocal database query: '%1'").arg(text.simplified()));
+    }
 
     auto time = QDateTime::currentMSecsSinceEpoch();
 
-    QSqlQuery query(database);
+    QSqlQuery query(db);
     if(!query.exec(text))
     {
-        auto error = database.lastError().text().simplified();
+        auto error = db.lastError().text().simplified();
         if(error.isEmpty()) error = "Incorrect query syntax";
         textEvents->addText(QString("[!]\tFATAL ERROR at into local database query: %1\n").
                             arg(error));
@@ -415,7 +419,7 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
         {
             if(log)
             {
-                textEvents->addText("[i]\tDatabase query: answer is empty");
+                textEvents->addText("[i]\tQuery: answer is empty");
                 textEvents->addText(QString("[i]\tQuery was completed in %1 ms").
                                     arg(QString::number(QDateTime::currentMSecsSinceEpoch() - time)));
             }
@@ -453,7 +457,7 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
 
         if(log)
         {
-            textEvents->addText(QString("[i]\tDatabase query answer: %1").arg(sanswer));
+            textEvents->addText(QString("[i]\tAnswer: %1").arg(sanswer));
             taskSeparator();
             textEvents->addText(QString("[i]\tAnswer len: %1 rows").arg(QString::number(rows)));
             textEvents->addText(QString("[i]\tQuery was completed in %1 ms").
@@ -517,7 +521,9 @@ void MainWindow::showServers(QMap<QString, QString> servers)
 
 void MainWindow::writeProfileToDB(const MojangApiProfile &profile, bool* updated)
 {
-    if(!database.isOpen()) return;
+    auto db = QSqlDatabase::database();
+
+    if(!db.isOpen()) return;
 
     bool rezult = false;
     QString comments;

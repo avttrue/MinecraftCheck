@@ -2,7 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QSqlDatabase>
 
 const auto TB_PROPERTY_CONTENT = "RealTextContent";
 const auto LE_PROPERTY_SEARCH = "SearchMode";
@@ -46,7 +45,6 @@ protected:
     void setInformation(const QString &text);
 
 private:
-    QSqlDatabase database;
     QProgressBar* progressBar;
     QLabel* labelLocalDB;
     QLabel* labelStatus;
