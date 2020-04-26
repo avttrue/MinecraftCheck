@@ -111,17 +111,6 @@ DBBrowser::DBBrowser(QWidget *parent)
     //table->setSelectionMode(QAbstractItemView::SingleSelection);
     table->setSelectionMode(QAbstractItemView::MultiSelection);
 
-    if(config->TableSkinMode().toLower() == "portrait" )
-    {
-        auto verticalHeader = table->verticalHeader();
-        verticalHeader->setDefaultSectionSize(config->TablePortraitSize());
-    }
-    else if(config->TableSkinMode().toLower() == "skin" )
-    {
-        auto verticalHeader = table->verticalHeader();
-        verticalHeader->setDefaultSectionSize(config->TableSkinSize());
-    }
-
     auto frameTable = new QFrame();
     auto layoutTable = new QVBoxLayout();
     layoutTable->setAlignment(Qt::AlignTop);
@@ -308,6 +297,32 @@ void DBBrowser::showTable(const QString &tablename)
         auto error = model->lastError().text().simplified();
         if(error.isEmpty()) error = tablename;
         Q_EMIT signalMessage(message.arg(error));
+    }
+
+    // размеры строк в таблицах
+    if(tablename == "Profiles")
+    {
+        if(config->TableSkinMode().toLower() == "portrait" )
+        {
+            auto verticalHeader = table->verticalHeader();
+            verticalHeader->setDefaultSectionSize(config->TablePortraitSize());
+        }
+        else if(config->TableSkinMode().toLower() == "skin" )
+        {
+            auto verticalHeader = table->verticalHeader();
+            verticalHeader->setDefaultSectionSize(config->TableSkinSize());
+        }
+    }
+    else if(tablename == "Capes" && config->ShowCapeImage())
+    {
+        auto verticalHeader = table->verticalHeader();
+        verticalHeader->setDefaultSectionSize(config->TableCapeSize());
+    }
+    else
+    {
+        auto hv = new QHeaderView(Qt::Vertical);
+        auto verticalHeader = table->verticalHeader();
+        verticalHeader->setDefaultSectionSize(hv->defaultSectionSize());
     }
 
     table->setModel(model);
@@ -908,6 +923,23 @@ QVariant MySqlTableModel::data(const QModelIndex &index, int role) const
                          scaled(config->TableSkinSize(),
                                 config->TableSkinSize(),
                                 Qt::KeepAspectRatio, Qt::FastTransformation);
+
+            if(role == Qt::DisplayRole) return QString();
+            if(role == Qt::DecorationRole) return pixmap;
+            if(role == Qt::SizeHintRole) return pixmap.size();
+        }
+    }
+
+    else if(tablename == "Capes" && columnname == "Cape") // NOTE: 'Capes.Cape' column
+    {
+        if(config->ShowCapeImage())
+        {
+            QString s_img = QSqlTableModel::data(index, Qt::DisplayRole).toString();
+            QPixmap pixmap;
+            pixmap = getPixmapFromBase64(s_img, nullptr, config->TableCapeSize()).
+                     scaled(config->TableCapeSize() * CAPE_WIDTH_HEIGHT_ASPECT,
+                            config->TableCapeSize(),
+                            Qt::KeepAspectRatio, Qt::FastTransformation);
 
             if(role == Qt::DisplayRole) return QString();
             if(role == Qt::DecorationRole) return pixmap;

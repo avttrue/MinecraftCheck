@@ -79,6 +79,10 @@ public:
     void setReportPortraitSize(int value);
     bool ReportAddPortrait() const;
     void setReportAddPortrait(bool value);
+    int TableCapeSize() const;
+    void setTableCapeSize(int value);
+    bool ShowCapeImage() const;
+    void setShowCapeImage(bool value);
 
 protected:
     void load();
@@ -101,6 +105,7 @@ private:
     QString m_FontNameEvents;           // семейство шрифта лога событий
     QString m_TableSkinMode;            // отображение скина в таблице: 'portrait', 'skin', 'none' (любое)
     int m_TableSkinSize;                // размер скина в таблице
+    int m_TableCapeSize;                // размер плаща в таблице
     int m_TablePortraitSize;            // размер портрета в таблице
     int m_ReportPortraitSize;           // размер портрета в отчёте
     int m_SplashTime;                   // время отображения сплеш-заставки
@@ -119,6 +124,7 @@ private:
     bool m_SI_metric;                   // использовать систему СИ в отображении размеров файлов
     bool m_OpenUrls;                    // открывать URLы системным браузером
     bool m_UseQtHtmlContent;            // разрешать Qt фрматировать содержание html документов
+    bool m_ShowCapeImage;               // отображать плащ в таблице как изображение
 };
 
 #endif // CONFIG_H

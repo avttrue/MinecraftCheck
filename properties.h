@@ -28,6 +28,8 @@ const QString MOJANG_MODEL2 = "Steve";
 const QString DATABASE_TYPE = "QSQLITE";
 const QString TABLE_SKIN_MODE = "portrait"; // 'portrait', 'skin', 'none'
 const auto TABLE_SKIN_SIZE = 64;
+const auto TABLE_CAPE_SIZE = 64;
+const auto CAPE_WIDTH_HEIGHT_ASPECT = 2;
 const auto TABLE_PORTRAIT_SIZE = 32;
 const auto REPORT_PORTRAIT_SIZE = 64;
 const auto REPORT_LED_SIZE = 32;
@@ -51,5 +53,6 @@ const auto ADVANCED_DB_MODE = false;
 const auto KEEP_COMMENTS_AT_UPD = true;
 const auto SI_METRIC = false;
 const auto OPEN_URLS = true;
+const auto SHOW_CAPE_IMAGE = true;
 
 #endif // PROPERTIES_H

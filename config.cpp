@@ -65,6 +65,14 @@ void Config::load()
         m_Settings->setValue("MainWindow/TableSkinSize", TABLE_SKIN_SIZE);
     m_TableSkinSize = m_Settings->value("MainWindow/TableSkinSize").toInt();
 
+    if(!m_Settings->contains("MainWindow/TableCapeSize"))
+        m_Settings->setValue("MainWindow/TableCapeSize", TABLE_CAPE_SIZE);
+    m_TableCapeSize = m_Settings->value("MainWindow/TableCapeSize").toInt();
+
+    if(!m_Settings->contains("MainWindow/ShowCapeImage"))
+        m_Settings->setValue("MainWindow/ShowCapeImage", SHOW_CAPE_IMAGE);
+    m_ShowCapeImage = m_Settings->value("MainWindow/ShowCapeImage").toBool();
+
     if(!m_Settings->contains("MainWindow/FontNameEvents"))
         m_Settings->setValue("MainWindow/FontNameEvents", FONT_NAME_EVENTS);
     m_FontNameEvents = m_Settings->value("MainWindow/FontNameEvents").toString();
@@ -154,10 +162,26 @@ void Config::load()
     m_KeepCommentsAtUpd = m_Settings->value("Database/KeepCommentsAtUpd").toBool();
 }
 
+void Config::setShowCapeImage(bool value)
+{
+    if(m_ShowCapeImage == value) return;
+
+    m_ShowCapeImage = value;
+    m_Settings->setValue("MainWindow/ShowCapeImage", m_ShowCapeImage);
+}
+
+void Config::setTableCapeSize(int value)
+{
+    if(m_TableCapeSize == value) return;
+
+    m_TableCapeSize = value;
+    m_Settings->setValue("MainWindow/TableCapeSize", m_TableCapeSize);
+}
+
 void Config::setReportAddPortrait(bool value)
 {
     if(m_ReportAddPortrait == value) return;
-
+    
     m_ReportAddPortrait = value;
     m_Settings->setValue("Report/AddPortrait", m_ReportAddPortrait);
 }
@@ -386,6 +410,8 @@ void Config::setQueryServers(const QString &value)
     m_Settings->setValue("ApiQueries/Servers", m_QueryServers);
 }
 
+bool Config::ShowCapeImage() const { return m_ShowCapeImage; }
+int Config::TableCapeSize() const { return m_TableCapeSize; }
 bool Config::ReportAddPortrait() const { return m_ReportAddPortrait; }
 int Config::ReportPortraitSize() const { return m_ReportPortraitSize; }
 int Config::TableSkinSize() const { return m_TableSkinSize; }

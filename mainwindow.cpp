@@ -922,14 +922,16 @@ void MainWindow::slotSetup()
                                    "06#_Show portrait",
                                    "07#_Portrait size",
                                    "08#_Skin scale",
-                                   "09#_Led size (servise status)",
-                                   "10#_Margin (%)",
-                                   "11#_Open in system handler at saving",
-                                   "12#_Use Qt html",
-                                   "13#_Common",
-                                   "14#_Event log size (0 = maximum)",
-                                   "15#_Use SI metric (at next recalc)",
-                                   "16#_Date and time format"};
+                                   "09#_Show cape",
+                                   "10#_Cape size",
+                                   "11#_Led size (servise status)",
+                                   "12#_Margin (%)",
+                                   "13#_Open in system handler at saving",
+                                   "14#_Use Qt html",
+                                   "15#_Common options",
+                                   "16#_Event log size (0 = maximum)",
+                                   "17#_Use SI metric (at next recalc)",
+                                   "18#_Date and time format"};
     QMap<QString, DialogValue> map =
         {{keys.at(0), {}},
          {keys.at(1), {QVariant::Bool, config->AdvancedDBMode(), 0, 0}},
@@ -940,14 +942,16 @@ void MainWindow::slotSetup()
          {keys.at(6), {QVariant::Bool, config->ReportAddPortrait(), 0, 0}},
          {keys.at(7), {QVariant::Int, config->ReportPortraitSize(), 8, 256}},
          {keys.at(8), {QVariant::Int, config->ReportImgScale(), 1, 10}},
-         {keys.at(9), {QVariant::Int, config->ReportLedSize(), 8, 256}},
-         {keys.at(10), {QVariant::Int, config->ReportMargins(), 0, 30}},
-         {keys.at(11), {QVariant::Bool, config->ReportAutoOpen(), 0, 0}},
-         {keys.at(12), {QVariant::Bool, config->UseQtHtmlContent(), 0, 0}},
-         {keys.at(13), {}},
-         {keys.at(14), {QVariant::Int, config->LogSize(), 0, 0}},
-         {keys.at(15), {QVariant::Bool, config->SIMetric(), 0, 0}},
-         {keys.at(16), {QVariant::String, config->DateTimeFormat(), 0, 0}}
+         {keys.at(9), {QVariant::Bool, config->ShowCapeImage(), 0, 0}},
+         {keys.at(10), {QVariant::Int, config->TableCapeSize(), 8, 256}},
+         {keys.at(11), {QVariant::Int, config->ReportLedSize(), 8, 256}},
+         {keys.at(12), {QVariant::Int, config->ReportMargins(), 0, 30}},
+         {keys.at(13), {QVariant::Bool, config->ReportAutoOpen(), 0, 0}},
+         {keys.at(14), {QVariant::Bool, config->UseQtHtmlContent(), 0, 0}},
+         {keys.at(15), {}},
+         {keys.at(16), {QVariant::Int, config->LogSize(), 0, 0}},
+         {keys.at(17), {QVariant::Bool, config->SIMetric(), 0, 0}},
+         {keys.at(18), {QVariant::String, config->DateTimeFormat(), 0, 0}}
         };
 
     auto dvl = new DialogValuesList(this, ":/resources/img/setup.svg", "Settings", &map);
@@ -958,14 +962,18 @@ void MainWindow::slotSetup()
     config->setTableSkinMode(map.value(keys.at(2)).value.toString());
     config->setTableSkinSize(map.value(keys.at(3)).value.toInt());
     config->setTablePortraitSize(map.value(keys.at(4)).value.toInt());
+
     config->setReportAddPortrait(map.value(keys.at(6)).value.toBool());
     config->setReportPortraitSize(map.value(keys.at(7)).value.toInt());
     config->setReportImgScale(map.value(keys.at(8)).value.toInt());
-    config->setReportLedSize(map.value(keys.at(9)).value.toInt());
-    config->setReportMargins(map.value(keys.at(10)).value.toInt());
-    config->setReportAutoOpen(map.value(keys.at(11)).value.toBool());
-    config->setUseQtHtmlContent(map.value(keys.at(12)).value.toBool());
-    config->setLogSize(map.value(keys.at(14)).value.toInt());
-    config->setSIMetric(map.value(keys.at(15)).value.toBool());
-    config->setDateTimeFormat(map.value(keys.at(16)).value.toString());
+    config->setShowCapeImage(map.value(keys.at(9)).value.toBool());
+    config->setTableCapeSize(map.value(keys.at(10)).value.toInt());
+    config->setReportLedSize(map.value(keys.at(11)).value.toInt());
+    config->setReportMargins(map.value(keys.at(12)).value.toInt());
+    config->setReportAutoOpen(map.value(keys.at(13)).value.toBool());
+    config->setUseQtHtmlContent(map.value(keys.at(14)).value.toBool());
+
+    config->setLogSize(map.value(keys.at(16)).value.toInt());
+    config->setSIMetric(map.value(keys.at(17)).value.toBool());
+    config->setDateTimeFormat(map.value(keys.at(18)).value.toString());
 }
