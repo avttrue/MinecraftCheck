@@ -30,7 +30,9 @@ protected:
     void showTextEdit(int mode); // mode = 0 - by nick, 1- by id
     void queryDone(bool success);
     void getServersStatus();
-    void getPlayerProfile();
+    void setPlayerForSearch();
+    void getProfile(const QString &text, bool mode = true);
+    void getListProfiles();
     void saveReport();
     int setQueryDataBase(const QString &text, QVector<QVariantList> *answer = nullptr, bool log = false);
     void showServers(QMap<QString, QString> servers);
@@ -40,7 +42,7 @@ protected:
     void showDBProfiles(QStringList uuids);
     void showProfile(const MojangApiProfile& profile);
     void showDBInfo();
-    void taskSeparator();
+    void setTaskSeparator();
     bool checkAnswerDB(QVector<QVariantList> answer, int row, int col);
     void setInformation(const QString &text);
 
@@ -54,6 +56,7 @@ private:
     QLineEdit* lineEdit;
     QAction* actionCheckServers;
     QAction* actionCheckPerson;
+    QAction* actionCheckPersonList;
     QAction* actionCheckPersonId;
     QAction* actionSave;
     DBBrowser* dbBrowser;

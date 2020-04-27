@@ -89,6 +89,9 @@ void MainWindow::loadGui()
                                         arg("Enter below a nickname to search using the Mojang Api"));
                      });
 
+    actionCheckPersonList = new QAction(QIcon(":/resources/img/persons.svg"), "Check list players by nick", this);
+    QObject::connect(actionCheckPerson, &QAction::triggered, this, &MainWindow::getListProfiles);
+
     actionCheckPersonId = new QAction(QIcon(":/resources/img/person_id.svg"), "Check player by id", this);
     actionCheckPersonId->setShortcut(Qt::CTRL + Qt::Key_I);
     QObject::connect(actionCheckPersonId, &QAction::triggered, [=]()
@@ -120,6 +123,7 @@ void MainWindow::loadGui()
 
     tbMain->addAction(actionCheckServers);
     tbMain->addAction(actionCheckPerson);
+    //tbMain->addAction(actionCheckPersonList);
     tbMain->addAction(actionCheckPersonId);
     tbMain->addSeparator();
     tbMain->addAction(actionAbort);
@@ -161,14 +165,14 @@ void MainWindow::loadGui()
     lineEdit->setVisible(false);
     auto* leef = new LineEditEventFilter(lineEdit);
     lineEdit->installEventFilter(leef);
-    QObject::connect(lineEdit, &QLineEdit::returnPressed, this, &MainWindow::getPlayerProfile);
+    QObject::connect(lineEdit, &QLineEdit::returnPressed, this, &MainWindow::setPlayerForSearch);
     vblInfo->addWidget(lineEdit, 0, Qt::AlignBottom);
     tabWidget->addTab(infoWidget, QIcon(":/resources/img/info.svg"), "Information");
 
     dbBrowser = new DBBrowser(this);
     tabWidget->addTab(dbBrowser, QIcon(":/resources/img/database.svg"), "Database");
     QObject::connect(dbBrowser, &DBBrowser::signalMessage, [=](const QString& text)
-                     { taskSeparator();
+                     { setTaskSeparator();
                        textEvents->addText(text); });
     QObject::connect(dbBrowser, &DBBrowser::signalReport, this, &MainWindow::showDBProfiles);
     QObject::connect(dbBrowser, &DBBrowser::signalQuery, [=](const QString& text)
@@ -220,6 +224,7 @@ void MainWindow::setEnableActions(bool value)
     actionCheckPersonId->setEnabled(value);
     actionCheckServers->setEnabled(value);
     actionSave->setEnabled(value);
+    actionCheckPersonList->setEnabled(value);
 }
 
 void MainWindow::showTextEdit(int mode)
@@ -265,22 +270,32 @@ void MainWindow::getServersStatus()
                      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
     QObject::connect(reader, &ServerStatusReader::signalServers, this, &MainWindow::showServers);
 
-    taskSeparator();
+    setTaskSeparator();
 
     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
     reader->sendQuery(config->QueryServers());
 }
 
-void MainWindow::getPlayerProfile()
+void MainWindow::setPlayerForSearch()
 {
     if(lineEdit->text().isEmpty()) return;
+
     lineEdit->setVisible(false);
     tabWidget->setCurrentIndex(2);
     setEnableActions(false);    
     textBrowser->clear();
     progressBar->setVisible(true);
 
+    auto text = lineEdit->text().simplified();
+    bool mode = lineEdit->property(LE_PROPERTY_SEARCH).toInt();
+    getProfile(text, mode == 0 ? true : false);
+
+    lineEdit->clear();
+}
+
+void MainWindow::getProfile(const QString &text, bool mode)
+{
     QPointer<PlayerProfileReader> reader = new PlayerProfileReader(this);
 
     QObject::connect(reader, &PlayerProfileReader::signalSuccess, [=]()
@@ -291,39 +306,38 @@ void MainWindow::getPlayerProfile()
                      { if(reader) reader->abort(true);
                          setInformation(getTextFromRes(":/resources/tip_body.html").
                                               arg("Failed to get data from Mojang")); });
-    QObject::connect(reader, &PlayerProfileReader::signalMessage, [=](QString text)
-                     { textEvents->addText(text);
+    QObject::connect(reader, &PlayerProfileReader::signalMessage, [=](QString string)
+                     { textEvents->addText(string);
                        QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
-    QObject::connect(reader, &PlayerProfileReader::signalStatus, [=](QString text)
-                     { labelStatus->setText(text);
+    QObject::connect(reader, &PlayerProfileReader::signalStatus, [=](QString string)
+                     { labelStatus->setText(string);
                        QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
     QObject::connect(reader, &PlayerProfileReader::signalProfile, this, &MainWindow::showProfile);
 
-    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    setTaskSeparator();
 
-    taskSeparator();
-    if(lineEdit->property(LE_PROPERTY_SEARCH).toInt() == 0)
+    QString query;
+    if(mode)
     {
-        auto nick = lineEdit->text().simplified();
-        auto query = config->QueryPersonName().arg(nick);
-        textEvents->addText(QString("[i]\tSearching by player's name '%1'\n").arg(nick));
-        reader->sendQuery(query);
+        query = config->QueryPersonName().arg(text);
+        textEvents->addText(QString("[i]\tSearching by player's name '%1'\n").arg(text));
     }
-    else if(lineEdit->property(LE_PROPERTY_SEARCH).toInt() == 1)
+    else
     {
-        auto id = lineEdit->text().simplified().remove('{').remove('}').remove('-');
-        auto query = config->QueryPersonUuid().arg(id);
+        auto id = text; id.remove('{').remove('}').remove('-');
+        query = config->QueryPersonUuid().arg(id);
         reader->setProfileId(id);
         textEvents->addText(QString("[i]\tSearching by player's id '%1'\n").arg(id));
-        reader->sendQuery(query);
     }
-    else // error
-    {
-        labelStatus->setText("FATAL ERROR");
-        qCritical() << __func__ << ": wrong 'SearchMode' (" << lineEdit->property(LE_PROPERTY_SEARCH) << ")";
-        progressBar->setVisible(false);
-    }
-    lineEdit->clear();
+
+    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+
+    reader->sendQuery(query);
+}
+
+void MainWindow::getListProfiles()
+{
+
 }
 
 void MainWindow::saveReport()
@@ -390,7 +404,7 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
 
     if(log)
     {
-        taskSeparator();
+        setTaskSeparator();
         textEvents->addText(QString("[i]\tLocal database query: '%1'").arg(text.simplified()));
     }
 
@@ -458,7 +472,7 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
         if(log)
         {
             textEvents->addText(QString("[i]\tAnswer: %1").arg(sanswer));
-            taskSeparator();
+            setTaskSeparator();
             textEvents->addText(QString("[i]\tAnswer len: %1 rows").arg(QString::number(rows)));
             textEvents->addText(QString("[i]\tQuery was completed in %1 ms").
                                 arg(QString::number(QDateTime::currentMSecsSinceEpoch() - time)));
@@ -734,7 +748,7 @@ void MainWindow::buildProfileTable(const QString &caption, const QString &profil
 
 void MainWindow::showDBProfiles(QStringList uuids)
 {
-    taskSeparator();
+    setTaskSeparator();
     auto time = QDateTime::currentMSecsSinceEpoch();
     tabWidget->setCurrentIndex(0);
     setEnableActions(false);
@@ -869,7 +883,7 @@ void MainWindow::showDBInfo()
     labelLocalDB->setText(QString("%1, %2 profiles").arg(dbsize, dbcount));
 }
 
-void MainWindow::taskSeparator()
+void MainWindow::setTaskSeparator()
 {
     QString s;
     textEvents->addText(s.fill('-', TASK_SEPARATOR_LEN));
