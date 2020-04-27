@@ -65,6 +65,5 @@
         <file>resources/img/sql_file.svg</file>
         <file>resources/img/grid_gray.svg</file>
         <file>resources/img/grid_black.svg</file>
-        <file>resources/img/persons.svg</file>
     </qresource>
 </RCC>

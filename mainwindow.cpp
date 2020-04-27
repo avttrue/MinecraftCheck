@@ -89,9 +89,6 @@ void MainWindow::loadGui()
                                         arg("Enter below a nickname to search using the Mojang Api"));
                      });
 
-    actionCheckPersonList = new QAction(QIcon(":/resources/img/persons.svg"), "Check list players by nick", this);
-    QObject::connect(actionCheckPerson, &QAction::triggered, this, &MainWindow::getListProfiles);
-
     actionCheckPersonId = new QAction(QIcon(":/resources/img/person_id.svg"), "Check player by id", this);
     actionCheckPersonId->setShortcut(Qt::CTRL + Qt::Key_I);
     QObject::connect(actionCheckPersonId, &QAction::triggered, [=]()
@@ -123,7 +120,6 @@ void MainWindow::loadGui()
 
     tbMain->addAction(actionCheckServers);
     tbMain->addAction(actionCheckPerson);
-    //tbMain->addAction(actionCheckPersonList);
     tbMain->addAction(actionCheckPersonId);
     tbMain->addSeparator();
     tbMain->addAction(actionAbort);
@@ -224,7 +220,6 @@ void MainWindow::setEnableActions(bool value)
     actionCheckPersonId->setEnabled(value);
     actionCheckServers->setEnabled(value);
     actionSave->setEnabled(value);
-    actionCheckPersonList->setEnabled(value);
 }
 
 void MainWindow::showTextEdit(int mode)
@@ -333,11 +328,6 @@ void MainWindow::getProfile(const QString &text, bool mode)
     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
     reader->sendQuery(query);
-}
-
-void MainWindow::getListProfiles()
-{
-
 }
 
 void MainWindow::saveReport()

@@ -32,7 +32,6 @@ protected:
     void getServersStatus();
     void setPlayerForSearch();
     void getProfile(const QString &text, bool mode = true);
-    void getListProfiles();
     void saveReport();
     int setQueryDataBase(const QString &text, QVector<QVariantList> *answer = nullptr, bool log = false);
     void showServers(QMap<QString, QString> servers);
@@ -56,7 +55,6 @@ private:
     QLineEdit* lineEdit;
     QAction* actionCheckServers;
     QAction* actionCheckPerson;
-    QAction* actionCheckPersonList;
     QAction* actionCheckPersonId;
     QAction* actionSave;
     DBBrowser* dbBrowser;
