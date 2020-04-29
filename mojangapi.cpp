@@ -151,9 +151,9 @@ ServerStatusReader::ServerStatusReader(QObject *parent):
 }
 
 void ServerStatusReader::interpretateReply(const QString& reply)
-{
+{    
     QJsonDocument jdoc = getJsonDocument(reply);
-    if(jdoc.isEmpty()) return;
+    if(jdoc.isEmpty()) return;    
 
     auto vl = jdoc.toVariant().toList();
     for(auto v: vl)
@@ -213,10 +213,13 @@ void PlayerProfileReader::interpretateReply(const QString &reply)
     {
         if(!interpretate_Profile(getJsonDocument(reply))) return;
 
-        if(!interpretate_SkinCape(getJsonDocument(m_SkinCapeValue))) return;
+        QJsonDocument docSkinCape = m_SkinCapeValue.isEmpty()
+                                        ? QJsonDocument()
+                                        : getJsonDocument(m_SkinCapeValue);
+
+        if(!interpretate_SkinCape(docSkinCape)) return;
 
         m_Stage++;
-
         downloadData(m_Profile.SkinUrl); // m_SkinUrl всегда есть
     }
     else // сюда попадать не должны
@@ -423,20 +426,27 @@ bool PlayerProfileReader::interpretate_Profile(const QJsonDocument &document)
 
 bool PlayerProfileReader::interpretate_SkinCape(const QJsonDocument& document)
 {
-    if(document.isEmpty()) return false;
     auto time = QDateTime::currentMSecsSinceEpoch();
-    auto map = document.toVariant().toMap();
+    QMap<QString, QVariant> map;
 
     m_Profile.SkinModel = config->MojangModel2(); // default
 
-    if(!map.contains("textures")) //NOTE: 'textures' key
+    if(document.isEmpty())
     {
-        Q_EMIT signalMessage("[!]\tERROR. Json parsing: Properties.Textures: 'textures' key is absent");
-        Q_EMIT signalStatus("ERROR");
-        Q_EMIT signalError();
-        return false;
+        Q_EMIT signalMessage("[i]\tJson parsing: Properties is empty");
     }
-    map = map.value("textures").toMap();
+    else
+    {
+        map = document.toVariant().toMap();
+        if(!map.contains("textures")) //NOTE: 'textures' key
+        {
+            Q_EMIT signalMessage("[!]\tERROR. Json parsing: Properties.Textures: 'textures' key is absent");
+            Q_EMIT signalStatus("ERROR");
+            Q_EMIT signalError();
+            return false;
+        }
+        map = map.value("textures").toMap();
+    }
 
     if(!map.isEmpty())
     {
@@ -468,7 +478,10 @@ bool PlayerProfileReader::interpretate_SkinCape(const QJsonDocument& document)
         Q_EMIT signalMessage("[i]\tJson parsing: Properties.Textures: 'textures' value not present");
 
     if(m_Profile.SkinUrl.isEmpty())
+    {
+        Q_EMIT signalMessage(QString("[i]\t'SKIN.url' is empty; url is set to default"));
         m_Profile.SkinUrl = config->MojangDefaultSkin().arg(m_Profile.SkinModel.toLower());
+    }
 
     Q_EMIT signalMessage(QString("[i]\tSKIN url: %1").arg(m_Profile.SkinUrl));
     Q_EMIT signalMessage(QString("[i]\tCAPE url: %1").

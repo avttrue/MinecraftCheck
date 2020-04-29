@@ -45,7 +45,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     SplashScreen splash;
     splash.show();
     QEventLoop loop;
-    QTimer::singleShot(SPLASH_FIN_TIME, &loop, &QEventLoop::quit); // без этого не отображается
+    QTimer::singleShot(config->SplashServiceTime(), &loop, &QEventLoop::quit); // без этого не отображается
     loop.exec();
 
     auto db = QSqlDatabase::database();

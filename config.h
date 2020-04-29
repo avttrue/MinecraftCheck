@@ -83,6 +83,10 @@ public:
     void setTableCapeSize(int value);
     bool ShowCapeImage() const;
     void setShowCapeImage(bool value);
+    int SplashServiceTime() const;
+    void setSplashServiceTime(int value);
+    int CapeWHAspect() const;
+    void setCapeWHAspect(int value);
 
 protected:
     void load();
@@ -109,12 +113,14 @@ private:
     int m_TablePortraitSize;            // размер портрета в таблице
     int m_ReportPortraitSize;           // размер портрета в отчёте
     int m_SplashTime;                   // время отображения сплеш-заставки
+    int m_SplashServiceTime;            // время отображения сплеш-заставки при выходе и т.п.
     int m_SplashSize;                   // размер сплеш-заставки
     int m_ButtonSize;                   // размеры кнопок интерфейса
     int m_ReportLedSize;                // размер картинки индикатора серверов
     int m_ReportImgScale;               // масштаб картинок в отображении профиля игрока
     int m_LogSize;                      // количество строк лога событий
     int m_ReportMargins;                // отступы в % от краёв окна при выводе отчёта
+    int m_CapeWHAspect;                 // соотношение высоты-ширины картинки плаща
     bool m_ReportAddPortrait;           // добавлять портреты в отчёт
     bool m_ReportAutoOpen;              // открывать отчёт после сохранения
     bool m_AutoVacuum;                  // выполнять vacuum при выходе

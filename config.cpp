@@ -45,6 +45,14 @@ void Config::load()
         m_Settings->setValue("MainWindow/SplashTime", SPLASH_TIME);
     m_SplashTime = m_Settings->value("MainWindow/SplashTime").toInt();
 
+    if(!m_Settings->contains("MainWindow/SplashServiceTime"))
+        m_Settings->setValue("MainWindow/SplashServiceTime", SPLASH_SERVICE_TIME);
+    m_SplashServiceTime = m_Settings->value("MainWindow/SplashServiceTime").toInt();
+
+    if(!m_Settings->contains("MainWindow/CapeWidthHeightAspect"))
+        m_Settings->setValue("MainWindow/CapeWidthHeightAspect", CAPE_WIDTH_HEIGHT_ASPECT);
+    m_CapeWHAspect = m_Settings->value("MainWindow/CapeWidthHeightAspect").toInt();
+
     if(!m_Settings->contains("MainWindow/SplashSize"))
         m_Settings->setValue("MainWindow/SplashSize", SPLASH_SIZE);
     m_SplashSize = m_Settings->value("MainWindow/SplashSize").toInt();
@@ -160,6 +168,22 @@ void Config::load()
     if(!m_Settings->contains("Database/KeepCommentsAtUpd"))
         m_Settings->setValue("Database/KeepCommentsAtUpd", KEEP_COMMENTS_AT_UPD);
     m_KeepCommentsAtUpd = m_Settings->value("Database/KeepCommentsAtUpd").toBool();
+}
+
+void Config::setCapeWHAspect(int value)
+{
+    if(m_CapeWHAspect == value) return;
+
+    m_CapeWHAspect = value;
+    m_Settings->setValue("MainWindow/CapeWidthHeightAspect", m_CapeWHAspect);
+}
+
+void Config::setSplashServiceTime(int value)
+{
+    if(m_SplashServiceTime == value) return;
+
+    m_SplashServiceTime = value;
+    m_Settings->setValue("MainWindow/SplashServiceTime", m_SplashServiceTime);
 }
 
 void Config::setShowCapeImage(bool value)
@@ -410,6 +434,8 @@ void Config::setQueryServers(const QString &value)
     m_Settings->setValue("ApiQueries/Servers", m_QueryServers);
 }
 
+int Config::CapeWHAspect() const { return m_CapeWHAspect; }
+int Config::SplashServiceTime() const { return m_SplashServiceTime; }
 bool Config::ShowCapeImage() const { return m_ShowCapeImage; }
 int Config::TableCapeSize() const { return m_TableCapeSize; }
 bool Config::ReportAddPortrait() const { return m_ReportAddPortrait; }

@@ -937,7 +937,7 @@ QVariant MySqlTableModel::data(const QModelIndex &index, int role) const
             QString s_img = QSqlTableModel::data(index, Qt::DisplayRole).toString();
             QPixmap pixmap;
             pixmap = getPixmapFromBase64(s_img, nullptr, config->TableCapeSize()).
-                     scaled(config->TableCapeSize() * CAPE_WIDTH_HEIGHT_ASPECT,
+                     scaled(config->TableCapeSize() * config->CapeWHAspect(),
                             config->TableCapeSize(),
                             Qt::KeepAspectRatio, Qt::FastTransformation);
 
