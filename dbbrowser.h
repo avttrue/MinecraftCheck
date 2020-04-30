@@ -16,6 +16,7 @@ class DBBrowser: public QWidget
     Q_OBJECT
 public:
     DBBrowser(QWidget *parent = nullptr);
+    QString getModelFilter();
 
 protected:
     QSqlDatabase database() const;

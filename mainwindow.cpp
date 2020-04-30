@@ -748,9 +748,14 @@ void MainWindow::showDBProfiles(QStringList uuids)
     QStringList list(uuids);
     if(list.isEmpty())
     {
-        qDebug() << __func__ << "uuids is empty";
         QVector<QVariantList> answer;
-        setQueryDataBase(getTextFromRes(":/resources/sql/select_uuid_profiles.sql"), &answer);
+        auto where = dbBrowser->getModelFilter();
+        qDebug() << __func__ << ": where =" << where;
+        if(where.isEmpty())
+            setQueryDataBase(getTextFromRes(":/resources/sql/select_uuid_profiles.sql"), &answer);
+        else
+            setQueryDataBase(QString(getTextFromRes(":/resources/sql/select_uuid_profiles_where.sql").
+                                     arg(where)), &answer);
         for(auto v: answer)
         {
             if(v.isEmpty()) continue;
@@ -761,6 +766,7 @@ void MainWindow::showDBProfiles(QStringList uuids)
     if(list.isEmpty())
     {
         qDebug() << __func__ << "profile list is empty";
+        progressBar->setVisible(false);
         return;
     }
 
@@ -863,7 +869,8 @@ void MainWindow::showDBInfo()
 {
     auto dbsize = humanReadableByteCount(QFileInfo(config->PathLocalDB()).size(), config->SIMetric());
     QVector<QVariantList> rowsinfo;
-    setQueryDataBase(getTextFromRes(":/resources/sql/get_table_rows_count.sql").arg("Profiles"), &rowsinfo);
+    setQueryDataBase(getTextFromRes(":/resources/sql/get_table_rows_count.sql").
+                     arg("Profiles"), &rowsinfo);
 
     if(rowsinfo.isEmpty()) return;
 

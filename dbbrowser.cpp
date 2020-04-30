@@ -134,6 +134,14 @@ DBBrowser::DBBrowser(QWidget *parent)
     layout->addWidget(splitter);
 }
 
+QString DBBrowser::getModelFilter()
+{
+    auto model = qobject_cast<QSqlTableModel*>(table->model());
+    if (!model) return "";
+
+    return model->filter();
+}
+
 static QString dbCaption(const QSqlDatabase &db)
 {
     if(!db.isOpen()) return "ERROR";
@@ -731,7 +739,10 @@ void DBBrowser::slotSearch()
         idsl.removeAll("");
         for(auto id: idsl) ids.append(QString(" OR Uuid = '%1'").arg(id)); //NOTE: 'Uuid' column
 
-        where = QString("FirstName %1 '%2' OR CurrentName %1 '%2'%3").arg(prec, value, ids); //NOTE: 'FirstName', 'CurrentName' column
+        qDebug() << __func__ << ": ids =" << ids;
+
+        where = QString("FirstName %1 '%2' OR CurrentName %1 '%2'%3").
+                arg(prec, value, ids); //NOTE: 'FirstName', 'CurrentName' column
     }
     else if(map.value(keys.at(1)).value.toString() == arealist.at(2))
     {
@@ -750,6 +761,7 @@ void DBBrowser::slotSearch()
         where = QString("Capes %1 '%2'").arg(prec, value); //NOTE: 'Capes' column
     }
 
+    qDebug() << __func__ << ": where =" << where;
     model->setFilter(where);
     model->select();
     auto count = showTableInfo(model->filter());
@@ -796,9 +808,10 @@ void DBBrowser::slotComment()
     auto comments = record.field("Comments").value().toString(); // NOTE: 'Comments' column
 
     const QVector<QString> keys = {"01#_Name: ", "02#_ID: ", "03#_Value: "};
-    QMap<QString, DialogValue> map = {{keys.at(0), {QVariant::String, curname, "", "", DialogValueMode::Disabled}},
-                                      {keys.at(1), {QVariant::String, uuid, "", "", DialogValueMode::Disabled}},
-                                      {keys.at(2), {QVariant::String, comments}}};
+    QMap<QString, DialogValue> map =
+        {{keys.at(0), {QVariant::String, curname, "", "", DialogValueMode::Disabled}},
+         {keys.at(1), {QVariant::String, uuid, "", "", DialogValueMode::Disabled}},
+         {keys.at(2), {QVariant::String, comments}}};
 
     auto dvl = new DialogValuesList(this, ":/resources/img/edit.svg", "Edit comments", &map, keys.at(2));
 
@@ -808,7 +821,8 @@ void DBBrowser::slotComment()
     if(newcomments == comments) return;
 
     QSqlQuery query(db);
-    auto text = getTextFromRes(":/resources/sql/update_profile_comment.sql").arg(uuid, newcomments);
+    auto text = getTextFromRes(":/resources/sql/update_profile_comment.sql").
+                arg(uuid, newcomments);
 
     if(query.exec(text))
     {
