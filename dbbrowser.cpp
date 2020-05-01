@@ -52,6 +52,8 @@ DBBrowser::DBBrowser(QWidget *parent)
     actionView->setShortcut(Qt::CTRL + Qt::Key_W);
     actionView->setDisabled(true);
 
+    auto actionUnselAll = new QAction(QIcon(":/resources/img/sel_unsel.svg"), "Unselect all", this);
+
     QObject::connect(actionUpdateDB, &QAction::triggered, this, &DBBrowser::slotRefresh);
     QObject::connect(actionSchemaDB, &QAction::triggered, this, &DBBrowser::slotMetaData);
     QObject::connect(actionInsertRow, &QAction::triggered, this, &DBBrowser::slotInsertRow);
@@ -62,7 +64,8 @@ DBBrowser::DBBrowser(QWidget *parent)
     QObject::connect(actionFilter, &QAction::triggered, this, &DBBrowser::slotSearch);
     QObject::connect(actionUpdateProfile, &QAction::triggered, this, &DBBrowser::slotUpdateProfile);
     QObject::connect(actionComment, &QAction::triggered, this, &DBBrowser::slotComment);
-    QObject::connect(actionView, &QAction::triggered, this, &DBBrowser::slotViewProfile);
+    QObject::connect(actionView, &QAction::triggered, this, &DBBrowser::slotViewProfile);   
+    QObject::connect(actionUnselAll, &QAction::triggered, [=](){  table->clearSelection(); });
 
     auto layout = new QVBoxLayout(this);
     layout->setSpacing(1);
@@ -81,8 +84,11 @@ DBBrowser::DBBrowser(QWidget *parent)
     toolBar->addAction(actionFilter);
     toolBar->addAction(actionComment);
     toolBar->addSeparator();
-    toolBar->addAction(actionLoad);
+    toolBar->addAction(actionUnselAll);
     toolBar->addSeparator();
+    toolBar->addAction(actionLoad);    
+    toolBar->addSeparator();
+
     if(config->AdvancedDBMode()) toolBar->addAction(actionClearTable);
     if(config->AdvancedDBMode()) toolBar->addAction(actionInsertRow);
     if(config->AdvancedDBMode()) toolBar->addAction(actionDeleteRow);
@@ -864,7 +870,6 @@ void DBBrowser::slotViewProfile()
     rowToDialogValueMap(&map, currentrow);
 
     auto dvl = new DialogValuesList(this, ":/resources/img/eye.svg", "View profile", &map, "", false);
-
     auto actionPrev = new QAction(QIcon(":/resources/img/up_arrow.svg"), "Previous profile", dvl);
     auto actionNext = new QAction(QIcon(":/resources/img/down_arrow.svg"), "Next profile", dvl);
 
