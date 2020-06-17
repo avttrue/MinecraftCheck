@@ -7,10 +7,15 @@
 const QString RE_FIRST_LAST_SPACES = "^\\s+|\\s+$"; // регексп на наличие стартовых и финальных пробелов
 const QString RE_NUM_MARK = "(^.*)(#_)"; // регексп удаления символов до строки '#_' включительно
 const QString IMG_STYLE = "border: 1px solid darkgray; border-radius: 9px; padding: %1px;";
-const QSize WINDOW_SIZE(400, 300);
+const QString BTN_COLOR_STYLE = "border: 1px solid darkgray; border-radius: 9px; background-color: %1; font: bold monospace; color: %2";
+const QSize WINDOW_SIZE(400, 400);
+const int DOUBLE_SPINBOX_DECIMALS = 3;
+const qreal CAPTION_FONT_UP = 3.0;
+const qreal CAPTION_EFFECT_OFFSET = -1.5;
 
 class QGridLayout;
 class QToolBar;
+class QLineEdit;
 
 /*!
  * \brief DialogValueMode - режим отображения значений
@@ -19,10 +24,11 @@ enum DialogValueMode
 {
     Default = 0,  // поумолчанию, для StringList - перечисление через запятую
     Disabled,     // просто текстовое отображение значения
+    Caption,      // Заголовок
     OneFromList,  // для StringList - один из списка
     ManyFromList, // для StringList - несколько из списка
     Base64Image,  // для String - изображение в формате Base64, только отображение; minValue = width, maxValue = height
-    Caption       // Заголовок
+    Color         // для String - цвет
 };
 
 /*!
@@ -66,7 +72,7 @@ public:
 
 protected:
     void addWidgetContent(QWidget* widget);
-    bool eventFilter(QObject *, QEvent *event);
+    bool eventFilter(QObject *object, QEvent *event);
     void saveImage(QPixmap pixmap);
 
 private:    
@@ -75,6 +81,7 @@ private:
     QMap<QString, DialogValue>* m_Values;
     QString m_FocusedKey;
     bool m_DialogMode;
+    void setMapValue(const QString& key, const QVariant& value);
 
 public Q_SLOTS:
     void slotLoadContent(QMap<QString, DialogValue> *values);
@@ -82,10 +89,12 @@ public Q_SLOTS:
 private Q_SLOTS:    
     void slotStringValueChanged(const QString& value);
     void slotStringListValueChanged();
-    void slotOneOfStringListValueChanged(const QString& value);
+    void slotOneOfStringListValueChanged();
     void slotManyOfStringListValueChanged();
     void slotBoolValueChanged(bool value);
     void slotIntValueChanged(int value);
+    void slotDoubleValueChanged(double value);
+    void selectColor(const QString &value, QPushButton *btn);
 };
 
 #endif // DIALOGVALUESLIST_H

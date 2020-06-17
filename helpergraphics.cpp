@@ -59,3 +59,17 @@ QPixmap getProfilePortrait(const QString &img, int size)
 
     return pixmap;
 }
+
+QColor GetContrastColor(const QColor &color)
+{
+    const int SATURATION_THRESHOLD = 51;
+    int h = color. hslHue();
+    int s = color.hslSaturation();
+    int l = color.lightness();
+
+    h = h + 180;
+    if (h >= 360) h -= 360;
+    if (s < SATURATION_THRESHOLD) l = l < 128 ? 255 : 0;
+
+    return QColor::fromHsl(h, 255, l, color.alpha());
+}

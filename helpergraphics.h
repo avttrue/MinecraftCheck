@@ -29,4 +29,9 @@ QPixmap getPixmapFromBase64(const QString& img, bool *ok = nullptr, int defsize 
  */
 QPixmap getProfilePortrait(const QString& img, int size = 0);
 
+/*!
+ * \brief GetContrastColor - возвращает контрастный (инвертированный) цвет
+ */
+QColor GetContrastColor(const QColor& color);
+
 #endif // HELPERGRAPHICS_H
