@@ -19,6 +19,8 @@ Config::Config(const QString& in_AppDirectory):
     m_Settings->setIniCodec(QTextCodec::codecForName(TEXT_CODEC.toLatin1()));
 
     load();
+
+    QObject::connect(this, &QObject::destroyed, [=]() { qInfo() << "Config destroyed"; });
 }
 
 void Config::load()

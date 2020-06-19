@@ -138,6 +138,8 @@ DBBrowser::DBBrowser(QWidget *parent)
     splitter->setStretchFactor(0, 0);
     splitter->setStretchFactor(1, 1);
     layout->addWidget(splitter);
+
+    QObject::connect(this, &QObject::destroyed, [=]() { qInfo() << "DBBrowser destroyed"; });
 }
 
 QString DBBrowser::getModelFilter()

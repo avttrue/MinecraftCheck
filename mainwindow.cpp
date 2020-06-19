@@ -65,6 +65,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settings.setValue("MainWindow/Width",width());
 
     splash.close();
+
+    config->deleteLater();
+
     event->accept();
 }
 
