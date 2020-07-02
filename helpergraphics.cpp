@@ -4,6 +4,10 @@
 #include <QIcon>
 #include <QDebug>
 #include <QPainter>
+#include <QApplication>
+#include <QScreen>
+#include <QSvgRenderer>
+#include <QBitmap>
 
 QString getBase64Image(const QString& path, QSize size, bool html)
 {
@@ -72,4 +76,21 @@ QColor GetContrastColor(const QColor &color)
     if (s < SATURATION_THRESHOLD) l = l < 128 ? 255 : 0;
 
     return QColor::fromHsl(h, 255, l, color.alpha());
+}
+
+QPixmap SvgToPixmap(const QSize &size, const QString &file)
+{
+    auto pratio = QApplication::primaryScreen()->devicePixelRatio();
+
+    QSvgRenderer svgRenderer(file);
+
+    QPixmap img(size * pratio);
+    img.fill(Qt::transparent);
+
+    QPainter painter(&img);
+
+    svgRenderer.render(&painter);
+    img.setDevicePixelRatio(pratio);
+
+    return img;
 }

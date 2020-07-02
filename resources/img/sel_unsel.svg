@@ -7,13 +7,13 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   height="100%"
-   viewBox="0 0 64 64"
-   width="100%"
-   version="1.1"
+   inkscape:version="1.0 (6e3e5246a0, 2020-05-07)"
+   sodipodi:docname="sel_unsel.svg"
    id="svg4"
-   sodipodi:docname="kyo_black.svg"
-   inkscape:version="0.92.4 (unknown)">
+   version="1.1"
+   width="100%"
+   viewBox="0 0 64 64"
+   height="100%">
   <metadata
      id="metadata10">
     <rdf:RDF>
@@ -28,28 +28,29 @@
   <defs
      id="defs8" />
   <sodipodi:namedview
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1"
-     objecttolerance="10"
-     gridtolerance="10"
-     guidetolerance="10"
-     inkscape:pageopacity="0"
-     inkscape:pageshadow="2"
-     inkscape:window-width="1920"
-     inkscape:window-height="1010"
-     id="namedview6"
-     showgrid="false"
-     inkscape:zoom="4.2142857"
-     inkscape:cx="29.424722"
-     inkscape:cy="40.875723"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:document-rotation="0"
+     inkscape:current-layer="svg4"
      inkscape:window-maximized="1"
-     inkscape:current-layer="svg4" />
+     inkscape:window-y="0"
+     inkscape:window-x="0"
+     inkscape:cy="40.875723"
+     inkscape:cx="29.424722"
+     inkscape:zoom="4.2142857"
+     showgrid="false"
+     id="namedview6"
+     inkscape:window-height="1137"
+     inkscape:window-width="1920"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff" />
   <path
-     d="m 32,53.25 v -42.5 q -5.78125,0 -10.664063,2.851563 -4.882812,2.851562 -7.734374,7.734374 Q 10.75,26.21875 10.75,32 q 0,5.78125 2.851563,10.664062 2.851562,4.882813 7.734374,7.734375 Q 26.21875,53.25 32,53.25 Z M 62,32 Q 62,40.164062 57.976562,47.058594 53.953125,53.953125 47.058594,57.976562 40.164062,62 32,62 23.835937,62 16.941406,57.976562 10.046875,53.953125 6.0234375,47.058594 2,40.164062 2,32 2,23.835937 6.0234375,16.941406 10.046875,10.046875 16.941406,6.0234375 23.835937,2 32,2 40.164062,2 47.058594,6.0234375 53.953125,10.046875 57.976562,16.941406 62,23.835937 62,32 Z"
-     id="path2"
+     style="stroke-width:0.0390625;fill:#000000"
      inkscape:connector-curvature="0"
-     style="stroke-width:0.0390625" />
+     id="path2"
+     d="m 32,53.25 v -42.5 q -5.78125,0 -10.664063,2.851563 -4.882812,2.851562 -7.734374,7.734374 Q 10.75,26.21875 10.75,32 q 0,5.78125 2.851563,10.664062 2.851562,4.882813 7.734374,7.734375 Q 26.21875,53.25 32,53.25 Z M 62,32 Q 62,40.164062 57.976562,47.058594 53.953125,53.953125 47.058594,57.976562 40.164062,62 32,62 23.835937,62 16.941406,57.976562 10.046875,53.953125 6.0234375,47.058594 2,40.164062 2,32 2,23.835937 6.0234375,16.941406 10.046875,10.046875 16.941406,6.0234375 23.835937,2 32,2 40.164062,2 47.058594,6.0234375 53.953125,10.046875 57.976562,16.941406 62,23.835937 62,32 Z" />
 </svg>

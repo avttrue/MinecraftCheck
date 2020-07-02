@@ -34,4 +34,6 @@ QPixmap getProfilePortrait(const QString& img, int size = 0);
  */
 QColor GetContrastColor(const QColor& color);
 
+QPixmap SvgToPixmap(const QSize &size, const QString &file);
+
 #endif // HELPERGRAPHICS_H
