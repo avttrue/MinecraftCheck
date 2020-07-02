@@ -6,8 +6,8 @@
 #include <QPainter>
 #include <QApplication>
 #include <QScreen>
-#include <QSvgRenderer>
-#include <QBitmap>
+//#include <QSvgRenderer>
+
 
 QString getBase64Image(const QString& path, QSize size, bool html)
 {
@@ -78,19 +78,19 @@ QColor GetContrastColor(const QColor &color)
     return QColor::fromHsl(h, 255, l, color.alpha());
 }
 
-QPixmap SvgToPixmap(const QSize &size, const QString &file)
-{
-    auto pratio = QApplication::primaryScreen()->devicePixelRatio();
+//QPixmap SvgToPixmap(const QSize &size, const QString &file)
+//{
+//    auto pratio = QApplication::primaryScreen()->devicePixelRatio();
 
-    QSvgRenderer svgRenderer(file);
+//    QSvgRenderer svgRenderer(file);
 
-    QPixmap img(size * pratio);
-    img.fill(Qt::transparent);
+//    QPixmap img(size * pratio);
+//    img.fill(Qt::transparent);
 
-    QPainter painter(&img);
+//    QPainter painter(&img);
 
-    svgRenderer.render(&painter);
-    img.setDevicePixelRatio(pratio);
+//    svgRenderer.render(&painter);
+//    img.setDevicePixelRatio(pratio);
 
-    return img;
-}
+//    return img;
+//}
