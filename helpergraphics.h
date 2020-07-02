@@ -34,6 +34,10 @@ QPixmap getProfilePortrait(const QString& img, int size = 0);
  */
 QColor GetContrastColor(const QColor& color);
 
-//QPixmap SvgToPixmap(const QSize &size, const QString &file);
+void ChangePixmapColors(QPixmap* pixmap, QColor sourcecolor, QColor targetcolor);
+
+QPixmap SvgToPixmap(const QSize &size, const QString &file);
+
+QIcon AdaptedSvgIconByColor(QWidget* widget, QSize size, QColor sourcecolor, const QString &file);
 
 #endif // HELPERGRAPHICS_H

@@ -6,8 +6,9 @@
 #include <QPainter>
 #include <QApplication>
 #include <QScreen>
-//#include <QSvgRenderer>
-
+#include <QSvgRenderer>
+#include <QBitmap>
+#include <QWidget>
 
 QString getBase64Image(const QString& path, QSize size, bool html)
 {
@@ -78,19 +79,40 @@ QColor GetContrastColor(const QColor &color)
     return QColor::fromHsl(h, 255, l, color.alpha());
 }
 
-//QPixmap SvgToPixmap(const QSize &size, const QString &file)
-//{
-//    auto pratio = QApplication::primaryScreen()->devicePixelRatio();
+QPixmap SvgToPixmap(const QSize &size, const QString &file)
+{
+    auto pratio = QApplication::primaryScreen()->devicePixelRatio();
 
-//    QSvgRenderer svgRenderer(file);
+    QSvgRenderer svgRenderer(file);
 
-//    QPixmap img(size * pratio);
-//    img.fill(Qt::transparent);
+    QPixmap img(size * pratio);
+    img.fill(Qt::transparent);
 
-//    QPainter painter(&img);
+    QPainter painter;
+    painter.begin(&img);
+    svgRenderer.render(&painter);
+    painter.end();
 
-//    svgRenderer.render(&painter);
-//    img.setDevicePixelRatio(pratio);
+    img.setDevicePixelRatio(pratio);
+    return img;
+}
 
-//    return img;
-//}
+void ChangePixmapColors(QPixmap *pixmap, QColor sourcecolor, QColor targetcolor)
+{
+   QPainter painter;
+   painter.begin(pixmap);
+   auto mask = pixmap->createMaskFromColor(sourcecolor, Qt::MaskOutColor);
+   painter.setPen(targetcolor);
+   painter.drawPixmap(0, 0, mask);
+   painter.end();
+}
+
+QIcon AdaptedSvgIconByColor(QWidget *widget, QSize size, QColor sourcecolor, const QString &file)
+{
+    auto widgetcolor = widget->palette().color(widget->backgroundRole());
+    auto targetcolor = GetContrastColor(widgetcolor);
+    auto img = SvgToPixmap(size, file);
+    ChangePixmapColors(&img, sourcecolor, targetcolor);
+
+    return QIcon(img);
+}

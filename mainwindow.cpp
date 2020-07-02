@@ -73,6 +73,13 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
 void MainWindow::loadGui()
 {
+    // тулбар
+    auto tbMain = new QToolBar(this);
+    tbMain->setMovable(false);
+    tbMain->setOrientation(Qt::Horizontal);
+    tbMain->setIconSize(QSize(config->ButtonSize(), config->ButtonSize()));
+    addToolBar(tbMain);
+
     // действия
     auto actionQt = new QAction(QIcon(":/resources/img/qt_logo.svg"), "About Qt", this);
     QObject::connect(actionQt, &QAction::triggered, qApp, QApplication::aboutQt);
@@ -113,14 +120,10 @@ void MainWindow::loadGui()
     QObject::connect(actionAbout, &QAction::triggered, this, &MainWindow::slotAbout);
 
     auto actionSetup = new QAction(QIcon(":/resources/img/setup.svg"), "Settings", this);
+
     QObject::connect(actionSetup, &QAction::triggered, this, &MainWindow::slotSetup);
 
-    // тулбар
-    auto tbMain = new QToolBar(this);
-    tbMain->setMovable(false);
-    tbMain->setOrientation(Qt::Horizontal);
-    tbMain->setIconSize(QSize(config->ButtonSize(), config->ButtonSize()));
-
+    // тулбар actions
     tbMain->addAction(actionCheckServers);
     tbMain->addAction(actionCheckPerson);
     tbMain->addAction(actionCheckPersonId);
@@ -134,8 +137,6 @@ void MainWindow::loadGui()
     tbMain->addAction(actionAbout);
     tbMain->addAction(actionQt);
     tbMain->addAction(actionExit);
-
-    addToolBar(tbMain);
 
     // вкладки
     tabWidget = new QTabWidget(this);
