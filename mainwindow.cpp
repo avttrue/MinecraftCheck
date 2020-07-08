@@ -887,7 +887,7 @@ void MainWindow::showDBInfo()
 void MainWindow::setTaskSeparator()
 {
     QString s;
-    textEvents->addText(s.fill('-', TASK_SEPARATOR_LEN));
+    textEvents->addText(QString("<font color='blue'>%1</font>").arg(s.fill('-', TASK_SEPARATOR_LEN)), true);
 }
 
 bool MainWindow::checkAnswerDB(QVector<QVariantList> answer, int row, int col)

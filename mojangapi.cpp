@@ -138,7 +138,7 @@ QJsonDocument MojangApi::getJsonDocument(const QString &string)
 
 void MojangApi::slotProgress(qint64 received, qint64 total)
 {
-    Q_EMIT signalMessage(QString("[<]\treceived: %1/%2 bytes").
+    Q_EMIT signalMessage(QString("[i]\treceived: %1/%2 bytes").
                          arg(QString::number(received), total < 0 ? "unknown" : QString::number(total)));
 }
 

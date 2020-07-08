@@ -12,8 +12,7 @@ public:
     void setLogSize(int count = 0);
     bool getAutoScroll();
     void setAutoScroll(bool value);
-    int getMessagesCount();
-    void addText(const QString& text);
+    void addText(const QString& text, bool ishtml = false);
 
 protected:
     void contextMenuEvent(QContextMenuEvent *event);
@@ -21,8 +20,6 @@ protected:
 private:
     QAction* actionClear;
     QAction* actionAutoScroll;
-
-    int m_MessagesCount;
     bool m_AutoScroll;
 
 public Q_SLOTS:

@@ -8,7 +8,6 @@
 
 TextLog::TextLog(QWidget *parent)
     :QPlainTextEdit(parent),
-    m_MessagesCount(0),
     m_AutoScroll(true)
 {
     setFont(QFont(config->FontNameEvents(), -1, QFont::ExtraBold));
@@ -43,14 +42,13 @@ void TextLog::contextMenuEvent(QContextMenuEvent* event)
 void TextLog::slotClear()
 {
     document()->clear();
-    m_MessagesCount = 0;
     textChanged();
 }
 
-void TextLog::addText(const QString &text)
+void TextLog::addText(const QString &text, bool ishtml)
 {
-    m_MessagesCount++;
-    appendPlainText(text);
+    if(ishtml) appendHtml(text);
+    else appendPlainText(text);
 
     if(m_AutoScroll)
     {
@@ -80,4 +78,4 @@ void TextLog::slotAutoScroll()
 
 void TextLog::setLogSize(int count) { document()->setMaximumBlockCount(count);}
 bool TextLog::getAutoScroll() { return m_AutoScroll; }
-int TextLog::getMessagesCount() { return  m_MessagesCount; }
+
