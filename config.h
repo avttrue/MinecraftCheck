@@ -87,6 +87,8 @@ public:
     void setSplashServiceTime(int value);
     int CapeWHAspect() const;
     void setCapeWHAspect(int value);
+    QString ReportCaptionColor() const;
+    void setReportCaptionColor(const QString &value);
 
 protected:
     void load();
@@ -108,6 +110,7 @@ private:
     QString m_MojangImageFormat;        // формат картинок в Mojang API
     QString m_FontNameEvents;           // семейство шрифта лога событий
     QString m_TableSkinMode;            // отображение скина в таблице: 'portrait', 'skin', 'none' (любое)
+    QString m_ReportCaptionColor;       // цвет заголовка отчёта
     int m_TableSkinSize;                // размер скина в таблице
     int m_TableCapeSize;                // размер плаща в таблице
     int m_TablePortraitSize;            // размер портрета в таблице

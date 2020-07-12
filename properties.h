@@ -27,6 +27,7 @@ const QString MOJANG_MODEL1 = "Alex";
 const QString MOJANG_MODEL2 = "Steve";
 const QString DATABASE_TYPE = "QSQLITE";
 const QString TABLE_SKIN_MODE = "portrait"; // 'portrait', 'skin', 'none'
+const QString REPORT_CAPTION_COLOR = "#B0E0E6";
 const auto TABLE_SKIN_SIZE = 64;
 const auto TABLE_CAPE_SIZE = 64;
 const auto CAPE_WIDTH_HEIGHT_ASPECT = 2;

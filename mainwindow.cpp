@@ -523,7 +523,7 @@ void MainWindow::showServers(QMap<QString, QString> servers)
     table.prepend("<tr><td>");
     table.append("</td></tr>");
     auto html = getTextFromRes(":/resources/report_body.html").
-                arg(caption, table, QString::number(config->ReportMargins()));
+                arg(caption, table, QString::number(config->ReportMargins()), config->ReportCaptionColor());
     setInformation(html);
 }
 
@@ -736,7 +736,7 @@ QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool upd
 void MainWindow::buildProfileTable(const QString &caption, const QString &profiletable)
 {
     auto html = getTextFromRes(":/resources/report_body.html").
-                arg(caption, profiletable, QString::number(config->ReportMargins()));
+                arg(caption, profiletable, QString::number(config->ReportMargins()), config->ReportCaptionColor());
     setInformation(html);
 }
 
@@ -941,12 +941,13 @@ void MainWindow::slotSetup()
                                    "10#_Cape size",
                                    "11#_Led size (servise status)",
                                    "12#_Margin (%)",
-                                   "13#_Open in system handler at saving",
-                                   "14#_Use Qt html",
-                                   "15#_Common options",
-                                   "16#_Event log size (0 = maximum)",
-                                   "17#_Use SI metric (at next recalc)",
-                                   "18#_Date and time format"};
+                                   "13#_Caption color",
+                                   "14#_Open in system handler at saving",
+                                   "15#_Use Qt html",
+                                   "16#_Common options",
+                                   "17#_Event log size (0 = maximum)",
+                                   "18#_Use SI metric (at next recalc)",
+                                   "19#_Date and time format"};
     QMap<QString, DialogValue> map =
         {{keys.at(0), {}},
          {keys.at(1), {QVariant::Bool, config->AdvancedDBMode(), 0, 0}},
@@ -961,12 +962,13 @@ void MainWindow::slotSetup()
          {keys.at(10), {QVariant::Int, config->TableCapeSize(), 8, 256}},
          {keys.at(11), {QVariant::Int, config->ReportLedSize(), 8, 256}},
          {keys.at(12), {QVariant::Int, config->ReportMargins(), 0, 30}},
-         {keys.at(13), {QVariant::Bool, config->ReportAutoOpen(), 0, 0}},
-         {keys.at(14), {QVariant::Bool, config->UseQtHtmlContent(), 0, 0}},
-         {keys.at(15), {}},
-         {keys.at(16), {QVariant::Int, config->LogSize(), 0, 0}},
-         {keys.at(17), {QVariant::Bool, config->SIMetric(), 0, 0}},
-         {keys.at(18), {QVariant::String, config->DateTimeFormat(), 0, 0}}
+         {keys.at(13), {QVariant::String, config->ReportCaptionColor(), 0, 0, DialogValueMode::Color}},
+         {keys.at(14), {QVariant::Bool, config->ReportAutoOpen(), 0, 0}},
+         {keys.at(15), {QVariant::Bool, config->UseQtHtmlContent(), 0, 0}},
+         {keys.at(16), {}},
+         {keys.at(17), {QVariant::Int, config->LogSize(), 0, 0}},
+         {keys.at(18), {QVariant::Bool, config->SIMetric(), 0, 0}},
+         {keys.at(19), {QVariant::String, config->DateTimeFormat(), 0, 0}}
         };
 
     auto dvl = new DialogValuesList(this, ":/resources/img/setup.svg", "Settings", &map);
@@ -985,10 +987,11 @@ void MainWindow::slotSetup()
     config->setTableCapeSize(map.value(keys.at(10)).value.toInt());
     config->setReportLedSize(map.value(keys.at(11)).value.toInt());
     config->setReportMargins(map.value(keys.at(12)).value.toInt());
-    config->setReportAutoOpen(map.value(keys.at(13)).value.toBool());
-    config->setUseQtHtmlContent(map.value(keys.at(14)).value.toBool());
+    config->setReportCaptionColor(map.value(keys.at(13)).value.toString());
+    config->setReportAutoOpen(map.value(keys.at(14)).value.toBool());
+    config->setUseQtHtmlContent(map.value(keys.at(15)).value.toBool());
 
-    config->setLogSize(map.value(keys.at(16)).value.toInt());
-    config->setSIMetric(map.value(keys.at(17)).value.toBool());
-    config->setDateTimeFormat(map.value(keys.at(18)).value.toString());
+    config->setLogSize(map.value(keys.at(17)).value.toInt());
+    config->setSIMetric(map.value(keys.at(18)).value.toBool());
+    config->setDateTimeFormat(map.value(keys.at(19)).value.toString());
 }

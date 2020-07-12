@@ -127,6 +127,10 @@ void Config::load()
         m_Settings->setValue("Api/ImageFormat", MOJANG_IMAGE_FORMAT);
     m_MojangImageFormat = m_Settings->value("Api/ImageFormat").toString();
 
+    if(!m_Settings->contains("Report/CaptionColor"))
+        m_Settings->setValue("Report/CaptionColor", REPORT_CAPTION_COLOR);
+    m_ReportCaptionColor = m_Settings->value("Report/CaptionColor").toString();
+
     if(!m_Settings->contains("Report/LedSize"))
         m_Settings->setValue("Report/LedSize", REPORT_LED_SIZE);
     m_ReportLedSize = m_Settings->value("Report/LedSize").toInt();
@@ -170,6 +174,14 @@ void Config::load()
     if(!m_Settings->contains("Database/KeepCommentsAtUpd"))
         m_Settings->setValue("Database/KeepCommentsAtUpd", KEEP_COMMENTS_AT_UPD);
     m_KeepCommentsAtUpd = m_Settings->value("Database/KeepCommentsAtUpd").toBool();
+}
+
+void Config::setReportCaptionColor(const QString &value)
+{
+    if(m_ReportCaptionColor == value) return;
+
+    m_ReportCaptionColor = value;
+    m_Settings->setValue("Report/CaptionColor", m_ReportCaptionColor);
 }
 
 void Config::setCapeWHAspect(int value)
@@ -474,3 +486,4 @@ int Config::SplashSize() const { return m_SplashSize; }
 QString Config::PathApp() const { return m_PathAppDir; }
 QString Config::PathAppConfig() const { return m_PathAppConfig; }
 QString Config::PathLocalDB() const { return m_PathLocalDB; }
+QString Config::ReportCaptionColor() const { return m_ReportCaptionColor; }
