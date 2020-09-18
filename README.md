@@ -15,3 +15,4 @@ This application is designed for
 Data is accessed using the open [Mojang Api](https://wiki.vg/Mojang_API).
 
 The [test database](https://yadi.sk/d/B8zlymoXdIkvjw) contains several thousand real player profiles. Just place this file in the directory to the application's executable file.
+[Latest build](https://yadi.sk/d/PhKZdDVANGSbOQ)
