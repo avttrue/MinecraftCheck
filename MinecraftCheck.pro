@@ -1,4 +1,6 @@
 QT       += core gui network sql svg
+#https://stackoverflow.com/a/53234995/12177714
+QMAKE_CXXFLAGS += "-fno-sized-deallocation"
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

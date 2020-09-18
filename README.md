@@ -14,4 +14,4 @@ This application is designed for
 
 Data is accessed using the open [Mojang Api](https://wiki.vg/Mojang_API).
 
-The [test database](https://github.com/avttrue/MinecraftCheck/blob/master/profiles.db) contains several thousand real player profiles. Just place this file in the directory to the application's executable file.
+The [test database](https://yadi.sk/d/B8zlymoXdIkvjw) contains several thousand real player profiles. Just place this file in the directory to the application's executable file.
