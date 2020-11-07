@@ -670,14 +670,14 @@ QString MainWindow::createContentProfile(const MojangApiProfile &profile, bool u
 
     report_content.append("<h2>Properties</h2>\n");
     auto legacy = profile.Legacy ? "not migrated to mojang.com" : "Ok";
-    report_content.append(QString("<ul>\n<li>Legacy:%1&nbsp;</li>\n").
+    report_content.append(QString("<ul>\n<li>Legacy:&nbsp;%1</li>\n").
                           arg(legacy));
 
     auto demo = profile.Demo ? "account unpaid" : "Ok";
-    report_content.append(QString("<li>Demo:%1&nbsp;</li>\n").
+    report_content.append(QString("<li>Demo:&nbsp;%1</li>\n").
                           arg(demo));
 
-    report_content.append(QString("<li>Model:%1&nbsp;</li>\n").
+    report_content.append(QString("<li>Model:&nbsp;%1</li>\n").
                           arg(profile.SkinModel));
 
     report_content.append("</ul>\n<hr>\n");
