@@ -8,7 +8,7 @@ CONFIG += c++17
 
 TARGET      = mcchk
 TEMPLATE    = app
-VERSION     = 0.1
+VERSION     = 1.0
 
 DEFINES     += APP_VERS=\\\"$${VERSION}\\\"
 DEFINES     += GIT_VERS=\\\"$$system(git describe --always)\\\"

@@ -3,32 +3,16 @@
     <head>
         <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
         <style>
-            CAPTION { 
-                text-align: center; 
-                background: %4;
-                border-style: ridge;
-                 margin: 0px; }
-            H2 { margin: 1px; }
-            H3 { margin: 4px; }
-            .TABLE1 {
-                padding: 4px;
-                margin: 0px;
-                border-collapse: collapse;
-                border-spacing: 0;
-                border-style: none;
-                border-width: 0px;
-                width: 100%;
-                table-layout: fixed; }
-            .TABLE2 {
-                padding: 4px;
-                margin: 6px;
-                border-collapse: collapse; 
-                border-spacing: 0; 
-                border-style: dotted; 
-                border-width: 1px; 
-                border-color: gray; 
-                width: 100%;
-                table-layout: fixed; }
+            H3 { margin: 1px; }
+            H2 { margin: 4px;
+                 text-align: center; }
+            HR { width: 90%; }
+            UL { list-style-type: square;
+                 list-style-position: outside; }
+            IMG {
+                 display: block;
+                 margin: auto;
+                 text-align: center; }
             .MAINDIV {
                 font-size: large;
                 font-family: monospace;
@@ -37,32 +21,27 @@
                 margin-left: %3%;
                 margin-right: %3%;
                 padding: 10px; }
-            .TDTEXT1 {
-                border-style: dotted;
-                border-width: 1px;
-                border-color: gray;
-                text-align: left; 
-                vertical-align: middle; }
-            .TDTEXT2 {
-                border-style: dotted;
-                border-width: 1px;
-                border-color: gray;
-                text-align: center; }
-            .TDTEXT3 {
-                margin: 0px;
-                text-align: center; }
-            .TDIMG {
-                border-style: dotted; 
-                border-width: 1px; 
-                border-color: gray;
+            .CONTENTDIV {
+                text-align: left;
+                margin-left: 5%;
+                margin-right: 5%;
+                padding: 10px; }
+            .CONTENTABLE {
                 padding: 4px;
-                text-align: center; }
+                margin: 0px;
+                border-style: dotted;
+                border-width: 1px;
+                border-color: %4;
+                width: 100%;
+                table-layout: fixed; }
+             .TDNUMBER {
+                background: %4; }
         </style>
         <title>%1</title>
     </head>
     <body>
         <div class = 'MAINDIV'>
-            <table class = 'TABLE1'>
+            <table class = 'CONTENTABLE'>
             %2
             </table>
         </div>

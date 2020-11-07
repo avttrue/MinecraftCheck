@@ -36,8 +36,8 @@ protected:
     int setQueryDataBase(const QString &text, QVector<QVariantList> *answer = nullptr, bool log = false);
     void showServers(QMap<QString, QString> servers);
     void writeProfileToDB(const MojangApiProfile& profile, bool *updated = nullptr);
-    QString createTableProfile(const MojangApiProfile& profile, bool updated = false);
-    void buildProfileTable(const QString &caption, const QString &profiletable);
+    QString createContentProfile(const MojangApiProfile& profile, bool updated = false);
+    void buildProfileContent(const QString &caption, const QString &profile);
     void showDBProfiles(QStringList uuids);
     void showProfile(const MojangApiProfile& profile);
     void showDBInfo();

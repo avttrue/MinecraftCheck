@@ -36,7 +36,6 @@
         <file>resources/img/vline.svg</file>
         <file>resources/img/search.svg</file>
         <file>resources/img/text.svg</file>
-        <file>resources/table_body.html</file>
         <file>resources/sql/select_profile_uuid.sql</file>
         <file>resources/sql/get_table_rows_count.sql</file>
         <file>resources/sql/select_history_uuid.sql</file>

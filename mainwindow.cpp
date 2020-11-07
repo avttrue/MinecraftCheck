@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent)
     setWindowTitle(QString("%1 %2").arg(APP_NAME, APP_VERS));
     loadGui();
     setWidgetToScreenCenter(this);
-    openDataBase();    
+    openDataBase();
     slotAbout();
 }
 
@@ -88,25 +88,25 @@ void MainWindow::loadGui()
     QObject::connect(actionExit, &QAction::triggered, this, &MainWindow::close);
 
     actionCheckServers = new QAction(QIcon(":/resources/img/check.svg"), "Check servers", this);
-    actionCheckServers->setShortcut(Qt::CTRL + Qt::Key_M);    
+    actionCheckServers->setShortcut(Qt::CTRL + Qt::Key_M);
     QObject::connect(actionCheckServers, &QAction::triggered, this, &MainWindow::getServersStatus);
 
     actionCheckPerson = new QAction(QIcon(":/resources/img/person.svg"), "Check player by nick", this);
     actionCheckPerson->setShortcut(Qt::CTRL + Qt::Key_N);
     QObject::connect(actionCheckPerson, &QAction::triggered, [=]()
-                     { showTextEdit(0);
-                         setInformation(getTextFromRes(":/resources/tip_body.html").
-                                        arg("Enter below a nickname to search using the Mojang Api"));
-                     });
+    { showTextEdit(0);
+        setInformation(getTextFromRes(":/resources/tip_body.html").
+                       arg("Enter below a nickname to search using the Mojang Api"));
+    });
 
     actionCheckPersonId = new QAction(QIcon(":/resources/img/person_id.svg"), "Check player by id", this);
     actionCheckPersonId->setShortcut(Qt::CTRL + Qt::Key_I);
     QObject::connect(actionCheckPersonId, &QAction::triggered, [=]()
-                     {
-                         showTextEdit(1);
-                         setInformation(getTextFromRes(":/resources/tip_body.html").
-                                        arg("Enter below a Id to search using the Mojang Api"));
-                     });
+    {
+        showTextEdit(1);
+        setInformation(getTextFromRes(":/resources/tip_body.html").
+                       arg("Enter below a Id to search using the Mojang Api"));
+    });
 
     actionSave = new QAction(QIcon(":/resources/img/save.svg"), "Save report", this);
     actionSave->setShortcut(Qt::CTRL + Qt::Key_S);
@@ -146,12 +146,12 @@ void MainWindow::loadGui()
     textBrowser->setOpenLinks(false);
     textBrowser->setUndoRedoEnabled(false);
     QObject::connect(textBrowser, &QTextBrowser::anchorClicked, [=](const QUrl &link)
-                     {
-                         if(!config->OpenUrls()) return;
-                         if(link.isEmpty() || !link.isValid()) return;
-                         if (!QDesktopServices::openUrl(link))
-                             qCritical() << ": error at QDesktopServices::openUrl(" << link.toString() << ")";
-                     });
+    {
+        if(!config->OpenUrls()) return;
+        if(link.isEmpty() || !link.isValid()) return;
+        if (!QDesktopServices::openUrl(link))
+            qCritical() << ": error at QDesktopServices::openUrl(" << link.toString() << ")";
+    });
 
     auto infoWidget = new QWidget(this);
     auto vblInfo = new QVBoxLayout();
@@ -172,19 +172,19 @@ void MainWindow::loadGui()
     dbBrowser = new DBBrowser(this);
     tabWidget->addTab(dbBrowser, QIcon(":/resources/img/database.svg"), "Database");
     QObject::connect(dbBrowser, &DBBrowser::signalMessage, [=](const QString& text)
-                     { setTaskSeparator();
-                       textEvents->addText(text); });
+    { setTaskSeparator();
+        textEvents->addText(text); });
     QObject::connect(dbBrowser, &DBBrowser::signalReport, this, &MainWindow::showDBProfiles);
     QObject::connect(dbBrowser, &DBBrowser::signalQuery, [=](const QString& text)
-                     { QVector<QVariantList> answer;
-                       setQueryDataBase(text, &answer, true);
-                       tabWidget->setCurrentIndex(2); });
+    { QVector<QVariantList> answer;
+        setQueryDataBase(text, &answer, true);
+        tabWidget->setCurrentIndex(2); });
     QObject::connect(dbBrowser, &DBBrowser::signalUpdateProfile, [=](const QString& text)
-                     { showTextEdit(1);
-                         lineEdit->setText(text);
-                         setInformation(getTextFromRes(":/resources/tip_body.html").
-                                        arg("Confirm serch by uuid to continue<br>(press 'Enter')"));
-                     });
+    { showTextEdit(1);
+        lineEdit->setText(text);
+        setInformation(getTextFromRes(":/resources/tip_body.html").
+                       arg("Confirm serch by uuid to continue<br>(press 'Enter')"));
+    });
 
     textEvents = new TextLog(this);
     tabWidget->addTab(textEvents, QIcon(":/resources/img/log.svg"), "Events");
@@ -256,17 +256,17 @@ void MainWindow::getServersStatus()
     QPointer<ServerStatusReader> reader = new ServerStatusReader(this);
 
     QObject::connect(reader, &ServerStatusReader::signalSuccess, [=]()
-                     { queryDone(true); reader->deleteLater(); });
+    { queryDone(true); reader->deleteLater(); });
     QObject::connect(reader, &ServerStatusReader::signalError, [=]()
-                     { queryDone(false); reader->deleteLater(); });
+    { queryDone(false); reader->deleteLater(); });
     QObject::connect(this, &MainWindow::signalAbortQuery, [=]()
-                     { if(reader) reader->abort(true); });
+    { if(reader) reader->abort(true); });
     QObject::connect(reader, &ServerStatusReader::signalMessage, [=](QString text)
-                     { textEvents->addText(text);
-                     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
+    { textEvents->addText(text);
+        QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
     QObject::connect(reader, &ServerStatusReader::signalStatus, [=](QString text)
-                     { labelStatus->setText(text);
-                     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
+    { labelStatus->setText(text);
+        QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
     QObject::connect(reader, &ServerStatusReader::signalServers, this, &MainWindow::showServers);
 
     setTaskSeparator();
@@ -282,7 +282,7 @@ void MainWindow::setPlayerForSearch()
 
     lineEdit->setVisible(false);
     tabWidget->setCurrentIndex(2);
-    setEnableActions(false);    
+    setEnableActions(false);
     textBrowser->clear();
     progressBar->setVisible(true);
 
@@ -298,19 +298,19 @@ void MainWindow::getProfile(const QString &text, bool mode)
     QPointer<PlayerProfileReader> reader = new PlayerProfileReader(this);
 
     QObject::connect(reader, &PlayerProfileReader::signalSuccess, [=]()
-                     { queryDone(true); reader->deleteLater(); });
+    { queryDone(true); reader->deleteLater(); });
     QObject::connect(reader, &PlayerProfileReader::signalError, [=]()
-                     { queryDone(false); reader->deleteLater(); });
+    { queryDone(false); reader->deleteLater(); });
     QObject::connect(this, &MainWindow::signalAbortQuery, [=]()
-                     { if(reader) reader->abort(true);
-                         setInformation(getTextFromRes(":/resources/tip_body.html").
-                                              arg("Failed to get data from Mojang")); });
+    { if(reader) reader->abort(true);
+        setInformation(getTextFromRes(":/resources/tip_body.html").
+                       arg("Failed to get data from Mojang")); });
     QObject::connect(reader, &PlayerProfileReader::signalMessage, [=](QString string)
-                     { textEvents->addText(string);
-                       QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
+    { textEvents->addText(string);
+        QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
     QObject::connect(reader, &PlayerProfileReader::signalStatus, [=](QString string)
-                     { labelStatus->setText(string);
-                       QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
+    { labelStatus->setText(string);
+        QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);});
     QObject::connect(reader, &PlayerProfileReader::signalProfile, this, &MainWindow::showProfile);
 
     setTaskSeparator();
@@ -345,8 +345,8 @@ void MainWindow::saveReport()
     QFile file(filename);
 
     QString text = config->UseQtHtmlContent()
-                       ? textBrowser->toHtml()
-                       : textBrowser->property(TB_PROPERTY_CONTENT).toString();
+            ? textBrowser->toHtml()
+            : textBrowser->property(TB_PROPERTY_CONTENT).toString();
 
     if(textToFile(text, filename))
     {
@@ -452,8 +452,8 @@ int MainWindow::setQueryDataBase(const QString& text, QVector<QVariantList>* ans
                 if(!log) continue;
 
                 srow.isEmpty()
-                    ? srow.append(value.toString())
-                    : srow.append(QString(";%1").arg(value.toString()));
+                        ? srow.append(value.toString())
+                        : srow.append(QString(";%1").arg(value.toString()));
             }
             if(row.isEmpty()) continue;
 
@@ -492,15 +492,15 @@ void MainWindow::showServers(QMap<QString, QString> servers)
 {
     auto lsize = config->ReportLedSize();
     auto ledgreen = QString("<img src='%1' alt='green'>").
-                    arg(getBase64Image(":/resources/img/led_green.svg", QSize(lsize, lsize), true));
+            arg(getBase64Image(":/resources/img/led_green.svg", QSize(lsize, lsize), true));
     auto ledred = QString("<img src='%1' alt='red'>").
-                  arg(getBase64Image(":/resources/img/led_red.svg", QSize(lsize, lsize), true));
+            arg(getBase64Image(":/resources/img/led_red.svg", QSize(lsize, lsize), true));
     auto ledyellow = QString("<img src='%1' alt='yellow'>").
-                     arg(getBase64Image(":/resources/img/led_yellow.svg", QSize(lsize, lsize), true));
+            arg(getBase64Image(":/resources/img/led_yellow.svg", QSize(lsize, lsize), true));
     auto ledunknown = QString("<img src='%1' alt='%2'>").
-                      arg(getBase64Image(":/resources/img/question.svg", QSize(lsize, lsize), true), "%1");
+            arg(getBase64Image(":/resources/img/question.svg", QSize(lsize, lsize), true), "%1");
     auto caption = QString("Status of the Mojang services %1").
-                   arg(QDateTime::currentDateTime().toString(config->DateTimeFormat()));
+            arg(QDateTime::currentDateTime().toString(config->DateTimeFormat()));
 
     QString report_content;
     for(auto key: servers.keys())
@@ -523,7 +523,7 @@ void MainWindow::showServers(QMap<QString, QString> servers)
     table.prepend("<tr><td>");
     table.append("</td></tr>");
     auto html = getTextFromRes(":/resources/report_body.html").
-                arg(caption, table, QString::number(config->ReportMargins()), config->ReportCaptionColor());
+            arg(caption, table, QString::number(config->ReportMargins()), config->ReportCaptionColor());
     setInformation(html);
 }
 
@@ -574,7 +574,7 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile, bool* updated
             if(!profile.Capes.isEmpty())
             {
                 text = getTextFromRes(":/resources/sql/del_record_cape.sql").
-                       arg(profile.Id, profile.Capes.keys().at(0));
+                        arg(profile.Id, profile.Capes.keys().at(0));
                 setQueryDataBase(text);
             }
             setQueryDataBase("COMMIT;");
@@ -594,9 +594,9 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile, bool* updated
     {
         textEvents->addText(QString("[i]\tProfile has a CAPE"));
         text = getTextFromRes(":/resources/sql/add_record_cape.sql").
-               arg(profile.Id,
-                   profile.Capes.keys().at(0),
-                   profile.Capes.value(profile.Capes.keys().at(0)));
+                arg(profile.Id,
+                    profile.Capes.keys().at(0),
+                    profile.Capes.value(profile.Capes.keys().at(0)));
         setQueryDataBase(text);
         hasCapes = "1";
     }
@@ -614,14 +614,14 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile, bool* updated
     }
 
     text = getTextFromRes(":/resources/sql/add_record_profile.sql").
-           arg(profile.Id, QString::number(profile.DateTime),
-               profile.FirstName, profile.CurrentName,
-               profile.SkinUrl, profile.Skin, profile.SkinModel,
-               QString::number(profile.Legacy),
-               QString::number(profile.Demo),
-               comments,
-               profile.NameHistory.isEmpty() ? "0" : "1",
-               hasCapes);
+            arg(profile.Id, QString::number(profile.DateTime),
+                profile.FirstName, profile.CurrentName,
+                profile.SkinUrl, profile.Skin, profile.SkinModel,
+                QString::number(profile.Legacy),
+                QString::number(profile.Demo),
+                comments,
+                profile.NameHistory.isEmpty() ? "0" : "1",
+                hasCapes);
     setQueryDataBase(text);
 
     setQueryDataBase("COMMIT;");
@@ -631,112 +631,101 @@ void MainWindow::writeProfileToDB(const MojangApiProfile &profile, bool* updated
     if(updated) *updated = rezult;
 }
 
-QString MainWindow::createTableProfile(const MojangApiProfile &profile, bool updated)
+QString MainWindow::createContentProfile(const MojangApiProfile &profile, bool updated)
 {
-    auto dts = longTimeToString(profile.DateTime, config->DateTimeFormat()).replace(' ', "&#160;");
-    auto caption = QString("Player profile '%1'<br>%2%3").
-                   arg(profile.CurrentName,
-                       dts,
-                       updated ? "<br>(updated)" : "");
+    auto dts = longTimeToString(profile.DateTime, config->DateTimeFormat()).replace(' ', "&nbsp;");
+    auto report_content = QString("<div class = 'CONTENTDIV'>\n"
+                                  "<h2>%1<br>%2%3</h2>\n<hr>\n").
+            arg(profile.CurrentName,
+                dts,
+                updated ? "<br>(updated)" : "");
 
-    QString report_content;
-    report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
-                                  "<h3>ID:&#160;%1</h3></td></tr>").arg(profile.Id));
-    report_content.append(QString("<tr><td class='TDTEXT1'>"
-                                  "<h3>First name</h3></td>"
-                                  "<td class='TDTEXT1'><h3>%1</h3></td></tr>").arg(profile.FirstName));
+    report_content.append(QString("<ul>\n<li>ID:&nbsp;%1</li>\n").arg(profile.Id));
+    report_content.append(QString("<li>First&nbsp;name:&nbsp;%1</li>\n</ul><hr>\n\n").
+                          arg(profile.FirstName));
 
     if(config->ReportAddPortrait())
     {
         QPixmap portrait = getProfilePortrait(profile.Skin, config->ReportPortraitSize());
-        report_content.append(QString("<tr><td class='TDIMG' colspan='2'>"
-                                      "<img src='data:image/png;base64,%1' "
-                                      "alt='portrait'></td></tr>").
-                              arg(getBase64Image(portrait)));
+        report_content.append(QString("<p>\n<img src='data:image/png;base64,%1' "
+                                      "alt='portrait' width='%2' height='%3'>\n</p>\n<hr>\n").
+                              arg(getBase64Image(portrait),
+                                  QString::number(config->ReportPortraitSize()),
+                                  QString::number(config->ReportPortraitSize())));
     }
 
     if(!profile.NameHistory.isEmpty())
     {
-        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
-                                      "<h2>Name&#160;history&#160;[%1]</h2></td></tr>").
+        report_content.append(QString("<h2>Name&nbsp;history&nbsp;[%1]</h2>\n<ul>\n").
                               arg(QString::number(profile.NameHistory.keys().count())));
         for(auto key: profile.NameHistory.keys())
         {
 
-            auto dts = longTimeToString(key, config->DateTimeFormat()).replace(' ', "&#160;");
-            report_content.append(QString("<tr><td class='TDTEXT1'><h3>%1</h3></td>"
-                                          "<td class='TDTEXT1'><h3>%2</h3></td></tr>").
+            auto dts = longTimeToString(key, config->DateTimeFormat()).replace(' ', "&nbsp;");
+            report_content.append(QString("<li>%1&nbsp;%2</li>\n").
                                   arg(dts, profile.NameHistory.value(key)));
         }
-        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
-                                      "&#8212;&#160;&#8212;&#160;&#8212;</td></tr>"));
+        report_content.append("</ul>\n<hr>\n");
     }
 
+    report_content.append("<h2>Properties</h2>\n");
     auto legacy = profile.Legacy ? "not migrated to mojang.com" : "Ok";
-    report_content.append(QString("<tr><td class='TDTEXT1'><h3>Legacy</h3></td>"
-                                  "<td class='TDTEXT1'><h3>%1</h3></td></tr>").
+    report_content.append(QString("<ul>\n<li>Legacy:%1&nbsp;</li>\n").
                           arg(legacy));
 
     auto demo = profile.Demo ? "account unpaid" : "Ok";
-    report_content.append(QString("<tr><td class='TDTEXT1'><h3>Demo</h3></td>"
-                                  "<td class='TDTEXT1'><h3>%1</h3></td></tr>").
+    report_content.append(QString("<li>Demo:%1&nbsp;</li>\n").
                           arg(demo));
 
-    report_content.append(QString("<tr><td class='TDTEXT1'><h3>Model</h3></td>"
-                                  "<td class='TDTEXT1'><h3>%1</h3></td></tr>").
+    report_content.append(QString("<li>Model:%1&nbsp;</li>\n").
                           arg(profile.SkinModel));
 
-    report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
-                                  "<h2>Skin</h2></td></tr>"));
+    report_content.append("</ul>\n<hr>\n");
 
+    report_content.append("<h2>Skin</h2>\n");
     QPixmap image = getPixmapFromBase64(profile.Skin);
-    report_content.append(QString("<tr><td class='TDIMG' colspan='2'><br>"
+    report_content.append(QString("<p>\n<a href = '%2'>"
                                   "<img src='data:image/png;base64,%1' "
-                                  "alt='%2' width='%3' height='%4'><br>").
+                                  "alt='%2' width='%3' height='%4'></a>\n</p><hr>\n\n").
                           arg(profile.Skin,
                               profile.SkinUrl,
                               QString::number(image.width() * config->ReportImgScale()),
                               QString::number(image.height() * config->ReportImgScale())));
-    report_content.append(QString("<a href='%1' title='%1'>link</a><br>&#160;</td></tr>").
-                          arg(profile.SkinUrl));
 
     if(!profile.Capes.isEmpty())
     {
-        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
-                                      "<h2>Capes</h2></td></tr>"));
+        report_content.append("<h2>Capes</h2>\n");
 
         for(auto key: profile.Capes.keys())
         {
             auto cape = profile.Capes.value(key);
             QPixmap image = getPixmapFromBase64(cape);
 
-            report_content.append(QString("<tr><td class='TDIMG' colspan='2'><br>"
+            report_content.append(QString("<p>\n<a href = '%2'>"
                                           "<img src='data:image/png;base64,%1' "
-                                          "alt='%2' width='%3' height='%4'><br>").
+                                          "alt='%2' width='%3' height='%4'></a>\n</p>\n").
                                   arg(cape,
                                       key,
                                       QString::number(image.width() * config->ReportImgScale()),
                                       QString::number(image.height() * config->ReportImgScale())));
-            report_content.append(QString("<a href='%1' title='%1'>link</a><br>&#160;</td></tr>").
-                                  arg(key));
         }
+        report_content.append("<hr>\n");
     }
 
     if(!profile.Comment.isEmpty())
     {
-        report_content.append(QString("<tr><td class='TDTEXT2' colspan='2'>"
-                                      "<h2>Comment</h2></td></tr>"));
-        report_content.append(QString("<tr><td class='TDTEXT1' colspan='2'>"
-                                      "<h3>%1</h3></td></tr>").arg(profile.Comment));
+        report_content.append(QString("<h2>Comment</h2>\n"));
+        report_content.append(QString("<h3>%1</h3>\n").arg(profile.Comment));
     }
 
-    return getTextFromRes(":/resources/table_body.html").arg(caption, report_content);
+    report_content.append("</div>\n");
+    return report_content;
 }
 
-void MainWindow::buildProfileTable(const QString &caption, const QString &profiletable)
+void MainWindow::buildProfileContent(const QString &caption, const QString &profile)
 {
     auto html = getTextFromRes(":/resources/report_body.html").
-                arg(caption, profiletable, QString::number(config->ReportMargins()), config->ReportCaptionColor());
+            arg(caption, profile, QString::number(config->ReportMargins()), config->ReportCaptionColor());
     setInformation(html);
 }
 
@@ -829,22 +818,23 @@ void MainWindow::showDBProfiles(QStringList uuids)
                 profile.Capes.insert(list.at(0).toString(), list.at(1).toString());
         }
 
-        auto profiletable = createTableProfile(profile);
+        auto profilecontent = createContentProfile(profile);
 
-        content.append(QString("<tr><td class='TDTEXT3'><h2>%1</h2></td></tr>"
-                               "<tr><td class='TDTEXT3'>%2</td></tr>"
-                               "<tr><td>&#160;</td></tr>").
-                       arg(QString::number(prof_count), profiletable));
+
+
+        content.append(QString("<tr><td class = 'TDNUMBER'><h2>%1</h2></td></tr>"
+                               "<tr><td>%2</td></tr>").
+                       arg(QString::number(prof_count), profilecontent));
 
         prof_count++;
         QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
     }
 
     auto dts = longTimeToString(QDateTime::currentMSecsSinceEpoch(),
-                                config->DateTimeFormat()).replace(' ', "&#160;");
+                                config->DateTimeFormat()).replace(' ', "&nbsp;");
     auto caption = QString("Profiles report %1").arg(dts);
 
-    buildProfileTable(caption, content);
+    buildProfileContent(caption, content);
     setEnableActions(true);
     progressBar->setVisible(false);
 
@@ -858,15 +848,15 @@ void MainWindow::showProfile(const MojangApiProfile &profile)
     bool updated = false;
     if(config->AutoCollectProfiles()) writeProfileToDB(profile, &updated);
 
-    auto dts = longTimeToString(profile.DateTime, config->DateTimeFormat()).replace(' ', "&#160;");
+    auto dts = longTimeToString(profile.DateTime, config->DateTimeFormat()).replace(' ', "&nbsp;");
     auto caption = QString("Player profile '%1' %2").
-                   arg(profile.CurrentName, dts);
+            arg(profile.CurrentName, dts);
 
-    auto profiletable = createTableProfile(profile, updated);
+    auto profiletable = createContentProfile(profile, updated);
 
     profiletable.prepend("<tr><td>");
     profiletable.append("</td></tr>");
-    buildProfileTable(caption, profiletable);
+    buildProfileContent(caption, profiletable);
 }
 
 void MainWindow::showDBInfo()
@@ -921,7 +911,7 @@ void MainWindow::setInformation(const QString &text)
 void MainWindow::slotAbout()
 {
     auto html = getTextFromRes(":/resources/about_body.html").
-                arg(APP_NAME, APP_VERS, GIT_VERS, BUILD_DATE, getSystemInfo(), QT_VERSION_STR);
+            arg(APP_NAME, APP_VERS, GIT_VERS, BUILD_DATE, getSystemInfo(), QT_VERSION_STR);
     setInformation(html);
     tabWidget->setCurrentIndex(0);
 }
@@ -949,27 +939,27 @@ void MainWindow::slotSetup()
                                    "18#_Use SI metric (at next recalc)",
                                    "19#_Date and time format"};
     QMap<QString, DialogValue> map =
-        {{keys.at(0), {}},
-         {keys.at(1), {QVariant::Bool, config->AdvancedDBMode(), 0, 0}},
-         {keys.at(2), {QVariant::StringList, config->TableSkinMode(), 0, QStringList({"none", "portrait", "skin"}), DialogValueMode::OneFromList}},
-         {keys.at(3), {QVariant::Int, config->TableSkinSize(), 8, 256}},
-         {keys.at(4), {QVariant::Int, config->TablePortraitSize(), 8, 256}},
-         {keys.at(5), {}},
-         {keys.at(6), {QVariant::Bool, config->ReportAddPortrait(), 0, 0}},
-         {keys.at(7), {QVariant::Int, config->ReportPortraitSize(), 8, 256}},
-         {keys.at(8), {QVariant::Int, config->ReportImgScale(), 1, 10}},
-         {keys.at(9), {QVariant::Bool, config->ShowCapeImage(), 0, 0}},
-         {keys.at(10), {QVariant::Int, config->TableCapeSize(), 8, 256}},
-         {keys.at(11), {QVariant::Int, config->ReportLedSize(), 8, 256}},
-         {keys.at(12), {QVariant::Int, config->ReportMargins(), 0, 30}},
-         {keys.at(13), {QVariant::String, config->ReportCaptionColor(), 0, 0, DialogValueMode::Color}},
-         {keys.at(14), {QVariant::Bool, config->ReportAutoOpen(), 0, 0}},
-         {keys.at(15), {QVariant::Bool, config->UseQtHtmlContent(), 0, 0}},
-         {keys.at(16), {}},
-         {keys.at(17), {QVariant::Int, config->LogSize(), 0, 0}},
-         {keys.at(18), {QVariant::Bool, config->SIMetric(), 0, 0}},
-         {keys.at(19), {QVariant::String, config->DateTimeFormat(), 0, 0}}
-        };
+    {{keys.at(0), {}},
+     {keys.at(1), {QVariant::Bool, config->AdvancedDBMode(), 0, 0}},
+     {keys.at(2), {QVariant::StringList, config->TableSkinMode(), 0, QStringList({"none", "portrait", "skin"}), DialogValueMode::OneFromList}},
+     {keys.at(3), {QVariant::Int, config->TableSkinSize(), 8, 256}},
+     {keys.at(4), {QVariant::Int, config->TablePortraitSize(), 8, 256}},
+     {keys.at(5), {}},
+     {keys.at(6), {QVariant::Bool, config->ReportAddPortrait(), 0, 0}},
+     {keys.at(7), {QVariant::Int, config->ReportPortraitSize(), 8, 256}},
+     {keys.at(8), {QVariant::Int, config->ReportImgScale(), 1, 10}},
+     {keys.at(9), {QVariant::Bool, config->ShowCapeImage(), 0, 0}},
+     {keys.at(10), {QVariant::Int, config->TableCapeSize(), 8, 256}},
+     {keys.at(11), {QVariant::Int, config->ReportLedSize(), 8, 256}},
+     {keys.at(12), {QVariant::Int, config->ReportMargins(), 0, 30}},
+     {keys.at(13), {QVariant::String, config->ReportCaptionColor(), 0, 0, DialogValueMode::Color}},
+     {keys.at(14), {QVariant::Bool, config->ReportAutoOpen(), 0, 0}},
+     {keys.at(15), {QVariant::Bool, config->UseQtHtmlContent(), 0, 0}},
+     {keys.at(16), {}},
+     {keys.at(17), {QVariant::Int, config->LogSize(), 0, 0}},
+     {keys.at(18), {QVariant::Bool, config->SIMetric(), 0, 0}},
+     {keys.at(19), {QVariant::String, config->DateTimeFormat(), 0, 0}}
+    };
 
     auto dvl = new DialogValuesList(this, ":/resources/img/setup.svg", "Settings", &map);
 
