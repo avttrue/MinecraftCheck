@@ -497,7 +497,7 @@ void MainWindow::showServers(QMap<QString, QString> servers)
             arg(getBase64Image(":/resources/img/led_red.svg", QSize(lsize, lsize), true));
     auto ledyellow = QString("<img src='%1' alt='yellow'>").
             arg(getBase64Image(":/resources/img/led_yellow.svg", QSize(lsize, lsize), true));
-    auto ledunknown = QString("<img src='%1' alt='%2'>").
+    auto ledunkn = QString("<img src='%1' alt='%2'>").
             arg(getBase64Image(":/resources/img/question.svg", QSize(lsize, lsize), true), "%1");
     auto caption = QString("Status of the Mojang services %1").
             arg(QDateTime::currentDateTime().toString(config->DateTimeFormat()));
@@ -505,23 +505,22 @@ void MainWindow::showServers(QMap<QString, QString> servers)
     QString report_content;
     for(auto key: servers.keys())
     {
-        report_content.append(QString("<tr><td class='TDTEXT1'><h3>%1</h3></td>").arg(key));
+        report_content.append(QString("<tr>\n<td class='TDTEXT1'><h3>%1</h3>\n</td>\n").arg(key));
 
         auto value = servers.value(key).toLower();
 
         if(value == "green")
-            report_content.append(QString("<td class='TDIMG'>%1</td></tr>").arg(ledgreen));
+            report_content.append(QString("<td class='TDIMG'>\n%1\n</td>\n</tr>\n").arg(ledgreen));
         else if(value == "red")
-            report_content.append(QString("<td class='TDIMG'>%1</td></tr>").arg(ledred));
+            report_content.append(QString("<td class='TDIMG'>\n%1\n</td>\n</tr>\n").arg(ledred));
         else if(value == "yellow")
-            report_content.append(QString("<td class='TDIMG'>%1</td></tr>").arg(ledyellow));
+            report_content.append(QString("<td class='TDIMG'>\n%1\n</td>\n</tr>\n").arg(ledyellow));
         else
-            report_content.append(QString("<td class='TDIMG'>%1</td></tr>").arg(ledunknown.arg(value)));
+            report_content.append(QString("<td class='TDIMG'>\n%1\n</td>\n</tr>\n").arg(ledunkn.arg(value)));
     }
 
-    auto table = getTextFromRes(":/resources/table_body.html").arg(caption, report_content);
-    table.prepend("<tr><td>");
-    table.append("</td></tr>");
+    auto table = QString("<caption><h2>%1</h2></caption>\n%2\n").arg(caption, report_content);
+
     auto html = getTextFromRes(":/resources/report_body.html").
             arg(caption, table, QString::number(config->ReportMargins()), config->ReportCaptionColor());
     setInformation(html);
