@@ -38,6 +38,9 @@ void setWidgetToScreenCenter(QWidget* w);
  */
 void setWidgetToParentCenter(QWidget* w);
 
+/*!
+ * \brief addToolBarAction - добавить Action на ToolBar с присвоением имени для стилизации через css
+ */
 void addToolBarAction(QToolBar* bar, QAction *action, const QString& name = "");
 
 #endif // CONTROLS_H
