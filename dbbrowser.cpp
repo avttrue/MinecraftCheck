@@ -1,6 +1,7 @@
 
 #include "dbbrowser.h"
 #include "properties.h"
+#include "controls.h"
 #include "helper.h"
 #include "helpergraphics.h"
 #include "dialogs/dialogvalueslist.h"
@@ -74,24 +75,24 @@ DBBrowser::DBBrowser(QWidget *parent)
     auto toolBar = new QToolBar(this);
     toolBar->setIconSize(QSize(config->ButtonSize(), config->ButtonSize()));
     toolBar->setMovable(false);
-    toolBar->addAction(actionUpdateDB);
-    toolBar->addAction(actionSchemaDB);
+    addToolBarAction(toolBar, actionUpdateDB, TOOLBUTTON_NAME);
+    addToolBarAction(toolBar, actionSchemaDB, TOOLBUTTON_NAME);
     toolBar->addSeparator();
     toolBar->addSeparator();
-    toolBar->addAction(actionView);
-    toolBar->addAction(actionUpdateProfile);
-    toolBar->addAction(actionReport);
-    toolBar->addAction(actionFilter);
-    toolBar->addAction(actionComment);
+    addToolBarAction(toolBar, actionView, TOOLBUTTON_NAME);
+    addToolBarAction(toolBar, actionUpdateProfile, TOOLBUTTON_NAME);
+    addToolBarAction(toolBar, actionReport, TOOLBUTTON_NAME);
+    addToolBarAction(toolBar, actionFilter, TOOLBUTTON_NAME);
+    addToolBarAction(toolBar, actionComment, TOOLBUTTON_NAME);
     toolBar->addSeparator();
-    toolBar->addAction(actionUnselAll);
+    addToolBarAction(toolBar, actionUnselAll, TOOLBUTTON_NAME);
     toolBar->addSeparator();
-    toolBar->addAction(actionLoad);    
+    addToolBarAction(toolBar, actionLoad, TOOLBUTTON_NAME);
     toolBar->addSeparator();
 
-    if(config->AdvancedDBMode()) toolBar->addAction(actionClearTable);
-    if(config->AdvancedDBMode()) toolBar->addAction(actionInsertRow);
-    if(config->AdvancedDBMode()) toolBar->addAction(actionDeleteRow);
+    if(config->AdvancedDBMode()) addToolBarAction(toolBar, actionClearTable, TOOLBUTTON_NAME);
+    if(config->AdvancedDBMode()) addToolBarAction(toolBar, actionInsertRow, TOOLBUTTON_NAME);
+    if(config->AdvancedDBMode()) addToolBarAction(toolBar, actionDeleteRow, TOOLBUTTON_NAME);
     layout->addWidget(toolBar);
 
     tree = new QTreeWidget();

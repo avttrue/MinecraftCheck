@@ -106,24 +106,19 @@ background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
 stop: 0 black, stop: 0.5 gray,
 stop: 0.5 gray, stop: 1 black); }
 
-QTreeView {
-}
+QTreeView {}
 
 QTreeView::item {
 padding-top:    2px;
 padding-bottom: 2px; }
 
-QTreeView::item:hover {
-}
+QTreeView::item:hover {}
 
-QTreeView::item:selected {
-}
+QTreeView::item:selected {}
 
-QTreeView::item:selected:active{
-}
+QTreeView::item:selected:active{}
 
-QTreeView::item:selected:!active {
-}
+QTreeView::item:selected:!active {}
 
 QTreeView::branch:has-siblings:!adjoins-item {
 border-image: none;
@@ -147,18 +142,47 @@ QTreeView::branch:open:has-children:has-siblings {
 border-image: none;
 image: url(:/resources/img/branch-open.svg); }
 
-QToolButton {
+QToolButton#MCCheckerToolButton {
 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
 stop: 0 silver, stop: 0.5 white,
 stop: 0.5 white, stop: 1 silver);
 border-radius: 5px;
 margin: 1px; }
 
-QToolButton:hover {
+QToolButton#MCCheckerToolButton:hover {
 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
 stop: 0 silver, stop: 0.5 white,
 stop: 0.5 white, stop: 1 silver);
 border: 1px inset grey; }
 
-QToolButton:pressed {
+QToolButton#MCCheckerToolButton:pressed {
 background-color: #C0C0C0; }
+
+QTabWidget::pane {}
+
+QTabWidget::tab-bar {}
+
+QTabBar::tab {
+background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+stop: 0 silver, stop: 0.5 transparent,
+stop: 0.5 transparent, stop: 1 silver);
+border: 1px solid gray;
+border-bottom: 0px;
+border-top-left-radius: 3px;
+border-top-right-radius: 3px;
+min-width: 8ex;
+padding: 3px; }
+
+QTabBar::tab:hover {
+background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+stop: 0 transparent, stop: 0.5 silver,
+stop: 0.5 silver, stop: 1 transparent); }
+
+QTabBar::tab:selected {
+background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+stop: 0 transparent, stop: 0.5 white,
+stop: 0.5 white, stop: 1 transparent);
+border-top: 3px solid gray; }
+
+QTabBar::tab:!selected {
+margin-top: 4px; }

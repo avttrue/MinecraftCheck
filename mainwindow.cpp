@@ -124,19 +124,19 @@ void MainWindow::loadGui()
     QObject::connect(actionSetup, &QAction::triggered, this, &MainWindow::slotSetup);
 
     // тулбар actions
-    tbMain->addAction(actionCheckServers);
-    tbMain->addAction(actionCheckPerson);
-    tbMain->addAction(actionCheckPersonId);
+    addToolBarAction(tbMain, actionCheckServers, TOOLBUTTON_NAME);
+    addToolBarAction(tbMain, actionCheckPerson, TOOLBUTTON_NAME);
+    addToolBarAction(tbMain, actionCheckPersonId, TOOLBUTTON_NAME);
     tbMain->addSeparator();
-    tbMain->addAction(actionAbort);
+    addToolBarAction(tbMain, actionAbort, TOOLBUTTON_NAME);
     tbMain->addSeparator();
-    tbMain->addAction(actionSave);
+    addToolBarAction(tbMain, actionSave, TOOLBUTTON_NAME);
     tbMain->addWidget(new WidgetSpacer(this));
-    tbMain->addAction(actionSetup);
+    addToolBarAction(tbMain, actionSetup, TOOLBUTTON_NAME);
     tbMain->addSeparator();
-    tbMain->addAction(actionAbout);
-    tbMain->addAction(actionQt);
-    tbMain->addAction(actionExit);
+    addToolBarAction(tbMain, actionAbout, TOOLBUTTON_NAME);
+    addToolBarAction(tbMain, actionQt, TOOLBUTTON_NAME);
+    addToolBarAction(tbMain, actionExit, TOOLBUTTON_NAME);
 
     // вкладки
     tabWidget = new QTabWidget(this);

@@ -16,6 +16,7 @@ const QString TEXT_CODEC = "UTF-8";
 const QString APP_NAME = "Minecraft Checker";
 const QString APP_CFG = "config.cfg";
 const QString LOCAL_DB = "profiles.db";
+const QString TOOLBUTTON_NAME = "MCCheckerToolButton"; // see main.css
 const QString FONT_NAME_EVENTS = "monospace";
 const QString QUERY_SERVERS = "https://status.mojang.com/check";
 const QString QUERY_PERSON_UUID = "https://api.mojang.com/user/profiles/%1/names";

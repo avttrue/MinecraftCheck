@@ -3,6 +3,7 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include <QKeyEvent>
+#include <QToolBar>
 
 WidgetSpacer::WidgetSpacer(QWidget *parent): QWidget(parent)
 { setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding); }
@@ -37,6 +38,15 @@ void setWidgetToParentCenter(QWidget* w)
     center.setX(center.x() - (w->width()/2));
     center.setY(center.y() - (w->height()/2));
     w->move(center);
+}
+
+void addToolBarAction(QToolBar* bar, QAction *action, const QString& name)
+{
+    if(!bar || !action) return;
+    bar->addAction(action);
+
+    if(name.isEmpty()) return;
+    bar->widgetForAction(action)->setObjectName(name);
 }
 
 bool LineEditEventFilter::eventFilter(QObject *obj, QEvent *e)

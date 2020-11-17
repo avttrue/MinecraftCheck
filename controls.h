@@ -4,6 +4,8 @@
 #include <QFrame>
 #include <QLineEdit>
 
+class QToolBar;
+
 class WidgetSpacer: public QWidget
 {
 
@@ -35,5 +37,7 @@ void setWidgetToScreenCenter(QWidget* w);
  * поместить виджет по центру предка
  */
 void setWidgetToParentCenter(QWidget* w);
+
+void addToolBarAction(QToolBar* bar, QAction *action, const QString& name = "");
 
 #endif // CONTROLS_H
