@@ -32,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setWindowIcon(QIcon(":/resources/img/mainicon512.png"));
-    setWindowTitle(QString("%1 %2").arg(APP_NAME, APP_VERS));
+    setWindowTitle(QString("%1 %2").arg(APP_NAME, APP_VERSION));
     loadGui();
     setWidgetToScreenCenter(this);
     openDataBase();
@@ -910,7 +910,7 @@ void MainWindow::setInformation(const QString &text)
 void MainWindow::slotAbout()
 {
     auto html = getTextFromRes(":/resources/about_body.html").
-            arg(APP_NAME, APP_VERS, GIT_VERS, BUILD_DATE, getSystemInfo(), QT_VERSION_STR);
+            arg(APP_NAME, APP_VERSION, getSystemInfo(), QT_VERSION_STR);
     setInformation(html);
     tabWidget->setCurrentIndex(0);
 }

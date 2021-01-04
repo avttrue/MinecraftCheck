@@ -22,12 +22,15 @@ int main(int argc, char *argv[])
     window.show();
 
     QEventLoop loop;
-    QTimer::singleShot(config->SplashTime(), [&application, &window, &splash, &loop]()
-                       {
-                           splash.finish(&window);
-                           application.setActiveWindow(&window);
-                           loop.quit();
-                       });
+
+    auto close_splash = [&application, &window, &splash, &loop]()
+    {
+        splash.finish(&window);
+        application.setActiveWindow(&window);
+        loop.quit();
+    };
+
+    QTimer::singleShot(config->SplashTime(), &application, close_splash);
     loop.exec(QEventLoop::ExcludeUserInputEvents);
 
     return application.exec();
