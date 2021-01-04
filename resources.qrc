@@ -66,5 +66,6 @@
         <file>resources/img/grid_black.svg</file>
         <file>resources/sql/select_uuid_profiles_where.sql</file>
         <file>resources/img/sel_unsel.svg</file>
+        <file>MinecraftCheck.pro.old</file>
     </qresource>
 </RCC>
