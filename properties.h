@@ -1,6 +1,3 @@
-/*
- * параметры приложения
- */
 #ifndef PROPERTIES_H
 #define PROPERTIES_H
 
@@ -14,7 +11,7 @@ extern Config* config; // интерфейс над QSettings
 const QString DT_FORMAT =               "yyyy.MM.dd hh:mm:ss";
 const QString TEXT_CODEC =              "UTF-8";
 const QString APP_NAME =                "Minecraft Checker";
-const QString APP_VERSION =             "1.2";
+const QString APP_VERSION =             "1.3";
 const QString APP_CFG =                 "config.cfg";
 const QString LOCAL_DB =                "profiles.db";
 const QString TOOLBUTTON_NAME =         "MCCheckerToolButton"; // see main.css

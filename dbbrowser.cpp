@@ -700,7 +700,12 @@ void DBBrowser::slotSearch()
                  };
 
     auto dvl = new DialogValuesList(this, ":/resources/img/search.svg", "Find a profile", &map, keys.at(0));
-    dvl->resize(SEARCH_WINDOW_WIDTH, SEARCH_WINDOW_HEIGHT);
+    dvl->resize(config->SearchWindowWidth(), config->SearchWindowHeight());
+    QObject::connect(dvl, &DialogBody::signalSizeChanged, [=](QSize size)
+    {
+        config->setSearchWindowWidth(size.width());
+        config->setSearchWindowHeight(size.height());
+    });
     if(!dvl->exec()) return;
 
     auto time = QDateTime::currentMSecsSinceEpoch();
@@ -824,8 +829,12 @@ void DBBrowser::slotComment()
          {keys.at(2), {QVariant::String, comments}}};
 
     auto dvl = new DialogValuesList(this, ":/resources/img/edit.svg", "Edit comments", &map, keys.at(2));
-    dvl->resize(COMMENT_WINDOW_WIDTH, COMMENT_WINDOW_HEIGHT);
-
+    dvl->resize(config->CommentWindowWidth(), config->CommentWindowHeight());
+    QObject::connect(dvl, &DialogBody::signalSizeChanged, [=](QSize size)
+    {
+        config->setCommentWindowWidth(size.width());
+        config->setCommentWindowHeight(size.height());
+    });
     if(!dvl->exec()) return;
 
     auto newcomments = map.value(keys.at(2)).value.toString().simplified();
@@ -915,7 +924,12 @@ void DBBrowser::slotViewProfile()
     dvl->addToolbarButton(actionNext);
     dvl->addToolbarButton(actionPrev);
     dvl->ToolBar()->actions().last()->setVisible(false);
-    dvl->resize(PROFVIEW_WINDOW_WIDTH, PROFVIEW_WINDOW_HEIGHT);
+    dvl->resize(config->ProfViewWindowWidth(), config->ProfViewWindowHeight());
+    QObject::connect(dvl, &DialogBody::signalSizeChanged, [=](QSize size)
+    {
+        config->setProfViewWindowWidth(size.width());
+        config->setProfViewWindowHeight(size.height());
+    });
     dvl->exec();
 }
 

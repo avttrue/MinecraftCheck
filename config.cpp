@@ -39,6 +39,38 @@ void Config::load()
     if(!m_Settings->contains("MainWindow/Width"))
         m_Settings->setValue("MainWindow/Width", WINDOW_WIDTH);
 
+    if(!m_Settings->contains("MainWindow/ConfigWindowWidth"))
+        m_Settings->setValue("MainWindow/ConfigWindowWidth", CONFIG_WINDOW_WIDTH);
+    m_ConfigWindowWidth = m_Settings->value("MainWindow/ConfigWindowWidth").toInt();
+
+    if(!m_Settings->contains("MainWindow/ConfigWindowHeight"))
+        m_Settings->setValue("MainWindow/ConfigWindowHeight", CONFIG_WINDOW_HEIGHT);
+    m_ConfigWindowHeight = m_Settings->value("MainWindow/ConfigWindowHeight").toInt();
+
+    if(!m_Settings->contains("MainWindow/SearchWindowWidth"))
+        m_Settings->setValue("MainWindow/SearchWindowWidth", SEARCH_WINDOW_WIDTH);
+    m_SearchWindowWidth = m_Settings->value("MainWindow/SearchWindowWidth").toInt();
+
+    if(!m_Settings->contains("MainWindow/SearchWindowHeight"))
+        m_Settings->setValue("MainWindow/SearchWindowHeight", SEARCH_WINDOW_HEIGHT);
+    m_SearchWindowHeight = m_Settings->value("MainWindow/SearchWindowHeight").toInt();
+
+    if(!m_Settings->contains("MainWindow/CommentWindowWidth"))
+        m_Settings->setValue("MainWindow/CommentWindowWidth", COMMENT_WINDOW_WIDTH);
+    m_CommentWindowWidth = m_Settings->value("MainWindow/CommentWindowWidth").toInt();
+
+    if(!m_Settings->contains("MainWindow/CommentWindowHeight"))
+        m_Settings->setValue("MainWindow/CommentWindowHeight", COMMENT_WINDOW_HEIGHT);
+    m_CommentWindowHeight = m_Settings->value("MainWindow/CommentWindowHeight").toInt();
+
+    if(!m_Settings->contains("MainWindow/ProfViewWindowWidth"))
+        m_Settings->setValue("MainWindow/ProfViewWindowWidth", PROFVIEW_WINDOW_WIDTH);
+    m_ProfViewWindowWidth = m_Settings->value("MainWindow/ProfViewWindowWidth").toInt();
+
+    if(!m_Settings->contains("MainWindow/ProfViewWindowHeight"))
+        m_Settings->setValue("MainWindow/ProfViewWindowHeight", PROFVIEW_WINDOW_HEIGHT);
+    m_ProfViewWindowHeight = m_Settings->value("MainWindow/ProfViewWindowHeight").toInt();
+
     if(!m_Settings->contains("MainWindow/OpenURLs"))
         m_Settings->setValue("MainWindow/OpenURLs", OPEN_URLS);
     m_OpenUrls = m_Settings->value("MainWindow/OpenURLs").toBool();
@@ -176,10 +208,74 @@ void Config::load()
     m_KeepCommentsAtUpd = m_Settings->value("Database/KeepCommentsAtUpd").toBool();
 }
 
+void Config::setProfViewWindowHeight(int value)
+{
+    if(m_ProfViewWindowHeight == value) return;
+
+    m_ProfViewWindowHeight = value;
+    m_Settings->setValue("MainWindow/ProfViewWindowHeight", m_ProfViewWindowHeight);
+}
+
+void Config::setProfViewWindowWidth(int value)
+{
+    if(m_ProfViewWindowWidth == value) return;
+
+    m_ProfViewWindowWidth = value;
+    m_Settings->setValue("MainWindow/ProfViewWindowWidth", m_ProfViewWindowWidth);
+}
+
+void Config::setCommentWindowHeight(int value)
+{
+    if(m_CommentWindowHeight == value) return;
+
+    m_CommentWindowHeight = value;
+    m_Settings->setValue("MainWindow/CommentWindowHeight", m_CommentWindowHeight);
+}
+
+void Config::setCommentWindowWidth(int value)
+{
+    if(m_CommentWindowWidth == value) return;
+
+    m_CommentWindowWidth = value;
+    m_Settings->setValue("MainWindow/CommentWindowWidth", m_CommentWindowWidth);
+}
+
+void Config::setSearchWindowHeight(int value)
+{
+    if(m_SearchWindowHeight == value) return;
+
+    m_SearchWindowHeight = value;
+    m_Settings->setValue("MainWindow/SearchWindowHeight", m_SearchWindowHeight);
+}
+
+void Config::setSearchWindowWidth(int value)
+{
+    if(m_SearchWindowWidth == value) return;
+
+    m_SearchWindowWidth = value;
+    m_Settings->setValue("MainWindow/SearchWindowWidth", m_SearchWindowWidth);
+}
+
+void Config::setConfigWindowHeight(int value)
+{
+    if(m_ConfigWindowHeight == value) return;
+
+    m_ConfigWindowHeight = value;
+    m_Settings->setValue("MainWindow/ConfigWindowHeight", m_ConfigWindowHeight);
+}
+
+void Config::setConfigWindowWidth(int value)
+{
+    if(m_ConfigWindowWidth == value) return;
+
+    m_ConfigWindowWidth = value;
+    m_Settings->setValue("MainWindow/ConfigWindowWidth", m_ConfigWindowWidth);
+}
+
 void Config::setReportCaptionColor(const QString &value)
 {
     if(m_ReportCaptionColor == value) return;
-
+    
     m_ReportCaptionColor = value;
     m_Settings->setValue("Report/CaptionColor", m_ReportCaptionColor);
 }
@@ -487,3 +583,11 @@ QString Config::PathApp() const { return m_PathAppDir; }
 QString Config::PathAppConfig() const { return m_PathAppConfig; }
 QString Config::PathLocalDB() const { return m_PathLocalDB; }
 QString Config::ReportCaptionColor() const { return m_ReportCaptionColor; }
+int Config::ConfigWindowWidth() const { return m_ConfigWindowWidth; }
+int Config::ConfigWindowHeight() const { return m_ConfigWindowHeight; }
+int Config::SearchWindowHeight() const { return m_SearchWindowHeight; }
+int Config::SearchWindowWidth() const { return m_SearchWindowWidth; }
+int Config::CommentWindowHeight() const { return m_CommentWindowHeight; }
+int Config::CommentWindowWidth() const { return m_CommentWindowWidth; }
+int Config::ProfViewWindowHeight() const { return m_ProfViewWindowHeight; }
+int Config::ProfViewWindowWidth() const { return m_ProfViewWindowWidth; }

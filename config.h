@@ -89,6 +89,22 @@ public:
     void setCapeWHAspect(int value);
     QString ReportCaptionColor() const;
     void setReportCaptionColor(const QString &value);
+    int ConfigWindowWidth() const;
+    void setConfigWindowWidth(int value);
+    int ConfigWindowHeight() const;
+    void setConfigWindowHeight(int value);
+    int SearchWindowWidth() const;
+    void setSearchWindowWidth(int value);
+    int SearchWindowHeight() const;
+    void setSearchWindowHeight(int value);
+    int CommentWindowWidth() const;
+    void setCommentWindowWidth(int value);
+    int CommentWindowHeight() const;
+    void setCommentWindowHeight(int value);
+    int ProfViewWindowWidth() const;
+    void setProfViewWindowWidth(int value);
+    int ProfViewWindowHeight() const;
+    void setProfViewWindowHeight(int value);
 
 protected:
     void load();
@@ -111,6 +127,14 @@ private:
     QString m_FontNameEvents;           // семейство шрифта лога событий
     QString m_TableSkinMode;            // отображение скина в таблице: 'portrait', 'skin', 'none' (любое)
     QString m_ReportCaptionColor;       // цвет заголовка отчёта
+    int m_ConfigWindowWidth;            // размеры окна Настроек
+    int m_ConfigWindowHeight;           // размеры окна Настроек
+    int m_SearchWindowWidth;            // размеры окна Поиска
+    int m_SearchWindowHeight;           // размеры окна Поиска
+    int m_CommentWindowWidth;           // размеры окна Комментирования
+    int m_CommentWindowHeight;          // размеры окна Комментирования
+    int m_ProfViewWindowWidth;           // размеры окна профиля
+    int m_ProfViewWindowHeight;          // размеры окна профиля
     int m_TableSkinSize;                // размер скина в таблице
     int m_TableCapeSize;                // размер плаща в таблице
     int m_TablePortraitSize;            // размер портрета в таблице

@@ -961,7 +961,12 @@ void MainWindow::slotSetup()
     };
 
     auto dvl = new DialogValuesList(this, ":/resources/img/setup.svg", "Settings", &map);
-    dvl->resize(CONFIG_WINDOW_WIDTH, CONFIG_WINDOW_HEIGHT);
+    dvl->resize(config->ConfigWindowWidth(), config->ConfigWindowHeight());
+    QObject::connect(dvl, &DialogBody::signalSizeChanged, [=](QSize size)
+    {
+        config->setConfigWindowWidth(size.width());
+        config->setConfigWindowHeight(size.height());
+    });
     setWidgetToParentCenter(dvl);
     if(!dvl->exec()) return;
 
