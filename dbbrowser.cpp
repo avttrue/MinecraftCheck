@@ -700,6 +700,7 @@ void DBBrowser::slotSearch()
                  };
 
     auto dvl = new DialogValuesList(this, ":/resources/img/search.svg", "Find a profile", &map, keys.at(0));
+    dvl->resize(SEARCH_WINDOW_WIDTH, SEARCH_WINDOW_HEIGHT);
     if(!dvl->exec()) return;
 
     auto time = QDateTime::currentMSecsSinceEpoch();
@@ -823,6 +824,7 @@ void DBBrowser::slotComment()
          {keys.at(2), {QVariant::String, comments}}};
 
     auto dvl = new DialogValuesList(this, ":/resources/img/edit.svg", "Edit comments", &map, keys.at(2));
+    dvl->resize(COMMENT_WINDOW_WIDTH, COMMENT_WINDOW_HEIGHT);
 
     if(!dvl->exec()) return;
 
@@ -872,9 +874,11 @@ void DBBrowser::slotViewProfile()
     auto pcurrentrow = &currentrow;
     rowToDialogValueMap(&map, currentrow);
 
-    auto dvl = new DialogValuesList(this, ":/resources/img/eye.svg", "View profile", &map, "", false);
-    auto actionPrev = new QAction(QIcon(":/resources/img/up_arrow.svg"), "Previous profile", dvl);
-    auto actionNext = new QAction(QIcon(":/resources/img/down_arrow.svg"), "Next profile", dvl);
+    auto dvl = new DialogValuesList(this, ":/resources/img/eye.svg", "View profile", &map, "");
+    auto actionPrev = new QAction(QIcon(":/resources/img/up_arrow.svg"), "Previous profile");
+    QObject::connect(actionPrev, &QObject::destroyed, [=]() { qInfo() << "DBBrowser.actionPrev destroyed"; });
+    auto actionNext = new QAction(QIcon(":/resources/img/down_arrow.svg"), "Next profile");
+    QObject::connect(actionNext, &QObject::destroyed, [=]() { qInfo() << "DBBrowser.actionNext destroyed"; });
 
     if(currentrow == 0) actionPrev->setDisabled(true);
     if(count == currentrow + 1) actionNext->setDisabled(true);
@@ -910,6 +914,7 @@ void DBBrowser::slotViewProfile()
 
     dvl->addToolbarButton(actionNext);
     dvl->addToolbarButton(actionPrev);
+    dvl->ToolBar()->actions().last()->setVisible(false);
 
     dvl->exec();
 }

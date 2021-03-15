@@ -16,36 +16,18 @@
 #include <QToolBar>
 #include <QStandardItemModel>
 #include <QFileDialog>
-#include <QGraphicsDropShadowEffect>
 #include <QPushButton>
 #include <QColorDialog>
-#include <QWindowStateChangeEvent>
 
 DialogValuesList::DialogValuesList(QWidget* parent,
                                    const QString& icon,
                                    const QString& caption,
                                    QMap<QString, DialogValue> *values,
-                                   const QString &focusedKey,
-                                   bool dialogMode) :
-      QDialog(parent)
+                                   const QString &focusedKey) :
+    DialogBody(parent, caption, icon, true, true),
+    m_Values(values),
+    m_FocusedKey(focusedKey)
 {
-    m_Values = values;
-    m_DialogMode = dialogMode;
-    m_FocusedKey = focusedKey;
-    setWindowFlags(Qt::Dialog |
-                   Qt::CustomizeWindowHint |
-                   Qt::WindowTitleHint);
-    setAttribute(Qt::WA_DeleteOnClose);
-    setWindowTitle(caption);
-    setWindowIcon(QIcon(icon));
-    setModal(m_DialogMode);
-
-    auto vblForm = new QVBoxLayout();
-    vblForm->setAlignment(Qt::AlignAbsolute);
-    vblForm->setMargin(0);
-    vblForm->setSpacing(0);
-    setLayout(vblForm);
-
     auto saContent = new QScrollArea();
     saContent->setAlignment(Qt::AlignTop);
     saContent->setWidgetResizable(true);
@@ -57,41 +39,43 @@ DialogValuesList::DialogValuesList(QWidget* parent,
     wContent->setLayout(glContent);
     glContent->setAlignment(Qt::AlignTop);
 
-    toolBar = new QToolBar();
-    toolBar->setMovable(false);
-    toolBar->setIconSize(QSize(config->ButtonSize(), config->ButtonSize()));
+    ToolBar()->setIconSize(QSize(config->ButtonSize(), config->ButtonSize()));
+    ToolBar()->addWidget(new WidgetSpacer());
 
-    toolBar->addWidget(new WidgetSpacer());
+    auto actionAccept = new QAction(QIcon(":/resources/img/yes.svg"), tr("Accept"));
+    actionAccept->setAutoRepeat(false);
+    QObject::connect(actionAccept, &QAction::triggered, [=](){ accept(); });
+    ToolBar()->addAction(actionAccept);
 
-    if(m_DialogMode)
-    {
-        auto actionAccept = new QAction(QIcon(":/resources/img/yes.svg"), "Accept");
-        actionAccept->setAutoRepeat(false);
-        actionAccept->setShortcut(Qt::CTRL + Qt::Key_Q);
-        QObject::connect(actionAccept, &QAction::triggered, [=](){ accept(); });
-        toolBar->addAction(actionAccept);
-    }
-    auto actionCancel = new QAction(QIcon(":/resources/img/no.svg"), "Cancel");
-    actionCancel->setAutoRepeat(false);
-    QObject::connect(actionCancel, &QAction::triggered, [=](){ reject(); });
-    toolBar->addAction(actionCancel);
-
-    vblForm->addWidget(saContent);
-    vblForm->addWidget(toolBar);
+    addDialogContent(saContent);
 
     slotLoadContent(values);
 
-    resize(WINDOW_SIZE);
+    resize(DVL_WINDOW_SIZE);
+
+    QObject::connect(this, &QObject::destroyed, [=](){ qDebug() << "DialogValuesList" << windowTitle() << "destroyed"; });
+    qDebug() << "DialogValuesList" << windowTitle() << "created";
 }
 
-void DialogValuesList::addWidgetContent(QWidget *widget)
+void DialogValuesList::addWidgetContent(QWidget *widget, bool sub_item)
 {
-    glContent->addWidget(widget, glContent->count(), 0, 1, 1, Qt::AlignTop);
+    if(sub_item)
+    {
+        auto w = new QWidget();
+        auto hb = new QHBoxLayout();
+        hb->setContentsMargins(DVL_SUBITEM_SIZE, 0, 0, 0);
+        w->setLayout(hb);
+        hb->addWidget(widget, Qt::AlignLeft);
+        glContent->addWidget(w, glContent->count(), 0, 1, 1, Qt::AlignTop);
+    }
+    else
+        glContent->addWidget(widget, glContent->count(), 0, 1, 1, Qt::AlignTop);
 }
 
 void DialogValuesList::addToolbarButton(QAction *action)
 {
-    toolBar->insertAction(toolBar->actions().first(), action);
+    action->setParent(this);
+    ToolBar()->insertAction(ToolBar()->actions().first(), action);
 }
 
 void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
@@ -107,33 +91,28 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
         QVariant v = values->value(key).value;
         QVariant minv = values->value(key).minValue;
         QVariant maxv = values->value(key).maxValue;
-        QString text = key; text.remove(QRegExp(RE_NUM_MARK));
+        QString text = key; text.remove(QRegExp(DVL_RE_NUM_MARK));
+        bool sub_item = false;
+        if(text.startsWith(DVL_SUBITEM_MARK))
+        {
+            text.remove(0, DVL_SUBITEM_MARK.length());
+            sub_item = true;
+        }
 
         if(t == QVariant::Invalid ||
-            values->value(key).mode == DialogValueMode::Caption)
+                values->value(key).mode == DialogValueMode::Caption)
         {
-            auto widget = new QFrame();
-            widget->setFrameStyle(QFrame::Raised | QFrame::Panel);
-            auto bl = new QHBoxLayout();
-            bl->setMargin(0);
-
-            auto label = new QLabel(widget);
-            label->setText(QString("<b>%1</b>").arg(text));
+            auto label = new QLabel();
+            label->setStyleSheet(DVL_CAPTION_STYLE);
+            label->setText(QString("<center>%1</center>").arg(text));
             label->setWordWrap(true);
 
-            auto effect = new QGraphicsDropShadowEffect(widget);
-            effect->setOffset(CAPTION_EFFECT_OFFSET, CAPTION_EFFECT_OFFSET);
-            effect->setColor(widget->palette().color(QPalette::Base));
-            label->setGraphicsEffect(effect);
-
             QFont font = label->font();
-            font.setPointSizeF(font.pointSizeF() + CAPTION_FONT_UP);
+            font.setPointSizeF(font.pointSizeF() + DVL_CAPTION_FONT_UP);
             //font.setUnderline(true);
             label->setFont(font);
 
-            bl->addWidget(label, 0);
-            widget->setLayout(bl);
-            addWidgetContent(widget);
+            addWidgetContent(label);
             continue;
         }
 
@@ -156,7 +135,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             le->setPalette(pal);
             bl->addWidget(le, 1);
             widget->setLayout(bl);
-            addWidgetContent(widget);
+            addWidgetContent(widget, sub_item);
             continue;
         }
 
@@ -175,12 +154,12 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             btn->setFixedHeight(config->ButtonSize());
             btn->setAutoFillBackground(true);
             btn->setProperty("ValueName", key);
-            btn->setStyleSheet(BTN_COLOR_STYLE.arg(v.toString(), GetContrastColor(QColor(v.toString())).name()));
+            btn->setStyleSheet(DVL_BTN_COLOR_STYLE.arg(v.toString(), GetContrastColor(QColor(v.toString())).name()));
             QObject::connect(btn, &QPushButton::pressed, [=]() { selectColor(btn->text(), btn); });
             bl->addWidget(btn, 1);
 
             widget->setLayout(bl);
-            addWidgetContent(widget);
+            addWidgetContent(widget, sub_item);
             continue;
         }
 
@@ -205,7 +184,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
                 int border = 5;
                 QPixmap p(pixmap);
                 limg->setBackgroundRole(QPalette::Base);
-                limg->setStyleSheet(IMG_STYLE.arg(QString::number(border)));
+                limg->setStyleSheet(DVL_IMG_STYLE.arg(QString::number(border)));
 
                 auto w = minv.toInt();
                 auto h = maxv.toInt();
@@ -215,7 +194,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
                 limg->setPixmap(p);
                 limg->setFixedSize(p.width() + 2 * border, p.height() + 2 * border);
                 bl->addWidget(limg, 0);
-            }            
+            }
             auto tbimginfo = new QToolBar();
             tbimginfo->setMovable(false);
             tbimginfo->setIconSize(QSize(config->ButtonSize(), config->ButtonSize()));
@@ -232,7 +211,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             bl->addWidget(tbimginfo, 0);
 
             widget->setLayout(bl);
-            addWidgetContent(widget);
+            addWidgetContent(widget, sub_item);
             continue;
         }
 
@@ -255,7 +234,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             widget->setLayout(bl);
 
             if(key == m_FocusedKey) le->setFocus();
-            addWidgetContent(widget);
+            addWidgetContent(widget, sub_item);
             continue;
         }
 
@@ -266,7 +245,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             cbox->setProperty("ValueName", key);
             QObject::connect(cbox, &QCheckBox::stateChanged,
                              this, &DialogValuesList::slotBoolValueChanged);
-            addWidgetContent(cbox);
+            addWidgetContent(cbox, sub_item);
             if(key == m_FocusedKey) cbox->setFocus();
             continue;
         }
@@ -277,15 +256,15 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             spinbox->setPrefix(QString("%1: ").arg(text));
             spinbox->setRange(minv.toInt(),
                               maxv.toInt() == minv.toInt()
-                                  ? std::numeric_limits<int>::max()
-                                  : maxv.toInt());
+                              ? std::numeric_limits<int>::max()
+                              : maxv.toInt());
             spinbox->setSingleStep(1);
             spinbox->setValue(v.toInt());
             spinbox->installEventFilter(this);
             spinbox->setProperty("ValueName", key);
             QObject::connect(spinbox, QOverload<int>::of(&QSpinBox::valueChanged),
                              this, &DialogValuesList::slotIntValueChanged);
-            addWidgetContent(spinbox);
+            addWidgetContent(spinbox, sub_item);
             if(key == m_FocusedKey) spinbox->setFocus();
             continue;
         }
@@ -295,17 +274,17 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             spinbox->setPrefix(QString("%1: ").arg(text));
             spinbox->setRange(minv.toDouble(),
                               maxv.toDouble() - minv.toDouble() == 0.0
-                                  ? std::numeric_limits<double>::max()
-                                  : maxv.toDouble());
-            spinbox->setDecimals(DOUBLE_SPINBOX_DECIMALS);
-            spinbox->setSingleStep(0.1);// TODO: QDoubleSpinBox->setSingleStep
+                              ? std::numeric_limits<double>::max()
+                              : maxv.toDouble());
+            spinbox->setDecimals(DVL_DOUBLE_SPINBOX_DECIMALS);
+            spinbox->setSingleStep(0.1);
             spinbox->setStepType(QAbstractSpinBox::AdaptiveDecimalStepType);
             spinbox->setValue(v.toDouble());
             spinbox->installEventFilter(this);
             spinbox->setProperty("ValueName", key);
             QObject::connect(spinbox, QOverload<double>::of(&QDoubleSpinBox::valueChanged),
                              this, &DialogValuesList::slotDoubleValueChanged);
-            addWidgetContent(spinbox);
+            addWidgetContent(spinbox, sub_item);
             if(key == m_FocusedKey) spinbox->setFocus();
             continue;
         }
@@ -320,7 +299,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             bl->setSpacing(2);
             bl->addWidget(label, 0);
             if(values->value(key).mode == DialogValueMode::Default)
-            { 
+            {
                 auto le = new QLineEdit(v.toStringList().join(','), widget);
                 le->setCursorPosition(0);
                 le->setProperty("ValueName", key);
@@ -339,7 +318,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
                 auto list = maxv.toStringList();
                 if(!list.isEmpty())
                 {
-                    list.sort(Qt::CaseInsensitive);
+                    //list.sort(Qt::CaseInsensitive);
                     cb->addItems(list);
                     cb->setProperty("ValueName", key);
                     auto index = list.indexOf(v.toString());
@@ -357,7 +336,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
                 auto lv = new QListView(widget);
                 lv->setSelectionMode(QAbstractItemView::NoSelection);
                 lv->setEditTriggers(QAbstractItemView::NoEditTriggers);
-                lv->setSelectionRectVisible(false);                
+                lv->setSelectionRectVisible(false);
                 QFontMetrics fm(lv->font());
                 lv->setFixedHeight(fm.height() * 4);
                 auto model = new QStandardItemModel(lv);
@@ -383,39 +362,11 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
                 if(key == m_FocusedKey) lv->setFocus();
                 widget->setLayout(bl);
             }
-            addWidgetContent(widget);
+            addWidgetContent(widget, sub_item);
             continue;
         }
 
         qCritical() << __func__ << ": Value" << key << "Unsupported type" << t;
-    }
-}
-
-bool DialogValuesList::eventFilter(QObject* object, QEvent *event)
-{
-    switch (event->type())
-    {
-    case QEvent::Wheel:
-    { return true; }
-    case QEvent::WindowStateChange:
-    {
-        if(!isMinimized()) return false;
-
-        // если всё же свернули
-        setWindowState(static_cast<QWindowStateChangeEvent *>(event)->oldState());
-        return true;
-
-    }
-    case QEvent::Close:
-    {
-        if(object != this || isMinimized() || isMaximized()) return false;
-
-        // сохранение размеров окна
-
-        return true;
-    }
-
-    default: { return false; }
     }
 }
 
@@ -452,7 +403,7 @@ void DialogValuesList::slotStringListValueChanged()
     auto ledit = qobject_cast<QLineEdit*>(sender());
     if(!ledit) { qCritical() << __func__ << ": Signal sender not found."; return; }
     auto key = ledit->property("ValueName").toString();
-    setMapValue(key, ledit->text().split(',', Qt::SkipEmptyParts).replaceInStrings(QRegExp(RE_FIRST_LAST_SPACES), ""));
+    setMapValue(key, ledit->text().split(',', Qt::SkipEmptyParts).replaceInStrings(QRegExp(DVL_RE_FIRST_LAST_SPACES), ""));
 }
 
 void DialogValuesList::slotOneOfStringListValueChanged()
@@ -505,7 +456,7 @@ void DialogValuesList::selectColor(const QString &value, QPushButton* btn)
     {
         auto colortxt = color.name().toUpper();
         btn->setText(colortxt);
-        btn->setStyleSheet(BTN_COLOR_STYLE.arg(colortxt, GetContrastColor(QColor(colortxt)).name()));
+        btn->setStyleSheet(DVL_BTN_COLOR_STYLE.arg(colortxt, GetContrastColor(QColor(colortxt)).name()));
         auto key = btn->property("ValueName").toString();
         setMapValue(key, colortxt);
     }

@@ -21,6 +21,8 @@ set(PROJECT_SOURCES
     dbbrowser.h
     dialogs/dialogvalueslist.cpp
     dialogs/dialogvalueslist.h
+    dialogs/dialogbody.cpp
+    dialogs/dialogbody.h
     helper.cpp
     helper.h
     helpergraphics.cpp

@@ -961,7 +961,8 @@ void MainWindow::slotSetup()
     };
 
     auto dvl = new DialogValuesList(this, ":/resources/img/setup.svg", "Settings", &map);
-
+    dvl->resize(CONFIG_WINDOW_WIDTH, CONFIG_WINDOW_HEIGHT);
+    setWidgetToParentCenter(dvl);
     if(!dvl->exec()) return;
 
     config->setAdvancedDBMode(map.value(keys.at(1)).value.toBool());
