@@ -915,7 +915,7 @@ void DBBrowser::slotViewProfile()
     dvl->addToolbarButton(actionNext);
     dvl->addToolbarButton(actionPrev);
     dvl->ToolBar()->actions().last()->setVisible(false);
-
+    dvl->resize(PROFVIEW_WINDOW_WIDTH, PROFVIEW_WINDOW_HEIGHT);
     dvl->exec();
 }
 
