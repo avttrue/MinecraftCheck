@@ -41,16 +41,16 @@ DBBrowser::DBBrowser(QWidget *parent)
     actionReport->setDisabled(true);
     auto actionLoad = new QAction(QIcon(":/resources/img/sql_file.svg"), "Load query", this);
     actionFilter = new QAction(QIcon(":/resources/img/search.svg"), "Set filter", this);
-    actionFilter->setShortcut(Qt::CTRL + Qt::Key_F);
+    actionFilter->setShortcut(Qt::CTRL | Qt::Key_F);
     actionFilter->setDisabled(true);
     actionUpdateProfile = new QAction(QIcon(":/resources/img/refresh.svg"), "Reload profile", this);
-    actionUpdateProfile->setShortcut(Qt::CTRL + Qt::Key_R);
+    actionUpdateProfile->setShortcut(Qt::CTRL | Qt::Key_R);
     actionUpdateProfile->setDisabled(true);
     actionComment = new QAction(QIcon(":/resources/img/edit.svg"), "Edit comments", this);
-    actionComment->setShortcut(Qt::CTRL + Qt::Key_E);
+    actionComment->setShortcut(Qt::CTRL | Qt::Key_E);
     actionComment->setDisabled(true);
     actionView = new QAction(QIcon(":/resources/img/eye.svg"), "View profile", this);
-    actionView->setShortcut(Qt::CTRL + Qt::Key_W);
+    actionView->setShortcut(Qt::CTRL | Qt::Key_W);
     actionView->setDisabled(true);
 
     auto actionUnselAll = new QAction(QIcon(":/resources/img/sel_unsel.svg"), "Unselect all", this);
@@ -70,7 +70,7 @@ DBBrowser::DBBrowser(QWidget *parent)
 
     auto layout = new QVBoxLayout(this);
     layout->setSpacing(1);
-    layout->setMargin(1);
+    layout->setContentsMargins(1, 1, 1, 1);
 
     auto toolBar = new QToolBar(this);
     toolBar->setIconSize(QSize(config->ButtonSize(), config->ButtonSize()));
@@ -105,7 +105,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     auto layoutTree = new QVBoxLayout();
     layoutTree->setAlignment(Qt::AlignTop);
     layoutTree->setSpacing(1);
-    layoutTree->setMargin(0);
+    layoutTree->setContentsMargins(0, 0, 0, 0);
     frameTree->setLayout(layoutTree);
     layoutTree->addWidget(tree);
 
@@ -122,7 +122,7 @@ DBBrowser::DBBrowser(QWidget *parent)
     auto layoutTable = new QVBoxLayout();
     layoutTable->setAlignment(Qt::AlignTop);
     layoutTable->setSpacing(1);
-    layoutTable->setMargin(0);
+    layoutTable->setContentsMargins(0, 0, 0, 0);;
     frameTable->setLayout(layoutTable);
     layoutTable->addWidget(table);
 
@@ -185,7 +185,7 @@ void DBBrowser::slotRefresh()
     int tableCount = 0;
     bool gotActiveDb = false;
 
-    for(auto name: connectionNames)
+    for(const auto &name: connectionNames)
     {
         auto root = new QTreeWidgetItem(tree);
         auto db = QSqlDatabase::database(name, false);
@@ -391,10 +391,9 @@ void DBBrowser::showMetaData(const QString &t)
         auto field = rec.field(i);
         model->setData(model->index(i, 0), field.name());
         model->setData(model->index(i, 1), field.typeID() == -1
-                                               ? QString(QMetaType::typeName(static_cast<int>(field.type())))
+                                               ? QString(field.name())
                                                : QString("%1 (%2)").
-                                                 arg(QMetaType::typeName(static_cast<int>(field.type()))).
-                                                 arg(field.typeID()));
+                                                 arg(field.name(), QString::number(field.typeID())));
         model->setData(model->index(i, 2), field.length());
         model->setData(model->index(i, 3), field.precision());
         model->setData(model->index(i, 4),
@@ -584,16 +583,16 @@ void DBBrowser::rowToDialogValueMap(QMap<QString, DialogValue>* map, int row)
     auto scale = config->ReportImgScale();
     auto portrait = getBase64Image(getProfilePortrait(fields.at(3), config->ReportPortraitSize()));
     *map =
-        {{keys.at(0), {QVariant::String, fields.at(0), 0, 0, DialogValueMode::Disabled}},
-         {keys.at(1), {QVariant::String, portrait, 0, 0, DialogValueMode::Base64Image}},
-         {keys.at(2), {QVariant::String, fields.at(1), 0, 0, DialogValueMode::Disabled}},
-         {keys.at(3), {QVariant::String, fields.at(2), 0, 0, DialogValueMode::Disabled}},
-         {keys.at(4), {QVariant::String, fields.at(3), scale, scale, DialogValueMode::Base64Image}},
-         {keys.at(5), {QVariant::String, fields.at(4), 0, 0, DialogValueMode::Disabled}},
-         {keys.at(6), {QVariant::String, fields.at(5), 0, 0, DialogValueMode::Disabled}},
-         {keys.at(7), {QVariant::String, fields.at(6), 0, 0, DialogValueMode::Disabled}},
-         {keys.at(8), {QVariant::String, fields.at(7) == "0" ? "NO" : "YES", "", "", DialogValueMode::Disabled}},
-         {keys.at(9), {QVariant::String, fields.at(8) == "0" ? "NO" : "YES", "", "", DialogValueMode::Disabled}}
+        {{keys.at(0), {QMetaType::QString, fields.at(0), 0, 0, DialogValueMode::Disabled}},
+         {keys.at(1), {QMetaType::QString, portrait, 0, 0, DialogValueMode::Base64Image}},
+         {keys.at(2), {QMetaType::QString, fields.at(1), 0, 0, DialogValueMode::Disabled}},
+         {keys.at(3), {QMetaType::QString, fields.at(2), 0, 0, DialogValueMode::Disabled}},
+         {keys.at(4), {QMetaType::QString, fields.at(3), scale, scale, DialogValueMode::Base64Image}},
+         {keys.at(5), {QMetaType::QString, fields.at(4), 0, 0, DialogValueMode::Disabled}},
+         {keys.at(6), {QMetaType::QString, fields.at(5), 0, 0, DialogValueMode::Disabled}},
+         {keys.at(7), {QMetaType::QString, fields.at(6), 0, 0, DialogValueMode::Disabled}},
+         {keys.at(8), {QMetaType::QString, fields.at(7) == "0" ? "NO" : "YES", "", "", DialogValueMode::Disabled}},
+         {keys.at(9), {QMetaType::QString, fields.at(8) == "0" ? "NO" : "YES", "", "", DialogValueMode::Disabled}}
         };
 }
 
@@ -684,8 +683,8 @@ void DBBrowser::slotSearch()
         return;
     }
 
-        const QVector<QString> keys =
-            {"3#_Value: ", "1#_Area: ", "2#_Precision: "};
+    const QVector<QString> keys =
+        {"3#_Value: ", "1#_Area: ", "2#_Precision: "};
     const QStringList arealist =
         {"NAMES in Profiles", "NAMES in Profiles and History",
          "COMMENTS", "ID in Profiles", "NAME HISTORY", "CAPES"};
@@ -694,9 +693,9 @@ void DBBrowser::slotSearch()
 
         QMap<QString, DialogValue>
             map =
-                {{keys.at(0), {QVariant::String, ""}},
-                 {keys.at(1), {QVariant::StringList, arealist.at(0), "", arealist, DialogValueMode::OneFromList}},
-                 {keys.at(2), {QVariant::StringList, preclist.at(0), "", preclist, DialogValueMode::OneFromList}},
+                {{keys.at(0), {QMetaType::QString, ""}},
+                 {keys.at(1), {QMetaType::QStringList, arealist.at(0), "", arealist, DialogValueMode::OneFromList}},
+                 {keys.at(2), {QMetaType::QStringList, preclist.at(0), "", preclist, DialogValueMode::OneFromList}},
                  };
 
     auto dvl = new DialogValuesList(this, ":/resources/img/search.svg", "Find a profile", &map, keys.at(0));
@@ -752,7 +751,8 @@ void DBBrowser::slotSearch()
 
         idsl.removeDuplicates();
         idsl.removeAll("");
-        for(auto id: idsl) ids.append(QString(" OR Uuid = '%1'").arg(id)); //NOTE: 'Uuid' column
+        for(const auto &id: idsl)
+            ids.append(QString(" OR Uuid = '%1'").arg(id)); //NOTE: 'Uuid' column
 
         qDebug() << __func__ << ": ids =" << ids;
 
@@ -824,9 +824,9 @@ void DBBrowser::slotComment()
 
     const QVector<QString> keys = {"01#_Name: ", "02#_ID: ", "03#_Value: "};
     QMap<QString, DialogValue> map =
-        {{keys.at(0), {QVariant::String, curname, "", "", DialogValueMode::Disabled}},
-         {keys.at(1), {QVariant::String, uuid, "", "", DialogValueMode::Disabled}},
-         {keys.at(2), {QVariant::String, comments}}};
+        {{keys.at(0), {QMetaType::QString, curname, "", "", DialogValueMode::Disabled}},
+         {keys.at(1), {QMetaType::QString, uuid, "", "", DialogValueMode::Disabled}},
+         {keys.at(2), {QMetaType::QString, comments}}};
 
     auto dvl = new DialogValuesList(this, ":/resources/img/edit.svg", "Edit comments", &map, keys.at(2));
     dvl->resize(config->CommentWindowWidth(), config->CommentWindowHeight());

@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QDir>
 #include <QTextCodec>
+#include <QSettings>
 
 Config::Config(const QString& in_AppDirectory):
     m_Settings(nullptr)
@@ -16,7 +17,6 @@ Config::Config(const QString& in_AppDirectory):
     qInfo() << "LocalDB:" << m_PathLocalDB;
 
     m_Settings = new QSettings(m_PathAppConfig, QSettings::IniFormat);
-    m_Settings->setIniCodec(QTextCodec::codecForName(TEXT_CODEC.toLatin1()));
 
     load();
 
@@ -35,9 +35,11 @@ void Config::load()
 
     if(!m_Settings->contains("MainWindow/Height"))
         m_Settings->setValue("MainWindow/Height", WINDOW_HEIGHT);
+    m_MainWindowHeight = m_Settings->value("MainWindow/Height").toInt();
 
     if(!m_Settings->contains("MainWindow/Width"))
         m_Settings->setValue("MainWindow/Width", WINDOW_WIDTH);
+    m_MainWindowWidth = m_Settings->value("MainWindow/Width").toInt();
 
     if(!m_Settings->contains("MainWindow/ConfigWindowWidth"))
         m_Settings->setValue("MainWindow/ConfigWindowWidth", CONFIG_WINDOW_WIDTH);
@@ -206,6 +208,22 @@ void Config::load()
     if(!m_Settings->contains("Database/KeepCommentsAtUpd"))
         m_Settings->setValue("Database/KeepCommentsAtUpd", KEEP_COMMENTS_AT_UPD);
     m_KeepCommentsAtUpd = m_Settings->value("Database/KeepCommentsAtUpd").toBool();
+}
+
+void Config::setMainWindowWidth(int value)
+{
+    if(m_MainWindowWidth == value) return;
+
+    m_MainWindowWidth = value;
+    m_Settings->setValue("MainWindow/Width", m_MainWindowWidth);
+}
+
+void Config::setMainWindowHeight(int value)
+{
+    if(m_MainWindowHeight == value) return;
+
+    m_MainWindowHeight = value;
+    m_Settings->setValue("MainWindow/Height", m_MainWindowHeight);
 }
 
 void Config::setProfViewWindowHeight(int value)

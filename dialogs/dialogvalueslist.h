@@ -58,7 +58,7 @@ enum DialogValueMode
  */
 struct DialogValue
 {
-    QVariant::Type type = QVariant::Invalid;
+    QMetaType::Type type = QMetaType::UnknownType;
     QVariant value = QVariant();
     QVariant minValue = QVariant();
     QVariant maxValue = QVariant();

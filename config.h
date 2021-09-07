@@ -3,12 +3,14 @@
 
 #include <QObject>
 #include <QString>
-#include <QSettings>
 
 /*!
  * \brief Config - настройки программы с загрузкой из файла конфига и сохранением в файл.
  * Интерфейс над QSettings.
  */
+
+class QSettings;
+
 class Config : public QObject
 {
     Q_OBJECT
@@ -21,6 +23,10 @@ public:
     QString PathApp() const;
     QString PathAppConfig() const;
     QString PathLocalDB() const;
+    int MainWindowHeight() const { return m_MainWindowHeight; }
+    void setMainWindowHeight(int value);
+    int MainWindowWidth() const { return m_MainWindowWidth; }
+    void setMainWindowWidth(int value);
     int ButtonSize() const;
     void setButtonSize(int value);
     QString QueryServers() const;
@@ -127,6 +133,8 @@ private:
     QString m_FontNameEvents;           // семейство шрифта лога событий
     QString m_TableSkinMode;            // отображение скина в таблице: 'portrait', 'skin', 'none' (любое)
     QString m_ReportCaptionColor;       // цвет заголовка отчёта
+    int m_MainWindowHeight;
+    int m_MainWindowWidth;
     int m_ConfigWindowWidth;            // размеры окна Настроек
     int m_ConfigWindowHeight;           // размеры окна Настроек
     int m_SearchWindowWidth;            // размеры окна Поиска

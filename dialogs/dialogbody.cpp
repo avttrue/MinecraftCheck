@@ -25,7 +25,7 @@ DialogBody::DialogBody(QWidget* parent,
     // основной контейнер
     auto formGridLayout = new QGridLayout(this);
     formGridLayout->setAlignment(Qt::AlignCenter);
-    formGridLayout->setMargin(2);
+    formGridLayout->setContentsMargins(2, 2, 2, 2);
     formGridLayout->setSpacing(0);
 
     // заголовок
@@ -33,7 +33,7 @@ DialogBody::DialogBody(QWidget* parent,
     frameCaption->setFrameStyle(QFrame::Raised | QFrame::Panel);
     frameCaption->setLineWidth(1);
     auto layoutCaption = new QHBoxLayout();
-    layoutCaption->setMargin(1);
+    layoutCaption->setContentsMargins(1, 1, 1, 1);
     layoutCaption->setSpacing(2);
 
     m_Caption = new DialogCaption(text);
@@ -73,7 +73,7 @@ DialogBody::DialogBody(QWidget* parent,
 
     m_ContentGridLayout = new QGridLayout(frameContent);
     m_ContentGridLayout->setAlignment(Qt::AlignCenter);
-    m_ContentGridLayout->setMargin(0);
+    m_ContentGridLayout->setContentsMargins(0, 0, 0, 0);
     m_ContentGridLayout->setSpacing(0);
     frameContent->setLayout(m_ContentGridLayout);
 
@@ -148,15 +148,15 @@ void DialogCaption::setText(const QString& text)
 
 void DialogCaption::mousePressEvent(QMouseEvent* event)
 {
-    m_MouseClick_X = event->x();
-    m_MouseClick_Y = event->y();
+    m_MouseClick_X = event->position().x();
+    m_MouseClick_Y = event->position().y();
 }
 
 void DialogCaption::mouseMoveEvent(QMouseEvent* event)
 {
     if (!(event->buttons() & Qt::LeftButton)) return;
 
-    window()->move(event->globalX() - m_MouseClick_X - pos().x(),
-                   event->globalY() - m_MouseClick_Y - pos().y());
+    window()->move(event->globalPosition().x() - m_MouseClick_X - pos().x(),
+                   event->globalPosition().y() - m_MouseClick_Y - pos().y());
 }
 

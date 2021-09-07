@@ -3,6 +3,7 @@
 #include "properties.h"
 #include "helpergraphics.h"
 
+#include <QRegularExpression>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDebug>
@@ -85,13 +86,13 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
 
     if(!values) { qCritical() << __func__ << ": Values is empty"; return; }
 
-    for (auto key: values->keys())
+    for (const auto &key: values->keys())
     {
-        QVariant::Type t = values->value(key).type;
+        QMetaType::Type t = values->value(key).type;
         QVariant v = values->value(key).value;
         QVariant minv = values->value(key).minValue;
         QVariant maxv = values->value(key).maxValue;
-        QString text = key; text.remove(QRegExp(DVL_RE_NUM_MARK));
+        QString text = key; text.remove(QRegularExpression(DVL_RE_NUM_MARK));
         bool sub_item = false;
         if(text.startsWith(DVL_SUBITEM_MARK))
         {
@@ -99,7 +100,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             sub_item = true;
         }
 
-        if(t == QVariant::Invalid ||
+        if(t == QMetaType::UnknownType ||
                 values->value(key).mode == DialogValueMode::Caption)
         {
             auto label = new QLabel();
@@ -120,7 +121,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
         {
             auto widget = new QWidget();
             auto bl = new QHBoxLayout();
-            bl->setMargin(0);
+            bl->setContentsMargins(0, 0, 0, 0);
             bl->setSpacing(1);
             auto label = new QLabel(widget);
             label->setText(QString("<b>%1</b>").arg(text));
@@ -143,7 +144,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
         {
             auto widget = new QWidget();
             auto bl = new QVBoxLayout();
-            bl->setMargin(0);
+            bl->setContentsMargins(0, 0, 0, 0);
             bl->setSpacing(1);
             auto label = new QLabel(widget);
             label->setText(QString("<b>%1</b>").arg(text));
@@ -167,7 +168,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
         {
             auto widget = new QWidget();
             auto bl = new QVBoxLayout();
-            bl->setMargin(0);
+            bl->setContentsMargins(0, 0, 0, 0);
             bl->setSpacing(1);
             auto label = new QLabel(widget);
             label->setText(QString("<b>%1</b>").arg(text));
@@ -202,7 +203,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
 
             auto actionSave = new QAction(QIcon(":/resources/img/save.svg"), tr("Save image"), widget);
             actionSave->setAutoRepeat(false);
-            QObject::connect(actionSave, &QAction::triggered, [=](){ saveImage(pixmap); });
+            QObject::connect(actionSave, &QAction::triggered, this, [=](){ saveImage(pixmap); });
             tbimginfo->addAction(actionSave);
 
             auto limgsize = new QLabel(QString("Size: %1X%2 px").
@@ -215,11 +216,11 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             continue;
         }
 
-        if(t == QVariant::String)
+        if(t == QMetaType::QString)
         {
             auto widget = new QWidget();
             auto bl = new QHBoxLayout();
-            bl->setMargin(0);
+            bl->setContentsMargins(0, 0, 0, 0);
             bl->setSpacing(1);
             auto label = new QLabel(widget);
             label->setWordWrap(true);
@@ -233,12 +234,12 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             bl->addWidget(le, 1);
             widget->setLayout(bl);
 
-            if(key == m_FocusedKey) le->setFocus();
             addWidgetContent(widget, sub_item);
+            if(key == m_FocusedKey) le->setFocus();
             continue;
         }
 
-        if(t == QVariant::Bool)
+        if(t == QMetaType::Bool)
         {
             auto cbox = new QCheckBox(text);
             cbox->setChecked(v.toBool());
@@ -250,7 +251,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             continue;
         }
 
-        if(t == QVariant::Int)
+        if(t == QMetaType::Int)
         {
             auto spinbox = new QSpinBox();
             spinbox->setPrefix(QString("%1: ").arg(text));
@@ -268,7 +269,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             if(key == m_FocusedKey) spinbox->setFocus();
             continue;
         }
-        if(t == QVariant::Double)
+        if(t == QMetaType::Double)
         {
             auto spinbox = new QDoubleSpinBox();
             spinbox->setPrefix(QString("%1: ").arg(text));
@@ -288,14 +289,14 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
             if(key == m_FocusedKey) spinbox->setFocus();
             continue;
         }
-        if(t == QVariant::StringList)
+        if(t == QMetaType::QStringList)
         {
             auto widget = new QWidget();
             auto label = new QLabel();
             label->setText(QString("<b>%1</b>").arg(text));
             label->setWordWrap(true);
             auto bl = new QHBoxLayout();
-            bl->setMargin(0);
+            bl->setContentsMargins(0, 0, 0, 0);
             bl->setSpacing(2);
             bl->addWidget(label, 0);
             if(values->value(key).mode == DialogValueMode::Default)
@@ -308,8 +309,8 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
                 QObject::connect(le, &QLineEdit::returnPressed,
                                  this, &DialogValuesList::slotStringListValueChanged);
                 bl->addWidget(le, 1);
+                 widget->setLayout(bl);
                 if(key == m_FocusedKey) le->setFocus();
-                widget->setLayout(bl);
             }
             else if(values->value(key).mode == DialogValueMode::OneFromList)
             {
@@ -328,8 +329,8 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
                 }
                 else cb->setDisabled(true);
                 bl->addWidget(cb, 1);
-                if(key == m_FocusedKey) cb->setFocus();
                 widget->setLayout(bl);
+                if(key == m_FocusedKey) cb->setFocus();
             }
             else if(values->value(key).mode == DialogValueMode::ManyFromList)
             {
@@ -345,7 +346,7 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
                 if(!list.isEmpty())
                 {
                     list.sort(Qt::CaseInsensitive);
-                    for(QString s: list)
+                    for(const QString &s: list)
                     {
                         auto i = new QStandardItem(s);
                         i->setCheckable(true);
@@ -359,8 +360,8 @@ void DialogValuesList::slotLoadContent(QMap<QString, DialogValue>* values)
                 }
                 else lv->setDisabled(true);
                 bl->addWidget(lv, 1);
-                if(key == m_FocusedKey) lv->setFocus();
                 widget->setLayout(bl);
+                if(key == m_FocusedKey) lv->setFocus();
             }
             addWidgetContent(widget, sub_item);
             continue;
@@ -403,7 +404,8 @@ void DialogValuesList::slotStringListValueChanged()
     auto ledit = qobject_cast<QLineEdit*>(sender());
     if(!ledit) { qCritical() << __func__ << ": Signal sender not found."; return; }
     auto key = ledit->property("ValueName").toString();
-    setMapValue(key, ledit->text().split(',', Qt::SkipEmptyParts).replaceInStrings(QRegExp(DVL_RE_FIRST_LAST_SPACES), ""));
+    setMapValue(key, ledit->text().split(',', Qt::SkipEmptyParts).
+                replaceInStrings(QRegularExpression(DVL_RE_FIRST_LAST_SPACES), ""));
 }
 
 void DialogValuesList::slotOneOfStringListValueChanged()

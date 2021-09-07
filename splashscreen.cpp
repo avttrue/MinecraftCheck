@@ -9,6 +9,7 @@ SplashScreen::SplashScreen()
     setPixmap(QPixmap(":/resources/img/mainicon512.png").
                      scaled(config->SplashSize(), config->SplashSize(),
                             Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+
     setWindowIcon(QIcon(":/resources/img/mainicon512.png"));
     setWindowModality(Qt::WindowModal);
     setWindowState(Qt::WindowActive);
