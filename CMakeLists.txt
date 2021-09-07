@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required ( VERSION 3.5 )
 
 set ( APP_NAME "mcchk" )
 
+#https://stackoverflow.com/a/53234995/12177714
 set ( CXX_FLAGS
     "-fno-sized-deallocation"
     )
@@ -63,17 +64,17 @@ set ( PROJECT_SOURCES
 #    ${TS_FILES}
     )    
 
-if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
+if ( ${QT_VERSION_MAJOR} GREATER_EQUAL 6 )
     qt_add_executable( ${APP_NAME} MANUAL_FINALIZATION ${PROJECT_SOURCES} )
     qt_create_translation( QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES} )
 
-else()
+else ()
     add_executable( ${APP_NAME} ${PROJECT_SOURCES} )
     qt5_create_translation( QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES} )
 
-endif()
+endif ()
 
-target_link_libraries(${APP_NAME} PRIVATE
+target_link_libraries ( ${APP_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Core5Compat
     Qt${QT_VERSION_MAJOR}::Core
     Qt${QT_VERSION_MAJOR}::Gui
@@ -82,6 +83,6 @@ target_link_libraries(${APP_NAME} PRIVATE
     Qt${QT_VERSION_MAJOR}::Svg
     )
 
-if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(${APP_NAME})
-endif()
+if ( QT_VERSION_MAJOR EQUAL 6 )
+    qt_finalize_executable( ${APP_NAME} )
+endif ()
